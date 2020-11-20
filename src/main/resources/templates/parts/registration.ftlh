@@ -1,4 +1,4 @@
-<#macro registration message="null">
+<#macro registration message="null" fio="" login="" password="" password2="">
     <div class="row">
         <div class="col-md-2">
         </div>
@@ -7,7 +7,7 @@
                 <div class="form-group row">
                     <label class="col-sm-3 col-form-label " >Ф.И.О. : </label>
                     <div class="col-sm-8">
-                        <input type="text" name="fio" placeholder="Ф.И.О." class="form-control" required/>
+                        <input type="text" name="fio" placeholder="Ф.И.О." class="form-control" required <#if fio!="null">value=${fio} </#if> />
                         <div class="invalid-feedback">
                             Введите Ф.И.О.
                         </div>
@@ -17,7 +17,7 @@
                 <div class="form-group row">
                     <label class="col-sm-3 col-form-label " >Логин : </label>
                     <div class="col-sm-8">
-                        <input type="text" name="username" placeholder="Логин" class="form-control" required/>
+                        <input type="text" name="username" placeholder="Логин" class="form-control" required <#if login!="null">value=${login} </#if>/>
                         <div class="invalid-feedback">
                             Введите логин
                         </div>
@@ -28,7 +28,7 @@
                 <div class="form-group row">
                     <label class="col-sm-3 col-form-label"> Пароль:  </label>
                     <div class="col-sm-8">
-                        <input type="password" name="password" placeholder="Пароль" class="form-control" required/>
+                        <input type="password" name="password" placeholder="Пароль" class="form-control" required <#if password!="null">value=${password} </#if>/>
                         <div class="invalid-feedback">
                             Введите пароль
                         </div>
@@ -39,7 +39,7 @@
                 <div class="form-group row">
                     <label class="col-sm-3 col-form-label"> Подтверждение:  </label>
                     <div class="col-sm-8">
-                        <input type="password" name="password2" placeholder="Пароль" class="form-control" required/>
+                        <input type="password" name="password2" placeholder="Пароль" class="form-control" required <#if password2!="null">value=${password2} </#if>/>
                         <div class="invalid-feedback">
                             Введите подтверждение пароля
                         </div>
