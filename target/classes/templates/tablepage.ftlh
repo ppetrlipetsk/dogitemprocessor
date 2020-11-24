@@ -36,13 +36,22 @@
 <div id="info"></div>
 
 <script src="jquery-3.5.1.min.js" type="text/javascript" ></script>
+<script src="etable.js" type="text/javascript" ></script>
 <script type="text/javascript">
-    let dt=${tableitems?ifExists};
+    <#if tableitems??>
+    dt=${tableitems};
+    <#else>
+    let dt=new Array();
+    </#if>
     <#if _csrf.token??>
     let _csrf="${_csrf.token}";
+    <#else>
+    let _csrf="";
     </#if>
-
+    let table=new ETable(dt);
+    table.drawTable().setCellClickListener();
+    /*table.setCellClickListener();*/
 </script>
-<script src="sc1.js" type="text/javascript" ></script>
+<#--<script src="sc1.js" type="text/javascript" ></script>-->
 </body>
 </html>

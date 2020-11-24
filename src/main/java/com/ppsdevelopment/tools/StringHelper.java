@@ -1,19 +1,24 @@
 package com.ppsdevelopment.tools;
 
+import com.ppsdevelopment.domain.ETable;
+
 import java.util.List;
 import java.util.Map;
 
 public class StringHelper {
-    public static String getTableItems(List<Map<Integer,String>> list) {
+    public static String getTableItems(ETable table) {
+        List<List<String>> list=table.getCells();
         String s="[";
-        for (Map<Integer, String> map: list) {
+        for (List<String>map: list) {
             if (s.substring(s.length()-1).equals("]")) s+=",";
             s+="[";
             if (s.substring(s.length()-1).equals("]")) s+=",";
-            for (Map.Entry<Integer, String> entry: map.entrySet()){
+
+            for (String cell: map){
                 if (!s.substring(s.length()-1).equals("[")) s+=",";
-                s+=entry.getValue();
+                s+=cell;
             }
+
             s+="]";
         }
         s+="]";

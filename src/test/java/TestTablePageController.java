@@ -23,9 +23,9 @@ public class TestTablePageController {
         }
     }
 
-    @Test
+/*    @Test
     public void testArrayMaker(){
         String s=StringHelper.getTableItems(messages);
         assertTrue(s.length()>0);
-    }
+    }*/
 }
