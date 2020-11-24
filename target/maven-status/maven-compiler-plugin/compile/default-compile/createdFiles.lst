@@ -1,0 +1,14 @@
+com\ppsdevelopment\repos\UserRepo.class
+com\ppsdevelopment\domain\Role.class
+com\ppsdevelopment\config\MvcConfig.class
+com\ppsdevelopment\tools\StringHelper.class
+com\ppsdevelopment\controller\UserController.class
+com\ppsdevelopment\service\UserService.class
+com\ppsdevelopment\controller\RegistrationController.class
+com\ppsdevelopment\domain\Message.class
+com\ppsdevelopment\Application.class
+com\ppsdevelopment\domain\User.class
+com\ppsdevelopment\controller\RESTController.class
+com\ppsdevelopment\controller\MainController.class
+com\ppsdevelopment\repos\MessageRepo.class
+com\ppsdevelopment\controller\TablePageController.class

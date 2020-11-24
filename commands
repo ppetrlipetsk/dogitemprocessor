@@ -1,0 +1,1 @@
+fetch('/tablerest/setitem',{method:'POST',Headers:{'Content-Type':'application/json'},body:JSON.stringify({x:'1'})}).then(console.log)
