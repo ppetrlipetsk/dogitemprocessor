@@ -1,10 +1,12 @@
 package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.domain.CellClass;
+import com.ppsdevelopment.domain.ETable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -13,11 +15,12 @@ public class RESTController {
 
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
-        //System.out.println(message.toString());
-        //return "message="+value+x.toString()+y.toString();
-      //  System.out.println("x="+message.containsKey("x"));
-
-        return "OK"+message.toString();
+        int x=Integer.valueOf(message.get("x"));
+        int y=Integer.valueOf(message.get("y"));
+        String value=message.get("value");
+        List<String> list= ETable.getCells().get(y);
+        list.set(x,value);
+        return "OK"+message.toString()+ETable.getCells().toString();
     }
 
     @PostMapping("/setitem")

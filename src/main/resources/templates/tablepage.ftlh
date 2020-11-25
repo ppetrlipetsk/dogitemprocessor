@@ -1,18 +1,13 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="../static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/css/etable.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
 </head>
 <body>
 
-<div id="ix1">qwerty</div>
-<div class="text-center" >
-    <div class="spinner-border" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
-</div>
 <table id="tableid">
     <thead>
     <tr>
@@ -48,10 +43,10 @@
     <#else>
     let _csrf="";
     </#if>
+
     let table=new ETable(dt);
     table.drawTable().setCellClickListener();
-    /*table.setCellClickListener();*/
 </script>
-<#--<script src="sc1.js" type="text/javascript" ></script>-->
+
 </body>
 </html>
