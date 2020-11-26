@@ -31,12 +31,18 @@ class ETable{
         return this;
     }
 
+    setInputPropertyes(input, td){
+
+
+    }
+
     setCellClickListener(){
         let t=this;
         $( "#tableid tr td" ).click(function() {
             let attrcell = this.hasAttribute('activecell');
             console.log(attrcell);
             if (!attrcell) {
+                let td = this;
                 let x = $(this).attr("x");
                 let y = $(this).parent().attr("rownum");
                 let input = document.createElement('input');
@@ -44,8 +50,8 @@ class ETable{
                 this.setAttribute('activecell', 1);
                 input.value = dt[y][x];
                 cell.innerHTML = '';
-                cell.appendChild(input);
-                let td = this;
+                t.setInputPropertyes(input,);
+                cell.appendChild(input, td);
                 input.addEventListener('blur', function () {
                     td.innerHTML = this.value;
                     dt[y][x] = this.value;
