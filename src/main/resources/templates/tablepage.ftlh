@@ -20,7 +20,7 @@ varjs=['jquery-3.5.1.min.js','etable.js']
     </table>
     <script type="text/javascript">
         <#if tableitems??>
-        dt=${tableitems};
+        let dt=${tableitems};
         <#else>
         let dt=new Array();
         </#if>

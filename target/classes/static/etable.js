@@ -21,7 +21,7 @@ class ETable{
         let s="";
         for (let i = 0; i < this.v_size; i++) {
             s=s+"<tr rownum='"+i+"'>"
-            let tr=""
+            let tr="";
             for (let y=0; y<this.h_size;y++){
                 tr=tr+"<td x='"+y+"'>"+dt[i][y]+"</td>";
             }
@@ -32,31 +32,39 @@ class ETable{
     }
 
     setInputPropertyes(input, td){
-
-
+        input.style.width=(td.clientWidth-input.offsetWidth-input.clientWidth-td.clientLeft*2)+"px";
+        input.style.height=(td.clientHeight-input.offsetHeight-input.clientHeight-td.clientTop*2)+"px";
+        input.style.background="none";
     }
 
     setCellClickListener(){
         let t=this;
         $( "#tableid tr td" ).click(function() {
             let attrcell = this.hasAttribute('activecell');
-            console.log(attrcell);
             if (!attrcell) {
                 let td = this;
                 let x = $(this).attr("x");
                 let y = $(this).parent().attr("rownum");
                 let input = document.createElement('input');
-                let cell = this;
                 this.setAttribute('activecell', 1);
                 input.value = dt[y][x];
-                cell.innerHTML = '';
-                t.setInputPropertyes(input,);
-                cell.appendChild(input, td);
+                td.innerHTML = '';
+                t.setInputPropertyes(input,td);
+                td.appendChild(input);
+
                 input.addEventListener('blur', function () {
-                    td.innerHTML = this.value;
-                    dt[y][x] = this.value;
                     td.removeAttribute('activecell');
-                    t.postajax(x,y,this.value);
+                    if ((dt[y][x]+"")!=this.value) {
+                        if (t.checkForNumber(this.value)) {
+                            dt[y][x] = this.value;
+                            t.postajax(x, y, this.value);
+                        }
+                        else {
+                            alert("error");
+                            this.value=dt[y][x];
+                        }
+                        td.innerHTML = this.value;
+                    }
                 });
                 input.focus();
             }
@@ -82,6 +90,11 @@ class ETable{
             }
         });
     }
+
+    checkForNumber(val){
+        return  ((val !== '')&&(!isNaN(Number(val))));
+    }
+
 }
 
 
