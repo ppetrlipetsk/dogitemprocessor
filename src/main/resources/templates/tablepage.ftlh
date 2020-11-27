@@ -20,24 +20,30 @@ varjs=['jquery-3.5.1.min.js','etable.js']
     </table>
     <script type="text/javascript">
         let columnCheck={
-            t1:"number",
-            t5:"number"
+            t1:"numeric",
+            t5:"numeric"
         };
 
         let columnName=["t1","t2","t3","t4","t5"];
 
         <#if tableitems??>
-        let dt=${tableitems};
+        let dt=${tableitems?no_esc};
         <#else>
         let dt=new Array();
         </#if>
+
         <#if _csrf.token??>
         let _csrf="${_csrf.token}";
         <#else>
         let _csrf="";
         </#if>
-        let table=new ETable(dt,columnCheck,columnName);
-        table.drawTable().setCellClickListener();
+
+        let table=new ETable({
+            tablearray:dt,
+            columnchecks:columnCheck,
+            columnname:columnName
+        }).drawTable().setCellClickListener();
+
     </script>
 
 </@c.page>

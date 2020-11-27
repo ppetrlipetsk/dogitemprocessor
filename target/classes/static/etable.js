@@ -1,13 +1,13 @@
 class ETable{
-
-
-    constructor(tarray){
-        this.v_size=this.getLineSize(tarray);
+    constructor(preferences){
+        this.tablearray=preferences.tablearray;
+        this.v_size=this.getLineSize(this.tablearray);
         if (this.v_size>0)
-            this.h_size=this.getLineSize(tarray[0]);
-        this.tablearray=tarray;
-        let spinnercode="<div  id=\"spinner\" class=\"spinner\" ></div>";
-        document.body.innerHTML = spinnercode+ document.body.innerHTML;
+            this.h_size=this.getLineSize(this.tablearray[0]);
+        this.columnChecks=preferences.columnchecks;
+        this.columnName=preferences.columnname;
+        document.body.innerHTML = this.getSpinnerCode()+ document.body.innerHTML;
+        return this;
     }
 
     getLineSize(line){
@@ -23,7 +23,12 @@ class ETable{
             s=s+"<tr data-rownum='"+i+"'>";
             let tr="";
             for (let y=0; y<this.h_size;y++){
-                tr=tr+"<td data-x='"+y+"'>"+this.tablearray[i][y]+"</td>";
+                columnName=this.columnName[y];
+                let check="";
+                if (this.columnChecks.hasOwnProperty(columnName)){
+                    check=" data-check='"+this.columnChecks[columnName]+"'";
+                }
+                tr=tr+"<td data-x='"+y+"'"+check+">"+this.tablearray[i][y]+"</td>";
             }
             s=s+tr+"</tr>"
         }
@@ -41,7 +46,7 @@ class ETable{
     setCellClickListener(){
         let t=this;
         $( "#tableid tr td" ).click(function() {
-            let attrcell = this.hasAttribute('activecell');
+            let attrcell = this.hasAttribute('data-activecell');
             if (!attrcell) {
                 let td = this;
                 let x = $(this).attr("data-x");
@@ -58,21 +63,36 @@ class ETable{
         });
     }
 
-    setBlurListener(input, td, t, x, y){
+    setBlurListener(input, td, eTableInstance, x, y){
         input.addEventListener('blur', function () {
             td.removeAttribute('data-activecell');
-            if ((t.tablearray[y][x]+"")!=input.value) {
-                if (t.checkForNumber(input.value)) {
-                    t.tablearray[y][x] = input.value;
-                    t.postajax(x, y, input.value);
+            if ((eTableInstance.tablearray[y][x]+"")!=input.value) {
+                let inputError=false;
+                let isChecked = td.hasAttribute('data-check');
+                if (isChecked) {
+                    let checkType = td.getAttribute("data-check");
+                    if (!eTableInstance.checkValue(input.value,checkType)) inputError=true;
+                }
+                if (!inputError) {
+                        eTableInstance.tablearray[y][x] = input.value;
+                        eTableInstance.postajax(x, y, input.value);
                 }
                 else {
-                    alert("Ошибка ввода данных!");
-                    input.value=t.tablearray[y][x];
+                        alert("Ошибка ввода данных!");
+                        input.value=eTableInstance.tablearray[y][x];
+                    }
                 }
-            }
             td.innerHTML = input.value;
         });
+    }
+
+    checkValue(value,checkType) {
+        switch (checkType) {
+            case 'numeric':
+                return this.numericCheck(value);
+            default: return false;
+        }
+        return false;
     }
 
     postajax(x,y, value){
@@ -95,10 +115,14 @@ class ETable{
         });
     }
 
-    checkForNumber(val){
+
+    numericCheck(val){
         return  ((val !== '')&&(!isNaN(Number(val))));
     }
 
+    getSpinnerCode(){
+        return "<div  id=\"spinner\" class=\"spinner\" ></div>";
+    }
 }
 
 

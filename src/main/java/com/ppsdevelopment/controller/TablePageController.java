@@ -12,25 +12,14 @@ import java.util.*;
 @RequestMapping("table")
 public class TablePageController {
     private int counter = 4;
-    private ETable table=ETable.getInstance();
-/*
-    private List<Map<Integer, String>> messages = new LinkedList<Map<Integer, String>>();
-     {
-        int counter=1;
-        for (int i=0;i<3;i++){
-            HashMap map=new HashMap();
-            for (int y=0;y<5;y++){
-                map.put(y,Integer.toString(counter++));
-            }
-            messages.add(map);
-
-        }
+    {
+        ETable.getInstance();
     }
-*/
 
     @GetMapping
     public String index(Map<String, Object> model){
-        model.put("tableitems", StringHelper.getTableItems(table));
+        model.put("tableitems", StringHelper.getTableItems(ETable.getCells()));
+        //model.put("tableitems", ETable.getCells());
         return "tablepage";
     }
 

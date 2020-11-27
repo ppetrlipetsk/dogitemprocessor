@@ -28,4 +28,8 @@ public class ETable {
         return cells;
     }
 
+    @Override
+    public String toString() {
+        return super.toString().replace("[","['").replace(",","','").replace("]","']");
+    }
 }
