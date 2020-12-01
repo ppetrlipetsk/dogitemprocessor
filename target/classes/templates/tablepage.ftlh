@@ -44,8 +44,6 @@ varjs=['jquery-3.5.1.min.js','etable.js']
             columnname:columnName
         }).drawTable().setCellClickListener();
 
-        /*table.drawTable().setCellClickListener();*/
-
     </script>
 
 </@c.page>
