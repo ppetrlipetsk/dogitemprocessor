@@ -1,7 +1,7 @@
 package com.ppsdevelopment.controller;
 
-import com.ppsdevelopment.domain.Role;
-import com.ppsdevelopment.domain.User;
+import com.ppsdevelopment.domain.reserv.Role;
+import com.ppsdevelopment.domain.reserv.User;
 import com.ppsdevelopment.repos.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

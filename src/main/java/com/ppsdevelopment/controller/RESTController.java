@@ -1,11 +1,9 @@
 package com.ppsdevelopment.controller;
 
-import com.ppsdevelopment.domain.CellClass;
-import com.ppsdevelopment.domain.ETable;
-import org.springframework.stereotype.Controller;
+import com.ppsdevelopment.domain.reserv.CellClass;
+import com.ppsdevelopment.domain.reserv.ETable;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 

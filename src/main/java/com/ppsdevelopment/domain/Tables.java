@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
+@Table(name="tables")
 public class Tables {
 
   @Id
@@ -19,8 +20,9 @@ public class Tables {
 */
 
 
-  @OneToMany(mappedBy = "tables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  public Set<Aliases> aliases;
+//  @OneToMany(mappedBy = "tables", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//  public Set<Aliases> aliases;
+
 
 
   public long getId() {
@@ -35,6 +37,7 @@ public class Tables {
     this.tablename = tablename;
   }
 
+/*
 
   public Set<Aliases> getAliases() {
     return aliases;
@@ -43,5 +46,7 @@ public class Tables {
   public void setAliases(Set<Aliases> aliases) {
     this.aliases = aliases;
   }
+*/
+
 
 }

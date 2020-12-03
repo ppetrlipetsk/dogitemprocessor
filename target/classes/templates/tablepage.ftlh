@@ -26,6 +26,12 @@ varjs=['jquery-3.5.1.min.js','etable.js']
 
         let columnName=["t1","t2","t3","t4","t5"];
 
+        <#if headervalues??>
+        let headervalues=${headervalues?no_esc};
+        <#else>
+        let headervalues=[];
+        </#if>
+
         <#if tableitems??>
         let dt=${tableitems?no_esc};
         <#else>

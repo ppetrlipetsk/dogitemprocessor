@@ -15,13 +15,15 @@ public class Aliases {
   private String fieldname;
 
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name="table_id")
-  public Tables tables;
+//  @ManyToOne(fetch = FetchType.EAGER)
+//  @JoinColumn(name="table_id")
+//  public Tables tables;
 
+  private Long table_id;
 
-
-/*  private long table_id;*/
+  @OneToOne(cascade = CascadeType.DETACH)
+  @JoinColumn(name="style_id")
+  private Styles style;
 
   private String fieldtype;
 
@@ -29,9 +31,6 @@ public class Aliases {
   public long getId() {
     return id;
   }
-
-
-
 
   public String getFieldalias() {
     return fieldalias;
@@ -50,28 +49,13 @@ public class Aliases {
     this.fieldname = fieldname;
   }
 
-
-/*
-
-  public long getTableId() {
+  public Long getTable_id() {
     return table_id;
   }
 
-  public void setTableId(long tableId) {
-    this.table_id = tableId;
+  public void setTable_id(Long table_id) {
+    this.table_id = table_id;
   }
-*/
-
-
-
-  public Tables getTables() {
-    return tables;
-  }
-
-  public void setTables(Tables tables) {
-    this.tables = tables;
-  }
-
 
   public String getFieldtype() {
     return fieldtype;
@@ -79,6 +63,42 @@ public class Aliases {
 
   public void setFieldtype(String fieldtype) {
     this.fieldtype = fieldtype;
+  }
+
+  public Styles getStyle() {
+    return style;
+  }
+
+  public void setStyle(Styles style) {
+    this.style = style;
+  }
+
+  public String getStyleClass(){
+    if (this.style!=null) return this.style.styleClass;
+    else
+      return "";
+  }
+
+  @Override
+  public String toString() {
+    return "Aliases{" +
+            "id=" + id +
+            ", fieldalias='" + fieldalias + '\'' +
+            ", fieldname='" + fieldname + '\'' +
+            ", table_id=" + table_id +
+            ", style=" + style +
+            ", fieldtype='" + fieldtype + '\'' +
+            '}';
+  }
+
+  public String toCellString() {
+    return "[{" +
+            "id:" + id +
+            ", fieldalias:'" + fieldalias + '\'' +
+            ", fieldname:'" + fieldname + '\'' +
+            ", styleClass:'" + this.getStyleClass() +"'"+
+            ", fieldtype:'" + fieldtype + '\'' +
+            "}]";
   }
 
 }

@@ -1,5 +1,6 @@
 class ETable{
     constructor(preferences){
+        let x= [{name:1, value:2}]
         this.tablearray=preferences.tablearray;
         this.v_size=this.getLineSize(this.tablearray);
         if (this.v_size>0)
