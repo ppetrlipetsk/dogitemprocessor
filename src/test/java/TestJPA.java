@@ -36,7 +36,7 @@ public class TestJPA {
         List<Tables> table=tablesRepo.findByTablename("zmm2021");
         List<Aliases> aliases=aliasesRepo.getAllByTable(table.get(0).getId());
         model.put("tables",table);
-        sourceTable.displayAllContactSummary(aliases);
+        //sourceTable.displayAllContactSummary(aliases);
 
         List<ExTable> items=exTableDAO.extableselect();
         model.put("tables5",items);

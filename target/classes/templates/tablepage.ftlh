@@ -44,6 +44,12 @@ varjs=['jquery-3.5.1.min.js','etable.js']
         let _csrf="";
         </#if>
 
+        <#if tabledata??>
+        let tabledata=${tabledata?no_esc};
+        <#else>
+        let tabledata=[];
+        </#if>
+
         let table=new ETable({
             tablearray:dt,
             columnchecks:columnCheck,

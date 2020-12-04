@@ -1,5 +1,7 @@
 package com.ppsdevelopment.helpers;
 
+import org.springframework.web.util.HtmlUtils;
+
 import java.util.List;
 
 public class StringHelper {
@@ -13,7 +15,7 @@ public class StringHelper {
             int counter2=0;
             for (String cell: map){
                 if(counter2>0) s+=",";
-                s+="'"+cell+"'";
+                s+="'"+ escapeValue(cell)+"'";
                 counter2++;
             }
             s+="]";
@@ -21,6 +23,10 @@ public class StringHelper {
         }
         s+="]";
         return s;
+    }
+
+    private static String escapeValue(String cell) {
+        return cell.replace("\\","\\\\").replace("\"","\\\"").replace("'","\\'").replace("/","\\/");
     }
 
 }
