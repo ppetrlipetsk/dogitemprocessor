@@ -11,3 +11,10 @@
     height: 70px;
     background: url('/static/images/spinner.gif') no-repeat;
 }
+
+#tableblockw {
+    display: block;
+    width: 100px;
+    height: 100px;
+    border: 1px solid #101010;
+}

@@ -5,6 +5,8 @@ varjs=['jquery-3.5.1.min.js','etable.js']
 >
 
 <@c.page varcss varjs>
+    <div id="tableblock"></div>
+
     <table id="tableid">
         <thead>
         <tr>
@@ -53,7 +55,8 @@ varjs=['jquery-3.5.1.min.js','etable.js']
         let table=new ETable({
             tablearray:dt,
             columnchecks:columnCheck,
-            columnname:columnName
+            columnname:columnName,
+            tabledata:tabledata
         }).drawTable().setCellClickListener();
 
     </script>

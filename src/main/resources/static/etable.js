@@ -2,6 +2,7 @@ class ETable{
     constructor(preferences){
         let x= [{name:1, value:2}]
         this.tablearray=preferences.tablearray;
+        this.tabledata=preferences.tabledata;
         this.v_size=this.getLineSize(this.tablearray);
         if (this.v_size>0)
             this.h_size=this.getLineSize(this.tablearray[0]);
@@ -11,6 +12,10 @@ class ETable{
         return this;
     }
 
+    getTableImage(){
+        return '<table id="datatable"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+    }
+
     getLineSize(line){
         if (typeof(line!='undefined')&&(Array.isArray(line)))
             return line.length;
@@ -18,7 +23,44 @@ class ETable{
             return -1;
     }
 
+    getTableHeaderBlock(){
+        let s='';
+        let rowStart='<tr>';
+        let rowEnd='</tr>';
+        s=s+rowStart;
+        for(let line of headervalues){
+            for(let val of line){
+                s=s+'<th class="'+val['styleClass']+'">'+val['fieldname']+'</th>\n';
+            }
+        }
+        s=s+rowEnd+"\n";
+        return s;
+    }
+
+    getTableBody(){
+        let s='';
+        let rowEnd='</tr>';
+        let indx=0;
+        for(let line of tabledata){
+            s=s+'<tr data-index="'+ indx+'">';
+            for(let i=0;i<line.length; i++){
+                if (i>0)
+                    s=s+'<td data-index="'+i+'">'+line[i]+'</td>\n';
+            }
+            s=s+rowEnd+"\n";
+            indx++;
+        }
+
+        return s;
+    }
+
+
+
+
     drawTable(){
+        $('#tableblock').html(this.getTableImage());
+        $('#tableblock').html(this.getTableImage());
+
         let s="";
         for (let i = 0; i < this.v_size; i++) {
             s=s+"<tr data-rownum='"+i+"'>";
@@ -62,6 +104,24 @@ class ETable{
                 input.focus();
             }
         });
+
+        $( "#datatable tr td" ).click(function() {
+            let attrcell = this.hasAttribute('data-activecell');
+            if (!attrcell) {
+                let td = this;
+                let x = $(this).attr("data-index");
+                let y = $(this).parent().attr("data-index");
+                let input = document.createElement('input');
+                this.setAttribute('data-activecell', 1);
+                input.value = t.tabledata[y][x];
+                td.innerHTML = '';
+                t.setInputPropertyes(input,td);
+                td.appendChild(input);
+                t.setBlurListener(input,td,t,x,y);
+                input.focus();
+            }
+        });
+
     }
 
     setBlurListener(input, td, eTableInstance, x, y){
@@ -132,3 +192,9 @@ class ETable{
 
 /*
 data:   JSON.stringify({x:x, value:"value"}),*/
+/*
+$("#tableblock").click(function() {
+        alert(1111111);
+    }
+);
+*/
