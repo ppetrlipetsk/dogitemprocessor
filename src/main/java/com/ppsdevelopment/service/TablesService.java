@@ -4,31 +4,37 @@ import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
 import com.ppsdevelopment.repos.TablesRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Service
 public class TablesService {
+/*
     @Autowired
-    TablesRepo tablesRepository;
+    TablesRepo tablesRepo;
+*/
 
-    public String getColumnsList(List<Aliases> aliases){
-        Collector<Aliases, StringJoiner, String> aliasesCollector =
-                Collector.of(
-                        () -> new StringJoiner(" , "),          // supplier
-                        (j, p) -> j.add(p.getFieldalias()),  // accumulator
-                        (j1, j2) -> j1.merge(j2),               // combiner
-                        StringJoiner::toString);                // finisher
+/*
+    @Value("${config.tablename}")
+    private  String tableName;
+*/
 
-        String fieldsLine = aliases
-                .stream()
-                .collect(aliasesCollector);
-        return fieldsLine;
+/*    private  Long tableId;*/
+
+/*
+    public TablesService() {
+        List<Tables> table=tablesRepo.findByTablename(tableName);
+        tableId=table.get(0).getId();
     }
 
+    public  String getTableName() {
+        return tableName;
+    }
+
+    public  void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+*/
 }

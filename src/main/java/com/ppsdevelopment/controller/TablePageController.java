@@ -25,21 +25,28 @@ public class TablePageController {
         ETable.getInstance();
     }
 
+/*
     @Autowired
     private TablesRepo tablesRepo;
+*/
 
-    @Autowired
+    /*@Autowired
     AliasesRepo aliasesRepo;
-
+*/
 
     @Autowired
     ExTableDAOImpl exTableDAO;
 
 
+    @Qualifier("SourceTableImpl")
+    @Autowired
     private SourceTableImpl sourceTable;
+
+/*
 
     @Autowired
     TablesService tablesService;
+*/
 
 
 
@@ -47,13 +54,13 @@ public class TablePageController {
     public String index(Map<String, Object> model){
         model.put("tableitems", StringHelper.getTableItems(ETable.getCells()));
 
-        List<Tables> table=tablesRepo.findByTablename("zmm2021");
-        List<Aliases> aliases=aliasesRepo.getAllByTable(table.get(0).getId());
+//        List<Tables> table=tablesRepo.findByTablename("zmm2021");
+//        List<Aliases> aliases=aliasesRepo.getAllByTable(table.get(0).getId());
 
-        String tableHeader= sourceTable.getHeaderDataList(aliases);
+        String tableHeader= sourceTable.getHeaderDataList();
         model.put("headervalues",tableHeader);
 
-        String tableData=sourceTable.getFieldsValuesLine(aliases);
+        String tableData=sourceTable.getFieldsValuesLine();
         model.put("tabledata",tableData);
 
         return "tablepage";

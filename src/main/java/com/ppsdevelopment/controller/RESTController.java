@@ -2,6 +2,9 @@ package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.domain.reserv.CellClass;
 import com.ppsdevelopment.domain.reserv.ETable;
+import com.ppsdevelopment.service.SourceTableImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,6 +13,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("tablerest")
 public class RESTController {
+
+    @Qualifier("SourceTableImpl")
+    @Autowired
+    private SourceTableImpl sourceTable;
+
+
 
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
@@ -25,6 +34,13 @@ public class RESTController {
     public @ResponseBody String setItem(@RequestBody CellClass cellClass){
         //System.out.println(message.toString());
         return "cell="+cellClass.getValue();
+    }
+
+    @PostMapping("/setcell")
+    public @ResponseBody String setCell(@RequestParam(required = true) String id, @RequestParam(required = true) Integer x, @RequestParam(required = true) String value){
+        //sourceTable.
+        //String fieldName=
+        return "";
     }
 
     @GetMapping
