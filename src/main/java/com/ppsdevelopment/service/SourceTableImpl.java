@@ -1,20 +1,19 @@
 package com.ppsdevelopment.service;
 
 import com.ppsdevelopment.SqlQueryPreparer;
-import com.ppsdevelopment.config.ConfigProperties;
 import com.ppsdevelopment.converters.DateFormatter;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
 import com.ppsdevelopment.repos.AliasesRepo;
 import com.ppsdevelopment.repos.TablesRepo;
+import com.ppsdevelopment.tmctypeslib.DetectType;
+import com.ppsdevelopment.tmctypeslib.FieldType;
 import com.ppsdevelopment.viewlib.ClassRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -141,5 +140,41 @@ public class SourceTableImpl {
         return fieldsLine;
     }
 
+    public List<Aliases> getAliases() {
+        return aliases;
+    }
 
+    public void setAliases(List<Aliases> aliases) {
+        SourceTableImpl.aliases = aliases;
+    }
+
+    public boolean isDataValid(String value, String fieldType) {
+        return DetectType.isValueValid(FieldType.valueOf(fieldType),value);
+    }
+
+    @Transactional
+    public void updateFieldValue(Long id, String value, String fieldName, FieldType fieldType) {
+        String query=propertiesService.properties().getProperty("fieldupdate");
+        Class<?> c=getClassForFieldType(fieldType);
+        String s=null;
+        try {
+            s=SqlQueryPreparer.getCaptionFromValue(value,c, DateFormatter.INTERNATIONAL_DATE_FORMAT,"/");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        query=query.replace("%tablename%",this.tableName).replace("%fieldname%",fieldName).replace("%value%",s).replace("%id%",id.toString());
+        em.createNativeQuery(query).executeUpdate();
+
+    }
+
+    private Class<?> getClassForFieldType(FieldType t) {
+        switch(t){
+            case BIGINTTYPE: return Long.class;
+            case INTTYPE: return Double.class;
+            case DECIMALTYPE: return Double.class;
+            case FLOATTYPE: return Float.class;
+            case DATETYPE: return java.sql.Date.class;
+            default: return String.class;
+        }
+    }
 }
