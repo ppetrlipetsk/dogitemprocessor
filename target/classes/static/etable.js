@@ -1,74 +1,68 @@
 class ETable{
     constructor(preferences){
-        let x= [{name:1, value:2}]
         this.tabledata=preferences.tabledata;
-        this.v_size=this.getLineSize(this.tabledata);
-        if (this.v_size>0)
-            this.h_size=this.getLineSize(this.tabledata[0]);
         this.columnChecks=preferences.columnchecks;
-        this.columnName=preferences.columnname;
-        document.body.innerHTML = this.getSpinnerCode()+ document.body.innerHTML;
+        this.tableId=preferences.tableid;
+        this.headervalues=preferences.headerdata;
+        this.checkTypes=preferences.checkTypes;
         return this;
     }
 
     getTableImage(){
-        return '<table id="datatable"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+        return this.getSpinnerCode()+'\n'+'<table id="datatable"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
     }
 
+/*
     getLineSize(line){
         if (typeof(line!='undefined')&&(Array.isArray(line)))
             return line.length;
         else
             return -1;
     }
+*/
 
     getTableHeaderBlock(){
-        let s='';
-        let rowStart='<tr>';
-        let rowEnd='</tr>';
-        s=s+rowStart;
-        for(let line of headervalues){
-            for(let val of line){
-                s=s+'<th class="'+val['styleClass']+'">'+val['fieldname']+'</th>\n';
+        if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
+            let s = '<tr>';
+            for (let line of this.headervalues) {
+                for (let val of line) {
+                    s = s + '<th class="' + val['styleClass'] + '">' + val['fieldname'] + '</th>\n';
+                }
             }
+            s = s + '</tr>' + "\n";
+            return s;
         }
-        s=s+rowEnd+"\n";
-        return s;
+        else
+            return "";
     }
 
     getTableBody(){
         let s='';
-        let rowEnd='</tr>';
-        let indx=0;
-        for(let line of this.tabledata){
-            s=s+'<tr data-id="'+line[0]+'" data-index="'+ indx+'">';
-            for(let i=0;i<line.length; i++){
-                if (i>0)
-                    s=s+'<td data-index="'+i+'">'+line[i]+'</td>\n';
-            }
-            s=s+rowEnd+"\n";
-            indx++;
+        if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
+            let indx=0;
+                for (let line of this.tabledata) {
+                    s = s + '<tr data-id="' + line[0] + '" data-index="' + indx + '">';
+                    for (let i = 0; i < line.length; i++) {
+                        if (i > 0)
+                            s = s + '<td data-index="' + i + '">' + line[i] + '</td>\n';
+                    }
+                    s = s + '</tr>\n';
+                    indx++;
+                }
         }
-
         return s;
     }
 
-
-
-
-
     drawTable(){
-        $('#tableblock').html(this.getTableImage());
+        $('#'+this.tableId).html(this.getTableImage());
         return this;
     }
-
 
     setInputPropertyes(input, td){
         input.style.width=(td.clientWidth-input.offsetWidth-input.clientWidth-td.clientLeft*2)+"px";
         input.style.height=(td.clientHeight-input.offsetHeight-input.clientHeight-td.clientTop*2)+"px";
         input.style.background="none";
     }
-
 
     setCellClickListener(){
         let t=this;
@@ -89,17 +83,26 @@ class ETable{
                 input.focus();
             }
         });
+    }
 
+    getCheckType(x){
+        if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
+            let ct=this.headervalues[x-1][0]['fieldtype'];
+            if (ct!=="undefined")
+                return ct;
+        }
+        return "undefined";
     }
 
     setBlurListener(input, td, eTableInstance, x, y,id){
         input.addEventListener('blur', function () {
             td.removeAttribute('data-activecell');
-            if ((eTableInstance.tabledata[y][x]+"")!=input.value) {
+            if ((eTableInstance.tabledata[y][x]+"")!==input.value) {
                 let inputError=false;
-                let isChecked = td.hasAttribute('data-check');
-                if (isChecked) {
-                    let checkType = td.getAttribute("data-check");
+                /*td.hasAttribute('data-check');*/
+                let checkType=eTableInstance.getCheckType(x);
+                if ((checkType!=="undefined") &&(checkType!='STRINGTYPE')){
+                    /*let checkType = td.getAttribute("data-check");*/
                     if (!eTableInstance.checkValue(input.value,checkType)) inputError=true;
                 }
                 if (!inputError) {
@@ -117,11 +120,15 @@ class ETable{
 
     checkValue(value,checkType) {
         switch (checkType) {
-            case 'numeric':
+            case 'BIGINTTYPE':
+            case 'INTTYPE':
+            case 'DECIMALTYPE':
+            case 'FLOATTYPE':
                 return this.numericCheck(value);
+            case 'DATETYPE':
+                return this.dateCheck(value);
             default: return false;
         }
-        return false;
     }
 
     postajax(x,y, value,id){
@@ -135,7 +142,6 @@ class ETable{
             processData: false,
             data:   JSON.stringify({id:id,fieldIndex:x,value:value}),
             success: function(response){
-                /*alert(response);*/
                 $('#spinner').fadeOut();
             },
             error: function(e){
@@ -149,8 +155,21 @@ class ETable{
         return  ((val !== '')&&(!isNaN(Number(val))));
     }
 
+    dateCheck(value){
+        let regexp=/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
+        let d=regexp.test(value);
+        return  (value !== '')&&d;
+    }
+
     getSpinnerCode(){
-        return "<div  id=\"spinner\" class=\"spinner\" ></div>";
+        return ""; /*"<div  id=\"spinner\" class=\"spinner\" ></div>";*/
+    }
+
+    tableFlush(){
+        $('#'+this.tableId).html("");
+    }
+    setTableData(value){
+        this.tabledata=value;
     }
 }
 

@@ -1,14 +1,22 @@
 package com.ppsdevelopment.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ppsdevelopment.datalib.TableCellRequest;
 import com.ppsdevelopment.domain.reserv.CellClass;
 import com.ppsdevelopment.domain.reserv.ETable;
+import com.ppsdevelopment.envinronment.Pagination;
+import com.ppsdevelopment.json.MapJson;
 import com.ppsdevelopment.service.SourceTableImpl;
 import com.ppsdevelopment.tmctypeslib.FieldType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,11 +28,12 @@ public class RESTController {
     @Autowired
     private SourceTableImpl sourceTable;
 
-
+    @Autowired
+    Pagination pagination;
 
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
-        int x=Integer.valueOf(message.get("x"));
+        int x=Integer.parseInt(message.get("x"));
         int y=Integer.valueOf(message.get("y"));
         String value=message.get("value");
         List<String> list= ETable.getCells().get(y);
@@ -48,12 +57,34 @@ public class RESTController {
 
         return data.toString();
     }
+
     @PostMapping("/setcellw")
     public @ResponseBody String setCell(@RequestParam(required = false, defaultValue = "-1") String i1,
                                         @RequestParam(required = false, defaultValue = "-1") String i2,
                                         @RequestParam(required = false,defaultValue = "-1") String i3) {
         return i1+i2+i3;
     }
+
+    @PostMapping("/setpage")
+    public @ResponseBody String setPage(@RequestBody String s, HttpServletRequest request) {
+        System.out.println(request);
+        Integer pageNumber;
+        try {
+            pageNumber=MapJson.get("pagenumber", s).asInt();
+
+            String tableData=sourceTable.getFieldsValuesLine(pageNumber,pagination.getPageSize());
+            //return "{\"value\":"+tableData+"}";
+          //  tableData=tableData.replace("'","\\'");
+            return tableData;
+            //model.put("tabledata",tableData);
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return s;
+    }
+
 
     @GetMapping
     public String getItems(){

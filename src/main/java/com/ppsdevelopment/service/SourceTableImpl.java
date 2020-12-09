@@ -101,7 +101,7 @@ public class SourceTableImpl {
 
     private String getFieldValueAsString(Object field) {
         try {
-            return SqlQueryPreparer.getCaptionFromValue(field,DateFormatter.INTERNATIONAL_DATE_FORMAT,"/");
+            return SqlQueryPreparer.getCaptionFromValue(field,DateFormatter.INTERNATIONAL_DATE_FORMAT,"/","\"");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -176,5 +176,31 @@ public class SourceTableImpl {
             case DATETYPE: return java.sql.Date.class;
             default: return String.class;
         }
+    }
+
+    public String getCheckTypesLine() {
+        StringBuilder resultStr=new StringBuilder();
+        resultStr.append("[");
+
+        Collector<Aliases, StringJoiner, String> aliasesCollector =
+                Collector.of(
+                        () -> new StringJoiner(" , "),          // supplier
+                        (j, p) -> j.add(p.toCellString()),  // accumulator
+                        (j1, j2) -> j1.merge(j2),               // combiner
+                        StringJoiner::toString);                // finisher
+
+        String fieldsLine = aliases
+                .stream()
+                .collect(aliasesCollector);
+        resultStr.append(fieldsLine).append("]");
+        return resultStr.toString();
+    }
+
+    public String getFieldsValuesLine(Integer pageNumber, Integer pageSize) {
+        String from=String.valueOf((pageNumber-1)*pageSize);
+        String queryString=propertiesService.properties().getProperty("tableselectpageble");
+        queryString=queryString.replace("%fields%",this.aliasesStringList).replace("%tablename%",tableName).replace("%from%",from).replace("%count%",pageSize.toString());
+        List result = em.createNativeQuery(queryString).getResultList();
+        return getDataString(result);
     }
 }

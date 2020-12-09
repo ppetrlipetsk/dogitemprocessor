@@ -28,7 +28,7 @@
 <body style="background-image: url('/static/images/architecture.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center center;">
 
 <div class="h-100 w-100 rgba-gradient container-fluid" >
-<div class="container" >
+<div class="container-fluid" >
     <#--<#include "navbar.ftlh">-->
     <#nested>
 </div>

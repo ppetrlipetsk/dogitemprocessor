@@ -1,21 +1,17 @@
 package com.ppsdevelopment.controller;
 
-import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.reserv.ETable;
-import com.ppsdevelopment.domain.Tables;
-import com.ppsdevelopment.repos.AliasesRepo;
-import com.ppsdevelopment.repos.TablesRepo;
 import com.ppsdevelopment.helpers.StringHelper;
-import com.ppsdevelopment.service.TablesService;
-import com.ppsdevelopment.service.res.ExTableDAOImpl;
 import com.ppsdevelopment.service.SourceTableImpl;
+import com.ppsdevelopment.service.res.ExTableDAOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.*;
+import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 @Controller
 @RequestMapping("table")
@@ -33,6 +29,8 @@ public class TablePageController {
     /*@Autowired
     AliasesRepo aliasesRepo;
 */
+    @Autowired
+    HttpSession session;
 
     @Autowired
     ExTableDAOImpl exTableDAO;
@@ -61,6 +59,9 @@ public class TablePageController {
         model.put("headervalues",tableHeader);
 
         String tableData=sourceTable.getFieldsValuesLine();
+        model.put("tabledata",tableData);
+
+        String checkTypes=sourceTable.getCheckTypesLine();
         model.put("tabledata",tableData);
 
         return "tablepage";

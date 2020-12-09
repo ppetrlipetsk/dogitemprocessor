@@ -1,25 +1,41 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/style.css','../static/css/etable.css']
-varjs=['jquery-3.5.1.min.js','etable.js']
+varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
 >
 
 <@c.page varcss varjs>
+    <div  id="spinner" class="spinner" ></div>
     <div id="tableblock"></div>
 
-    <table id="tableid">
-        <thead>
-        <tr>
-            <th class="t1" data-cname="t1">t1</th>
-            <th class="t2" data-cname="t2">t2</th>
-            <th class="t3" data-cname="t3">t3</th>
-            <th class="t3" data-cname="t4">t4</th>
-            <th class="t3" data-cname="t5">t5</th>
-        </tr>
-        </thead>
-        <tbody id="tbodyid">
-        </tbody>
-    </table>
+<#--
+    <form name="" method="post" action="/table">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <div class="page-link" aria-label="Назад" id="pageback">
+                        <span aria-hidden="true">&laquo;</span>
+                    </div>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>        </ul>
+        </nav>
+
+        <input type="hidden" name="pagesize" value="10">
+    <input type="hidden" name="firstitem" value="1">
+    <input type="hidden" name="itemsbypanel" value="5">
+&lt;#&ndash;    <input type="hidden" name="" value="">&ndash;&gt;
+    </form>
+-->
+    <div id="pagination_block"></div>
+
+
     <script type="text/javascript">
         let columnCheck={
             t1:"numeric",
@@ -52,13 +68,54 @@ varjs=['jquery-3.5.1.min.js','etable.js']
         let tabledata=[];
         </#if>
 
-        let table=new ETable({
+        <#if checktypes??>
+        let checktypes=${checktypes?no_esc};
+        <#else>
+        let checktypes=[];
+        </#if>
+
+        let pagtag='#pagination_block';
+        let buttonTag='<li class=\"page-item pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
+        let leftButton='<li class="page-item left-item">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
+        let rightButton='<li class="page-item right-item"> <a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>\n</li>\n</ul>\n';
+
+        let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
+
+        let tableItem=new ETable({
             tablearray:dt,
             columnchecks:columnCheck,
             columnname:columnName,
-            tabledata:tabledata
-        }).drawTable().setCellClickListener();
+            tabledata:tabledata,
+            tableid:"tableblock",
+            headerdata:headervalues,
+            checktypes:checktypes
+        });
+        tableItem.drawTable().setCellClickListener();
 
+        let paginator= new Pagination({
+            firstPage:1,
+            pageCount:10,
+            pageSize:10,
+            buttonsCount:5,
+            currentPage:1,
+            pagTag:pagtag,
+            buttonTag:buttonTag,
+            leftButton:leftButton,
+            rightButton:rightButton,
+            firstButtonNumber:1,
+            buttonItemTmpl:'%button%',
+            pagPanelTag:pagPanelTag,
+            itemsTmpl:'%items%',
+            itemClass:'.pagination-item',
+            leftClass:'.left-item',
+            rightClass:'.right-item',
+            itemLinkClass:'.page-link',
+            spinnerId:'#spinner',
+            tableClass:tableItem
+            }
+        );
+        paginator.showPaginationPanel().setClickListener();
+        alert(tableItem)
     </script>
 
 </@c.page>
