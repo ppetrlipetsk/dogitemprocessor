@@ -1,6 +1,6 @@
 <#import "parts/common.ftlh" as c>
 <#assign
-varcss=['../static/css/style.css','../static/css/etable.css']
+varcss=['../static/css/style.css','../static/css/etable.css','../static/css/maintable.css']
 varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
 >
 
@@ -74,10 +74,26 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
         let checktypes=[];
         </#if>
 
+        <#if pagination??>
+        let pagFirstPage=${pagination.getFirstPage()};
+        let pagCurrentPage=${pagination.getCurrentPage()};
+        let pagButtonsCount=${pagination.getButtonsCount()};
+        let pagPagesCount=${pagination.getPageCount()};
+            <#else>
+        let pagFirstPage=-1;
+        let pagCurrentPage=-1;
+        let pagButtonsCount=-1;
+        let pagPagesCount=-1;
+        </#if>
+
+
         let pagtag='#pagination_block';
         let buttonTag='<li class=\"page-item pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
+        let buttonTagActive='<li class=\"page-item active pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
         let leftButton='<li class="page-item left-item">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
-        let rightButton='<li class="page-item right-item"> <a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>\n</li>\n</ul>\n';
+        let leftButtonDisabled='<li class="page-item left-item disabled">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
+        let rightButton='<li class="page-item right-item"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
+        let rightButtonDisabled='<li class="page-item right-item disabled"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
 
         let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
 
@@ -93,15 +109,17 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
         tableItem.drawTable().setCellClickListener();
 
         let paginator= new Pagination({
-            firstPage:1,
-            pageCount:10,
-            pageSize:10,
-            buttonsCount:5,
-            currentPage:1,
+            firstPage:pagFirstPage,
+            buttonsCount:pagButtonsCount,
+            currentPage:pagCurrentPage,
+            pageCount:pagPagesCount,
             pagTag:pagtag,
             buttonTag:buttonTag,
             leftButton:leftButton,
             rightButton:rightButton,
+            buttonTagActive:buttonTagActive,
+            leftButtonDisabled:leftButtonDisabled,
+            rightButtonDisabled:rightButtonDisabled,
             firstButtonNumber:1,
             buttonItemTmpl:'%button%',
             pagPanelTag:pagPanelTag,
@@ -115,7 +133,6 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
             }
         );
         paginator.showPaginationPanel().setClickListener();
-        alert(tableItem)
     </script>
 
 </@c.page>

@@ -20,5 +20,16 @@
 }
 
 #tableblock td{
-    border:1px solid #101010;
+    border-bottom:1px solid #101010;
+}
+
+#tableblock, #tableid td, th{
+    border-collapse: collapse;
+}
+.t1{width:200px;}
+.t2{width:150px;}
+.t3{width:100px;}
+
+#tableblock th{
+    border-bottom:1px solid #000;
 }

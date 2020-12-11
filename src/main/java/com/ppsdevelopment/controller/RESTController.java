@@ -1,22 +1,18 @@
 package com.ppsdevelopment.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ppsdevelopment.datalib.TableCellRequest;
 import com.ppsdevelopment.domain.reserv.CellClass;
 import com.ppsdevelopment.domain.reserv.ETable;
 import com.ppsdevelopment.envinronment.Pagination;
 import com.ppsdevelopment.json.MapJson;
 import com.ppsdevelopment.service.SourceTableImpl;
+import com.ppsdevelopment.tmctypeslib.DetectType;
 import com.ppsdevelopment.tmctypeslib.FieldType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,11 +20,7 @@ import java.util.Map;
 @RequestMapping("tablerest")
 public class RESTController {
 
-    @Qualifier("SourceTableImpl")
-    @Autowired
     private SourceTableImpl sourceTable;
-
-    @Autowired
     Pagination pagination;
 
     @PostMapping("/setitems")
@@ -51,7 +43,8 @@ public class RESTController {
     public @ResponseBody String setCell(@RequestBody TableCellRequest data){
         String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
         String fieldType=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
-        if (sourceTable.isDataValid(data.getValue(), fieldType)){
+
+        if (DetectType.isValueValid(FieldType.valueOf(fieldType),data.getValue())){
             sourceTable.updateFieldValue(Long.valueOf(data.getId()),data.getValue(), fieldName, FieldType.valueOf(fieldType));
         }
 
@@ -70,27 +63,53 @@ public class RESTController {
         System.out.println(request);
         Integer pageNumber;
         try {
-            pageNumber=MapJson.get("pagenumber", s).asInt();
 
-            String tableData=sourceTable.getFieldsValuesLine(pageNumber,pagination.getPageSize());
-            //return "{\"value\":"+tableData+"}";
-          //  tableData=tableData.replace("'","\\'");
-            return tableData;
-            //model.put("tabledata",tableData);
+            pageNumber=MapJson.get("pagenumber", s).asInt();
+            pagination.setCurrentPage(pageNumber);
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
+            return sourceTable.getPaginationJsonResponse(tableData);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return s;
+        return sourceTable.getPaginationJsonResponse(s);
     }
 
 
+    @PostMapping("/setpageblock")
+    public @ResponseBody String setPageBlock(@RequestBody String s, HttpServletRequest request) {
+        Integer pageNumber;
+        Integer firstPage;
+        try {
+            pageNumber=MapJson.get("pagenumber", s).asInt();
+            firstPage=MapJson.get("firstpage", s).asInt();
+            pagination.setCurrentPage(pageNumber);
+            pagination.setFirstPage(firstPage);
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
+            return sourceTable.getPaginationJsonResponse(tableData);
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return sourceTable.getPaginationJsonResponse(s);
+    }
+
     @GetMapping
     public String getItems(){
-        //System.out.println(message.toString());
-
         return "main";
+    }
+
+
+    @Autowired
+    public void setSourceTable(@Qualifier("SourceTableImpl") SourceTableImpl sourceTable) {
+        this.sourceTable = sourceTable;
+    }
+
+    @Autowired
+    public void setPagination(Pagination pagination) {
+        this.pagination = pagination;
     }
 
 }

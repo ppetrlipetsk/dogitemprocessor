@@ -26,7 +26,8 @@ class ETable{
             let s = '<tr>';
             for (let line of this.headervalues) {
                 for (let val of line) {
-                    s = s + '<th class="' + val['styleClass'] + '">' + val['fieldname'] + '</th>\n';
+                    let c=((val['styleClass']).length>0)?" class=\""+val['styleClass']+"\"":this.getCSSByType(val);
+                    s = s + '<th '+c+' >' + val['fieldname'] + '</th>\n';
                 }
             }
             s = s + '</tr>' + "\n";
@@ -34,6 +35,24 @@ class ETable{
         }
         else
             return "";
+    }
+
+    getCSSByType(val) {
+        let fstyle="";
+        switch(val['fieldtype']){
+           case "INTTYPE":
+           case "BIGINTTYPE":
+           case "DECIMALTYPE":
+           case "FLOATTYPE": fstyle="numericcell";
+                break;
+           case "DATETYPE": fstyle="datecell"; break;
+           case "STRINGTYPE": fstyle="stringcell"; break;
+           default:
+           {}
+        }
+        if (fstyle.length>0) return "class=\""+fstyle+"\"";
+        else
+        return "";
     }
 
     getTableBody(){
