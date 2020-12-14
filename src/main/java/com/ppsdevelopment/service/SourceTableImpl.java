@@ -54,7 +54,10 @@ public class SourceTableImpl {
     public List getAll(){
         String from=String.valueOf((pagination.getCurrentPage()-1)*pagination.getPageSize());
         String queryString=propertiesService.properties().getProperty("tableselectpageble");
-        queryString=queryString.replace("%fields%",this.aliasesStringList).replace("%tablename%",tableName).replace("%from%",from).replace("%count%",Long.valueOf(pagination.getPageSize()).toString());
+        String order=pagination.getSortColumnName();
+        if (order==null) order="id";
+        order+=((pagination.isSortDirection())?" ASC":" DESC");
+        queryString=queryString.replace("%fields%",this.aliasesStringList).replace("%tablename%",tableName).replace("%from%",from).replace("%count%",Long.valueOf(pagination.getPageSize()).toString()).replace("%order%", order);
         return em.createNativeQuery(queryString).getResultList();
     }
 

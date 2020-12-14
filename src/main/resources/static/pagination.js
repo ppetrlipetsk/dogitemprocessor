@@ -3,7 +3,6 @@ class Pagination{
     constructor(preferences) {
         this.firstPage=preferences.firstPage;
         this.pagesCount=preferences.pageCount;
-        /*this.pageSize=preferences.pageSize;*/
         this.buttonsCount=preferences.buttonsCount;
         this.currentPage=preferences.currentPage;
         this.pagTag=preferences.pagTag;
@@ -21,7 +20,7 @@ class Pagination{
         this.leftClass=preferences.leftClass;
         this.rightClass=preferences.rightClass;
         this.itemLinkClass=preferences.itemLinkClass
-        this.spinnerId=preferences.spinnerId;
+        /*this.spinnerId=preferences.spinnerId;*/
         this.tableClass=preferences.tableClass;
 
         let c1=this.buttonTag.indexOf(this.buttonItemTmpl);
@@ -62,11 +61,13 @@ class Pagination{
         let t=this;
         $( this.itemClass ).click(function() {
             let el=this.querySelector(t.itemLinkClass);
-            if ((el!='undefined')&&(el!=null)){
+            if ((el!==undefined)&&(el!=null)){
                 let page=el.innerText;
-                t.queryForPage(page);
+                let pag=t.tableClass.queryForPage(page);
+                t.showPageBlockFromQuery(pag);
             }
         });
+
         $( this.leftClass ).click(function() {
             t.predPageBlock();
         });
@@ -76,61 +77,16 @@ class Pagination{
         });
     }
 
-
-    queryForPage(page) {
-        this.ajaxQuery("/tablerest/setpage"
-            ,{pagenumber:page}
-            ,function (thisItem, response) {
-                thisItem.fillTable(response);
-                thisItem.showPaginationPanel().setClickListener();
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            });
+    setPagesFromQuery(pag) {
+        if (pag!==undefined){
+            this.currentPage=pag.currentPage;
+            this.firstPage=pag.firstPage;
+        }
     }
 
-    queryForChangePagesBlock() {
-        this.ajaxQuery("/tablerest/setpageblock"
-            ,{pagenumber:this.currentPage, firstpage:this.firstPage}
-            ,function (thisItem, response) {
-                thisItem.fillTable(response);
-                thisItem.showPaginationPanel().setClickListener();
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            });
-    }
-
-    ajaxQuery(url,datafield,successfunction, errorfunction) {
-        let t=$(this.spinnerId);
-        t.fadeIn();
-        let thisItem=this;
-        $.ajaxSetup({headers: {'X-CSRF-Token': _csrf}});
-        $.ajax({
-            type: "POST",
-            url: url,
-            contentType: 'application/json',
-            processData: false,
-            data:   JSON.stringify(datafield),
-            success: function(response){
-                successfunction(thisItem,response);
-                t.fadeOut();
-            },
-            error: function(e){
-                errorfunction(t,e);
-                t.fadeOut();
-            }
-        });
-    }
-
-    fillTable(response){
-        let values = JSON.parse(response);
-        this.tableClass.setTableData(values["datatable"]);
-        let pag=values["pagination"];
-        this.currentPage=pag.currentPage;
-        this.firstPage=pag.firstPage;
-        this.tableClass.tableFlush();
-        this.tableClass.drawTable().setCellClickListener();
+    showPageBlockFromQuery(pag){
+        this.setPagesFromQuery(pag);
+        this.showPaginationPanel().setClickListener();
     }
 
     predPageBlock() {
@@ -138,7 +94,7 @@ class Pagination{
             let np = this.firstPage - this.buttonsCount;
             this.firstPage = (np <= 0) ? 1 : np;
             if (this.currentPage > (this.buttonsCount + this.firstPage - 1)) this.currentPage = this.buttonsCount + this.firstPage - 1;
-            this.queryForChangePagesBlock();
+            this.changePageBlock();
         }
     }
 
@@ -147,7 +103,15 @@ class Pagination{
             let np = this.firstPage + this.buttonsCount;
             this.firstPage = (np + this.buttonsCount - 1) > this.pagesCount ? this.pagesCount - this.buttonsCount + 1 : np;
             this.currentPage = this.currentPage > this.firstPage ? this.currentPage : this.firstPage;
-            this.queryForChangePagesBlock();
+            this.changePageBlock();
         }
+    }
+
+    changePageBlock() {
+        let pag=this.tableClass.queryForChangePagesBlock(this.firstPage, this.currentPage);
+        this.showPageBlockFromQuery(pag);
+    }
+
+    flushPagination(){
     }
 }

@@ -24,8 +24,12 @@ public class TablePageController {
     @GetMapping
     public String index(Map<String, Object> model){
 
+        pagination.setSortColumnName("id");
+        pagination.setSortDirection(true);
+
         String tableHeader= sourceTable.getTableHeader();
         model.put("headervalues",tableHeader);
+
 
         String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
         model.put("tabledata",tableData);

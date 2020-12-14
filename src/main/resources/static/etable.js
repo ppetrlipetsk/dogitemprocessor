@@ -1,40 +1,52 @@
 class ETable{
     constructor(preferences){
         this.tabledata=preferences.tabledata;
-        this.columnChecks=preferences.columnchecks;
-        this.tableId=preferences.tableid;
+        /*this.columnChecks=preferences.columnchecks;*/
+        this.tableBlockId=preferences.tableblockid;
         this.headervalues=preferences.headerdata;
         this.checkTypes=preferences.checkTypes;
+        this.tableId=preferences.tableId;
+        this.sortColumnName=1;
+        this.sortColumnNumber=1;
+        this.sortDirection=true;
+        this.spinnerId=preferences.spinnerId;
+        this.paginator={};
         return this;
     }
 
-    getTableImage(){
-        return this.getSpinnerCode()+'\n'+'<table id="datatable"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+    setPaginator(paginator){
+        this.paginator=paginator;
     }
 
-/*
-    getLineSize(line){
-        if (typeof(line!='undefined')&&(Array.isArray(line)))
-            return line.length;
-        else
-            return -1;
+    getTableImage(){
+        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
     }
-*/
+
 
     getTableHeaderBlock(){
         if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
             let s = '<tr>';
+            let index=0;
             for (let line of this.headervalues) {
                 for (let val of line) {
+                    let sortimage=index==this.sortColumnNumber-1?this.getSortImage():"";
                     let c=((val['styleClass']).length>0)?" class=\""+val['styleClass']+"\"":this.getCSSByType(val);
-                    s = s + '<th '+c+' >' + val['fieldname'] + '</th>\n';
+                    let columnNumber=" data-columnnumber=\""+(++index)+"\" ";
+                    s = s + '<th '+c+columnNumber+' >' + val['fieldname']+sortimage + '</th>\n';
                 }
             }
-            s = s + '</tr>' + "\n";
+            s += '</tr>' + "\n";
             return s;
         }
         else
             return "";
+    }
+
+    getSortImage() {
+        if (this.sortDirection)
+            return  "<img src='/static/images/upsort.png'>";
+        else
+            return  "<img src='/static/images/downsort.png'>";
     }
 
     getCSSByType(val) {
@@ -73,7 +85,7 @@ class ETable{
     }
 
     drawTable(){
-        $('#'+this.tableId).html(this.getTableImage());
+        $('#'+this.tableBlockId).html(this.getTableImage());
         return this;
     }
 
@@ -83,9 +95,28 @@ class ETable{
         input.style.background="none";
     }
 
+    setHeaderClickListener(){
+        let t=this;
+        $( "#"+this.tableId+" th" ).click(function() {
+
+            let attrcell = this.hasAttribute('data-columnnumber');
+            if (attrcell!=undefined){
+                let columnNumber = $(this).attr("data-columnnumber");
+                if (t.sortColumnNumber===columnNumber) t.sortDirection=!t.sortDirection;
+                else{
+                    t.sortDirection=true;
+                    t.sortColumnNumber=columnNumber;
+                }
+                t.sortQuery();
+            }
+        });
+        return this;
+    }
+
+
     setCellClickListener(){
         let t=this;
-        $( "#datatable tr td" ).click(function() {
+        $( "#"+this.tableId+" tr td" ).click(function() {
             let attrcell = this.hasAttribute('data-activecell');
             if (!attrcell) {
                 let td = this;
@@ -102,6 +133,7 @@ class ETable{
                 input.focus();
             }
         });
+        return this;
     }
 
     getCheckType(x){
@@ -120,7 +152,7 @@ class ETable{
                 let inputError=false;
                 /*td.hasAttribute('data-check');*/
                 let checkType=eTableInstance.getCheckType(x);
-                if ((checkType!=="undefined") &&(checkType!='STRINGTYPE')){
+                if ((checkType!==undefined) &&(checkType!=='STRINGTYPE')){
                     /*let checkType = td.getAttribute("data-check");*/
                     if (!eTableInstance.checkValue(input.value,checkType)) inputError=true;
                 }
@@ -151,24 +183,108 @@ class ETable{
     }
 
     postajax(x,y, value,id){
-        /*$("body").wrapInner(spinnercode);*/
-        $('#spinner').fadeIn();
+        this.ajaxQuery("/tablerest/setcell"
+            ,{id:id,fieldIndex:x,value:value}
+            ,function (response) {
+                $('#spinner').fadeOut();
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+
+    }
+
+    sortQuery() {
+        let t=this;
+        this.ajaxQuery("/tablerest/sortmaintable"
+            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection}
+            ,function (response) {
+                $('#spinner').fadeOut();
+                let responseValue=t.getFieldsFromResponse(response);
+                t.fillTable(responseValue["datatable"]);
+
+                if (t.paginator!==undefined){
+                    if (t.paginator.currentPage!==responseValue["pagination"].currentPage){
+                        t.paginator.currentPage=responseValue["pagination"].currentPage;
+                        t.paginator.firstPage=responseValue["pagination"].firstPage;
+                        t.paginator.showPaginationPanel();
+                        t.paginator.setClickListener();
+                    }
+                }
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+    }
+
+    getFieldsFromResponse(response){
+        let values = JSON.parse(response);
+        let datatable=values["datatable"];
+        let pagination=values["pagination"];
+        if (datatable===undefined) datatable=[];
+        if (pagination===undefined) pagination={};
+        return {datatable:datatable, pagination:pagination};
+    }
+
+    queryForPage(page) {
+        let resultResponse={};
+        let t=this;
+        this.ajaxQuery("/tablerest/setpage"
+            ,{pagenumber:page}
+            ,function (response) {
+            let responseValue=t.getFieldsFromResponse(response);
+                t.fillTable(responseValue["datatable"]);
+                resultResponse=responseValue["pagination"];
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        return resultResponse;
+    }
+
+    queryForChangePagesBlock(firstPage, currentPage) {
+        let resultResponse={};
+        let t=this;
+        this.ajaxQuery("/tablerest/setpageblock"
+            ,{pagenumber:currentPage, firstpage:firstPage}
+            ,function (response) {
+                let responseValue=t.getFieldsFromResponse(response);
+                t.fillTable(responseValue["datatable"]);
+                resultResponse=responseValue["pagination"];
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        return resultResponse;
+    }
+
+    ajaxQuery(url,datafield,successfunction, errorfunction) {
+        let t=$(this.spinnerId);
+        t.fadeIn();
         $.ajaxSetup({headers: {'X-CSRF-Token': _csrf}});
         $.ajax({
             type: "POST",
-            url: "/tablerest/setcell",
+            url: url,
+            async: false,
             contentType: 'application/json',
             processData: false,
-            data:   JSON.stringify({id:id,fieldIndex:x,value:value}),
+            data:   JSON.stringify(datafield),
             success: function(response){
-                $('#spinner').fadeOut();
+                successfunction(response);
+                t.fadeOut();
             },
             error: function(e){
-                alert('Error: ' + e);
+                errorfunction(t,e);
+                t.fadeOut();
             }
         });
     }
 
+    fillTable(values){
+        this.setTableData(values);
+        this.tableFlush();
+        this.drawTable().setCellClickListener().setHeaderClickListener();
+    }
 
     numericCheck(val){
         return  ((val !== '')&&(!isNaN(Number(val))));
@@ -185,11 +301,12 @@ class ETable{
     }
 
     tableFlush(){
-        $('#'+this.tableId).html("");
+        $('#'+this.tableBlockId).html("");
     }
     setTableData(value){
         this.tabledata=value;
     }
+
 }
 
 

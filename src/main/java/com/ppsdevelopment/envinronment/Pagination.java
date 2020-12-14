@@ -8,6 +8,9 @@ public class Pagination {
     long recordsCount; // Количество записей
     long currentPage; // Текущая страница
     int buttonsCount; // Количество кнопок на панели
+    String sortColumnName; // Столбец сортировки
+    boolean sortDirection;
+    int sortingColumnNumber;
 
 
     public Pagination() {
@@ -76,7 +79,10 @@ public class Pagination {
                 +",\"pageCount\":"+pageCount
                 +",\"recordsCount\":"+recordsCount
                 +",\"currentPage\":"+currentPage
-                +",\"buttonsCount\":"+buttonsCount;
+                +",\"buttonsCount\":"+buttonsCount
+                +",\"sortColumnName\":\""+sortColumnName+"\""
+                +",\"sortDirection\":\""+sortDirection+"\""
+                +",\"sortingColumnNumber\":"+sortingColumnNumber;
 
 /*
         int pageSize; // Размер страницы
@@ -87,4 +93,21 @@ public class Pagination {
         int buttonsCount; // Количество кнопок на панели
 */
     }
+
+    public String getSortColumnName() {
+        return sortColumnName;
+    }
+
+    public void setSortColumnName(String sortColumnName) {
+        this.sortColumnName = sortColumnName;
+    }
+
+    public boolean isSortDirection() {
+        return sortDirection;
+    }
+
+    public void setSortDirection(boolean sortDirection) {
+        this.sortDirection = sortDirection;
+    }
+
 }

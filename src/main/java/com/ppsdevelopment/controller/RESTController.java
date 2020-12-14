@@ -96,6 +96,33 @@ public class RESTController {
         return sourceTable.getPaginationJsonResponse(s);
     }
 
+    @PostMapping("/sortmaintable")
+    public  @ResponseBody String sortMainPage(@RequestBody String s){
+        Integer columnnumber;
+        try {
+            columnnumber=MapJson.get("columnnumber", s).asInt();
+            String columnName=pagination.getSortColumnName();
+            if (columnName.equals(sourceTable.getAliases().get(columnnumber-1).getFieldalias())){
+                pagination.setSortDirection(!pagination.isSortDirection());
+                pagination.setCurrentPage(1);
+                pagination.setFirstPage(1);
+            }
+            else{
+                pagination.setSortColumnName(sourceTable.getAliases().get(columnnumber-1).getFieldalias());
+                pagination.setSortDirection(true);
+                pagination.setCurrentPage(1);
+                pagination.setFirstPage(1);
+            }
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
+            return sourceTable.getPaginationJsonResponse(tableData);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return sourceTable.getPaginationJsonResponse(s);
+    }
+
+
     @GetMapping
     public String getItems(){
         return "main";

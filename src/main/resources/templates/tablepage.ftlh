@@ -102,11 +102,13 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
             columnchecks:columnCheck,
             columnname:columnName,
             tabledata:tabledata,
-            tableid:"tableblock",
+            tableblockid:"tableblock",
+            tableId:"datatable",
             headerdata:headervalues,
+            spinnerId:'#spinner',
             checktypes:checktypes
         });
-        tableItem.drawTable().setCellClickListener();
+        tableItem.drawTable().setHeaderClickListener().setCellClickListener();
 
         let paginator= new Pagination({
             firstPage:pagFirstPage,
@@ -128,10 +130,10 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
             leftClass:'.left-item',
             rightClass:'.right-item',
             itemLinkClass:'.page-link',
-            spinnerId:'#spinner',
             tableClass:tableItem
             }
         );
+        tableItem.setPaginator(paginator);
         paginator.showPaginationPanel().setClickListener();
     </script>
 
