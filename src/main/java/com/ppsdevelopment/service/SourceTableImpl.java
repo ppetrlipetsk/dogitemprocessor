@@ -28,7 +28,7 @@ public class SourceTableImpl {
     private TablesRepo tablesRepo;
     private AliasesRepo aliasesRepo;
     private PropertiesService propertiesService;
-    private Pagination pagination;
+    //private Pagination pagination;
     private HeaderAdapter headerAdapter;
 
 
@@ -51,7 +51,7 @@ public class SourceTableImpl {
         tableHeader= headerAdapter.getHeaderDataList(aliases);
     }
 
-    public List getAll(){
+    public List getAll(Pagination pagination){
         String from=String.valueOf((pagination.getCurrentPage()-1)*pagination.getPageSize());
         String queryString=propertiesService.properties().getProperty("tableselectpageble");
         String order=pagination.getSortColumnName();
@@ -109,7 +109,7 @@ public class SourceTableImpl {
         return tableId;
     }
 
-    public String getPaginationJsonResponse(String datatable){
+    public String getPaginationJsonResponse(String datatable, Pagination pagination){
         String dataLine="\"datatable\":"+datatable;
         String paging="\"pagination\":{"+pagination.toValueString()+"}";
         return "{"+dataLine+","+paging+"}";
@@ -130,11 +130,6 @@ public class SourceTableImpl {
     @Autowired
     public void setPropertiesService(PropertiesService propertiesService) {
         this.propertiesService = propertiesService;
-    }
-
-    @Autowired
-    public void setPagination(Pagination pagination) {
-        this.pagination = pagination;
     }
 
     @Autowired

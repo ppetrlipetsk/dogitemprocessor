@@ -93,6 +93,13 @@ class ETable{
         input.style.width=(td.clientWidth-input.offsetWidth-input.clientWidth-td.clientLeft*2)+"px";
         input.style.height=(td.clientHeight-input.offsetHeight-input.clientHeight-td.clientTop*2)+"px";
         input.style.background="none";
+        let t=this;
+        input.addEventListener('keydown', function(e) {
+                if (e.keyCode === 13) {
+                    console.log(this.value);
+                    input.blur();
+                }
+            });
     }
 
     setHeaderClickListener(){
@@ -100,14 +107,14 @@ class ETable{
         $( "#"+this.tableId+" th" ).click(function() {
 
             let attrcell = this.hasAttribute('data-columnnumber');
-            if (attrcell!=undefined){
+            if (attrcell!==undefined){
                 let columnNumber = $(this).attr("data-columnnumber");
                 if (t.sortColumnNumber===columnNumber) t.sortDirection=!t.sortDirection;
                 else{
                     t.sortDirection=true;
                     t.sortColumnNumber=columnNumber;
                 }
-                t.sortQuery();
+                t.sortQuery(this);
             }
         });
         return this;
@@ -194,7 +201,7 @@ class ETable{
 
     }
 
-    sortQuery() {
+    sortQuery(paginator) {
         let t=this;
         this.ajaxQuery("/tablerest/sortmaintable"
             ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection}
@@ -203,12 +210,12 @@ class ETable{
                 let responseValue=t.getFieldsFromResponse(response);
                 t.fillTable(responseValue["datatable"]);
 
-                if (t.paginator!==undefined){
-                    if (t.paginator.currentPage!==responseValue["pagination"].currentPage){
-                        t.paginator.currentPage=responseValue["pagination"].currentPage;
-                        t.paginator.firstPage=responseValue["pagination"].firstPage;
-                        t.paginator.showPaginationPanel();
-                        t.paginator.setClickListener();
+                if (paginator!==undefined){
+                    if (paginator.currentPage!==responseValue["pagination"].currentPage){
+                        paginator.currentPage=responseValue["pagination"].currentPage;
+                        paginator.firstPage=responseValue["pagination"].firstPage;
+                        paginator.showPaginationPanel();
+                        /*t.paginator.setClickListener();*/
                     }
                 }
             }
@@ -217,6 +224,31 @@ class ETable{
             });
     }
 
+    queryForPageSizeChange(value, paginator){
+        let t=this;
+        this.ajaxQuery("/tablerest/maintablepagesize"
+            ,{pagesize:value}
+            ,function (response) {
+                $('#spinner').fadeOut();
+                let responseValue=t.getFieldsFromResponse(response);
+                t.fillTable(responseValue["datatable"]);
+
+                if (paginator!==undefined){
+
+                        paginator.currentPage=responseValue["pagination"].currentPage;
+                        paginator.firstPage=responseValue["pagination"].firstPage;
+                        paginator.buttonsCount=responseValue["pagination"].buttonsCount;
+                        paginator.pagesCount=responseValue["pagination"].pageCount;
+                        paginator.pageSize=responseValue["pagination"].pageSize;
+                        paginator.showPaginationPanel();
+                        /*t.paginator.setClickListener();*/
+
+                }
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+    }
     getFieldsFromResponse(response){
         let values = JSON.parse(response);
         let datatable=values["datatable"];

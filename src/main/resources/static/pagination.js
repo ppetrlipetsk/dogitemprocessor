@@ -12,6 +12,7 @@ class Pagination{
         this.buttonTagActive=preferences.buttonTagActive;
         this.leftButtonDisabled=preferences.leftButtonDisabled;
         this.rightButtonDisabled=preferences.rightButtonDisabled;
+        this.pageSize=preferences.pageSize;
 
         this.buttonItemTmpl=preferences.buttonItemTmpl;
         this.pagPanelTag=preferences.pagPanelTag;
@@ -46,8 +47,23 @@ class Pagination{
         let rb=(this.firstPage+len)>=this.pagesCount? this.rightButtonDisabled:this.rightButton;
         s+=rb;
         let h=this.pagPanelTagLeft+s+this.pagPanelTagRight;
+        h=h+this.getPageSizeSelector();
         $(this.pagTag).html(h);
+        this.setClickListener();
         return this;
+    }
+
+    getPageSizeSelector(){
+        let s="<div class='pagecountblock'><span>Строк на странице: </span><select id=\"pageselector\" class='pagecountselect' size=\"1\">";
+        for (let i=0;i<10;i++){
+            let c=((i+1)*10);
+            let selected="";
+            if (c==this.pageSize) selected=" selected ";
+            s=s+"<option"+selected+" value=\""+c+"\">"+c+"</option>";
+        }
+        s=s+"</select>";
+        s=s+"</div>"
+        return s;
     }
 
     getButtonBody(value) {
@@ -75,6 +91,16 @@ class Pagination{
         $( this.rightClass).click(function() {
             t.nextPagingBlock();
         });
+
+        $("#pageselector").change(function(){
+            let pageSize=$(this).val();
+            t.queryForPageSizeChange(pageSize,this);
+        });
+
+    }
+
+    queryForPageSizeChange(value) {
+        this.tableClass.queryForPageSizeChange(value, this);
     }
 
     setPagesFromQuery(pag) {
@@ -86,7 +112,7 @@ class Pagination{
 
     showPageBlockFromQuery(pag){
         this.setPagesFromQuery(pag);
-        this.showPaginationPanel().setClickListener();
+        this.showPaginationPanel();/*.setClickListener();*/
     }
 
     predPageBlock() {
@@ -114,4 +140,5 @@ class Pagination{
 
     flushPagination(){
     }
+
 }

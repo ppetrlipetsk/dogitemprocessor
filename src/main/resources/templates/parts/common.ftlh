@@ -26,14 +26,21 @@
 
 </head>
 <body style="background-image: url('/static/images/architecture.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center center;">
-
 <div class="h-100 w-100 rgba-gradient container-fluid" >
-<div class="container-fluid" >
-    <#--<#include "navbar.ftlh">-->
-    <#nested>
-</div>
-</div>
+    <div class="container-fluid" >
 
+<#if browser??>
+    <#if browser==true >
+        <span style="color:#902020; font-weight: bold; font-size: 30px; padding-top:300px;display:block"> Браузер Internet Explorer устарел. Пожалуйста, используйте Google Chrome или Microsoft Edge</span>
+    <#else >
+        <#nested>
+    </#if>
+    <#else >
+        <#nested>
+</#if>
+
+    </div>
+</div>
 
 </body>
 </html>

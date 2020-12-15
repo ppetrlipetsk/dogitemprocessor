@@ -1,18 +1,27 @@
 package com.ppsdevelopment.envinronment;
 
-//@Component
-public class Pagination {
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import java.io.Serializable;
+
+
+public class Pagination implements Serializable {
     int pageSize; // Размер страницы
     int firstPage; // Номер первой страницы на панели кнопок
     long pageCount; // Количество страниц
     long recordsCount; // Количество записей
     long currentPage; // Текущая страница
     int buttonsCount; // Количество кнопок на панели
+    int maxButtonsCount;// Максимальное количество кнопок
     String sortColumnName; // Столбец сортировки
     boolean sortDirection;
     int sortingColumnNumber;
 
 
+/*
     public Pagination() {
         pageSize=5;
         firstPage=1;
@@ -20,6 +29,16 @@ public class Pagination {
 //        recordsCount=0;
 //        pageCount=200/pageSize;
     }
+*/
+    public Pagination(){
+        this.setFirstPage(1);
+        this.setMaxButtonsCount(5);
+        this.setPageSize(3);
+        this.setButtonsCount(5);
+        this.setCurrentPage(1);
+    }
+
+
 
     public int getPageSize() {
         return pageSize;
@@ -27,6 +46,10 @@ public class Pagination {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+        this.pageCount=this.recordsCount/pageSize;
+        if ((this.recordsCount%pageSize>0)) this.pageCount++;
+        this.buttonsCount= (int) this.pageCount;
+        if (this.buttonsCount>this.maxButtonsCount) this.buttonsCount= this.maxButtonsCount;
     }
 
     public int getFirstPage() {
@@ -110,4 +133,19 @@ public class Pagination {
         this.sortDirection = sortDirection;
     }
 
+    public int getMaxButtonsCount() {
+        return maxButtonsCount;
+    }
+
+    public void setMaxButtonsCount(int maxButtonsCount) {
+        this.maxButtonsCount = maxButtonsCount;
+    }
+
+    public int getSortingColumnNumber() {
+        return sortingColumnNumber;
+    }
+
+    public void setSortingColumnNumber(int sortingColumnNumber) {
+        this.sortingColumnNumber = sortingColumnNumber;
+    }
 }

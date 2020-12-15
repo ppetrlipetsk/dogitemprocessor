@@ -1,6 +1,6 @@
 <#import "parts/common.ftlh" as c>
 <#assign
-varcss=['../static/css/style.css','../static/css/etable.css','../static/css/maintable.css']
+varcss=['../static/css/etable.css','../static/css/maintable.css']
 varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
 >
 
@@ -8,34 +8,17 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
     <div  id="spinner" class="spinner" ></div>
     <div id="tableblock"></div>
 
-<#--
-    <form name="" method="post" action="/table">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-center">
-                <li class="page-item">
-                    <div class="page-link" aria-label="Назад" id="pageback">
-                        <span aria-hidden="true">&laquo;</span>
-                    </div>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>        </ul>
-        </nav>
 
-        <input type="hidden" name="pagesize" value="10">
-    <input type="hidden" name="firstitem" value="1">
-    <input type="hidden" name="itemsbypanel" value="5">
-&lt;#&ndash;    <input type="hidden" name="" value="">&ndash;&gt;
-    </form>
--->
     <div id="pagination_block"></div>
 
+    <div>
+    <#if attr1??>
+        attr=${attr1}
+        <#else>
+                attr1=___
+    </#if>
 
+    </div>
     <script type="text/javascript">
         let columnCheck={
             t1:"numeric",
@@ -79,11 +62,13 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
         let pagCurrentPage=${pagination.getCurrentPage()};
         let pagButtonsCount=${pagination.getButtonsCount()};
         let pagPagesCount=${pagination.getPageCount()};
+        let pageSize=${pagination.getPageSize()};
             <#else>
         let pagFirstPage=-1;
         let pagCurrentPage=-1;
         let pagButtonsCount=-1;
         let pagPagesCount=-1;
+        let pageSize=-1;
         </#if>
 
 
@@ -130,11 +115,12 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
             leftClass:'.left-item',
             rightClass:'.right-item',
             itemLinkClass:'.page-link',
+            pageSize:pageSize,
             tableClass:tableItem
             }
         );
         tableItem.setPaginator(paginator);
-        paginator.showPaginationPanel().setClickListener();
+        paginator.showPaginationPanel();/*.setClickListener();*/
     </script>
 
 </@c.page>

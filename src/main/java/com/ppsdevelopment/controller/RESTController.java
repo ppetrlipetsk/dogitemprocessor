@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -21,12 +22,12 @@ import java.util.Map;
 public class RESTController {
 
     private SourceTableImpl sourceTable;
-    Pagination pagination;
+    private HttpSession session;
 
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
         int x=Integer.parseInt(message.get("x"));
-        int y=Integer.valueOf(message.get("y"));
+        int y=Integer.parseInt(message.get("y"));
         String value=message.get("value");
         List<String> list= ETable.getCells().get(y);
         list.set(x,value);
@@ -62,18 +63,20 @@ public class RESTController {
     public @ResponseBody String setPage(@RequestBody String s, HttpServletRequest request) {
         System.out.println(request);
         Integer pageNumber;
+        Pagination pagination=getPagination();
         try {
 
             pageNumber=MapJson.get("pagenumber", s).asInt();
             pagination.setCurrentPage(pageNumber);
-            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
-            return sourceTable.getPaginationJsonResponse(tableData);
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+            setPagination(pagination);
+            return sourceTable.getPaginationJsonResponse(tableData,pagination);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return sourceTable.getPaginationJsonResponse(s);
+        return sourceTable.getPaginationJsonResponse(s,pagination);
     }
 
 
@@ -81,24 +84,27 @@ public class RESTController {
     public @ResponseBody String setPageBlock(@RequestBody String s, HttpServletRequest request) {
         Integer pageNumber;
         Integer firstPage;
+        Pagination pagination=getPagination();
         try {
             pageNumber=MapJson.get("pagenumber", s).asInt();
             firstPage=MapJson.get("firstpage", s).asInt();
             pagination.setCurrentPage(pageNumber);
             pagination.setFirstPage(firstPage);
-            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
-            return sourceTable.getPaginationJsonResponse(tableData);
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+            setPagination(pagination);
+            return sourceTable.getPaginationJsonResponse(tableData, pagination);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return sourceTable.getPaginationJsonResponse(s);
+        return sourceTable.getPaginationJsonResponse(s,pagination);
     }
 
     @PostMapping("/sortmaintable")
     public  @ResponseBody String sortMainPage(@RequestBody String s){
         Integer columnnumber;
+        Pagination pagination=getPagination();
         try {
             columnnumber=MapJson.get("columnnumber", s).asInt();
             String columnName=pagination.getSortColumnName();
@@ -106,22 +112,57 @@ public class RESTController {
                 pagination.setSortDirection(!pagination.isSortDirection());
                 pagination.setCurrentPage(1);
                 pagination.setFirstPage(1);
+                setPagination(pagination);
             }
             else{
                 pagination.setSortColumnName(sourceTable.getAliases().get(columnnumber-1).getFieldalias());
                 pagination.setSortDirection(true);
                 pagination.setCurrentPage(1);
                 pagination.setFirstPage(1);
+                setPagination(pagination);
             }
-            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll());
-            return sourceTable.getPaginationJsonResponse(tableData);
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+            return sourceTable.getPaginationJsonResponse(tableData,pagination);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return sourceTable.getPaginationJsonResponse(s);
+        return sourceTable.getPaginationJsonResponse(s,pagination);
     }
 
+    @PostMapping("/maintablepagesize")
+    public @ResponseBody String mainTablePageSize(@RequestBody String s){
+        Integer pageSizeNew;
+        Pagination pagination=getPagination();
+        try {
+            pageSizeNew=MapJson.get("pagesize", s).asInt();
+            int pageSize=pagination.getPageSize();
+            if (pageSize!=pageSizeNew){
+                pagination.setPageSize(pageSizeNew);
+                pagination.setCurrentPage(1);
+                setPagination(pagination);
+            }
+            String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+            return sourceTable.getPaginationJsonResponse(tableData,pagination);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return sourceTable.getPaginationJsonResponse("",pagination);
+    }
+
+    private Pagination getPagination(){
+        Pagination pagination;
+        if (session.getAttribute("pagination")==null){
+            pagination=new Pagination();
+        }
+        else
+         pagination=(Pagination) session.getAttribute("pagination");
+        return pagination;
+    }
+
+    private void setPagination(Pagination pagination){
+        session.setAttribute("pagination",pagination);
+    }
 
     @GetMapping
     public String getItems(){
@@ -135,8 +176,8 @@ public class RESTController {
     }
 
     @Autowired
-    public void setPagination(Pagination pagination) {
-        this.pagination = pagination;
+    public void setSession(HttpSession session){
+        this.session=session;
     }
 
 }
