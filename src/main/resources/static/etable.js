@@ -114,7 +114,7 @@ class ETable{
                     t.sortDirection=true;
                     t.sortColumnNumber=columnNumber;
                 }
-                t.sortQuery(t);
+                t.sortQuery(t.paginator);
             }
         });
         return this;
@@ -217,7 +217,7 @@ class ETable{
                     if (paginator.currentPage!==responseValue["pagination"].currentPage){
                         paginator.currentPage=responseValue["pagination"].currentPage;
                         paginator.firstPage=responseValue["pagination"].firstPage;
-                        t.showPaginationPanel();
+                        paginator.showPaginationPanel();
                     }
                 }
             }
