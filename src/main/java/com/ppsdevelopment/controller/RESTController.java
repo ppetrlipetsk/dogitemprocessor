@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ppsdevelopment.datalib.TableCellRequest;
 import com.ppsdevelopment.domain.reserv.CellClass;
 import com.ppsdevelopment.domain.reserv.ETable;
+import com.ppsdevelopment.envinronment.Credentials;
 import com.ppsdevelopment.envinronment.Pagination;
+import com.ppsdevelopment.envinronment.UsersSettingsRepository;
 import com.ppsdevelopment.json.MapJson;
 import com.ppsdevelopment.service.SourceTableImpl;
 import com.ppsdevelopment.tmctypeslib.DetectType;
@@ -23,6 +25,8 @@ public class RESTController {
 
     private SourceTableImpl sourceTable;
     private HttpSession session;
+    UsersSettingsRepository usersSettingsRepository;
+
 
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
@@ -44,11 +48,9 @@ public class RESTController {
     public @ResponseBody String setCell(@RequestBody TableCellRequest data){
         String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
         String fieldType=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
-
         if (DetectType.isValueValid(FieldType.valueOf(fieldType),data.getValue())){
             sourceTable.updateFieldValue(Long.valueOf(data.getId()),data.getValue(), fieldName, FieldType.valueOf(fieldType));
         }
-
         return data.toString();
     }
 
@@ -65,17 +67,14 @@ public class RESTController {
         Integer pageNumber;
         Pagination pagination=getPagination();
         try {
-
             pageNumber=MapJson.get("pagenumber", s).asInt();
             pagination.setCurrentPage(pageNumber);
             String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
             setPagination(pagination);
             return sourceTable.getPaginationJsonResponse(tableData,pagination);
-
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
         return sourceTable.getPaginationJsonResponse(s,pagination);
     }
 
@@ -93,11 +92,9 @@ public class RESTController {
             String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
             setPagination(pagination);
             return sourceTable.getPaginationJsonResponse(tableData, pagination);
-
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
         return sourceTable.getPaginationJsonResponse(s,pagination);
     }
 
@@ -112,6 +109,7 @@ public class RESTController {
                 pagination.setSortDirection(!pagination.isSortDirection());
                 pagination.setCurrentPage(1);
                 pagination.setFirstPage(1);
+                pagination.setSortColumnNumber(columnnumber);
                 setPagination(pagination);
             }
             else{
@@ -119,6 +117,7 @@ public class RESTController {
                 pagination.setSortDirection(true);
                 pagination.setCurrentPage(1);
                 pagination.setFirstPage(1);
+                pagination.setSortColumnNumber(columnnumber);
                 setPagination(pagination);
             }
             String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
@@ -162,6 +161,7 @@ public class RESTController {
 
     private void setPagination(Pagination pagination){
         session.setAttribute("pagination",pagination);
+        this.usersSettingsRepository.set(Credentials.getUser(),"maintable.pagination",pagination);
     }
 
     @GetMapping
@@ -180,4 +180,8 @@ public class RESTController {
         this.session=session;
     }
 
+    @Autowired
+    public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
+        this.usersSettingsRepository = usersSettingsRepository;
+    }
 }

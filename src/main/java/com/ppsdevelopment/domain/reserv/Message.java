@@ -1,5 +1,7 @@
 package com.ppsdevelopment.domain.reserv;
 
+import com.ppsdevelopment.domain.User;
+
 import javax.persistence.*;
 
 @Entity

@@ -1,4 +1,4 @@
-package com.ppsdevelopment.domain.reserv;
+package com.ppsdevelopment.domain;
 
 import org.springframework.security.core.GrantedAuthority;
 

@@ -61,14 +61,20 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
         let pagFirstPage=${pagination.getFirstPage()};
         let pagCurrentPage=${pagination.getCurrentPage()};
         let pagButtonsCount=${pagination.getButtonsCount()};
-        let pagPagesCount=${pagination.getPageCount()};
+        let pagPagesCount=${pagination.getPagesCount()};
         let pageSize=${pagination.getPageSize()};
+        let sortColumnNumber=${pagination.getSortColumnNumber()};
+        let sortColumnName='${pagination.getSortColumnName()}';
+        let sortDirection=${pagination.isSortDirection()?string('true','false')};
             <#else>
         let pagFirstPage=-1;
         let pagCurrentPage=-1;
         let pagButtonsCount=-1;
         let pagPagesCount=-1;
         let pageSize=-1;
+        let sortColumnNumber=1;
+        let sortColumnName="";
+        let sortDirection=true;
         </#if>
 
 
@@ -79,7 +85,6 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
         let leftButtonDisabled='<li class="page-item left-item disabled">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
         let rightButton='<li class="page-item right-item"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
         let rightButtonDisabled='<li class="page-item right-item disabled"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
-
         let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
 
         let tableItem=new ETable({
@@ -91,7 +96,10 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
             tableId:"datatable",
             headerdata:headervalues,
             spinnerId:'#spinner',
-            checktypes:checktypes
+            checktypes:checktypes,
+            sotrColumnName:sortColumnName,
+            sortColumnNumber:sortColumnNumber,
+            sortDirection:sortDirection
         });
         tableItem.drawTable().setHeaderClickListener().setCellClickListener();
 

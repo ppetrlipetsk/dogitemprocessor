@@ -1,7 +1,10 @@
 package com.ppsdevelopment.controller;
 
+import com.ppsdevelopment.domain.User;
+import com.ppsdevelopment.envinronment.Credentials;
 import com.ppsdevelopment.envinronment.HeaderParser;
 import com.ppsdevelopment.envinronment.Pagination;
+import com.ppsdevelopment.envinronment.UsersSettingsRepository;
 import com.ppsdevelopment.service.SourceTableImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,23 +13,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Date;
 import java.util.Map;
 
 @Controller
 @RequestMapping("table")
 public class TablePageController {
 
-    @Autowired
-    HttpSession session;
-    @Autowired
-    HttpServletRequest request;
-
-    //private Pagination pagination;
+    private HttpSession session;
+    private HttpServletRequest request;
     private SourceTableImpl sourceTable;
+    private UsersSettingsRepository usersSettingsRepository;
+
 
     @ModelAttribute("browser")
     public void getBrowser(Model model){
@@ -35,20 +34,14 @@ public class TablePageController {
 
     @GetMapping
     public String index(Map<String, Object> model){
-        Object attr1=session.getAttribute("attr1");
-        Pagination pagination=(Pagination) session.getAttribute("pagination");
-        if (pagination==null){
-            pagination=new Pagination();
+        User user= Credentials.getUser();
+        Pagination pagination= (Pagination) usersSettingsRepository.get(user,"maintable.pagination", Pagination.class);
+
+        if (pagination==null) {
+            pagination = new Pagination();
+            pagination.setSortColumnName("id");
+            pagination.setSortDirection(true);
         }
-
-        if (attr1==null){
-            String attr2="attr1="+new Date().toString();
-            session.setAttribute("attr1",attr2);
-        }
-
-        pagination.setSortColumnName("id");
-        pagination.setSortDirection(true);
-
         String tableHeader= sourceTable.getTableHeader();
         model.put("headervalues",tableHeader);
 
@@ -59,9 +52,8 @@ public class TablePageController {
         pagination.setRecordsCount(sourceTable.getCount());
         model.put("pagination",pagination);
 
-        model.put("attr1",session.getAttribute("attr1").toString());
-
         session.setAttribute("pagination",pagination);
+        usersSettingsRepository.set(user,"maintable.pagination",pagination);
         return "tablepage";
     }
 
@@ -70,9 +62,18 @@ public class TablePageController {
         this.sourceTable = xTable;
     }
 
-//    @Autowired
-    //public void setPagination(Pagination pagination) {
-        //this.pagination = pagination;
-    //}
+    @Autowired
+    public void setSession(HttpSession session) {
+        this.session = session;
+    }
 
+    @Autowired
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
+
+    @Autowired
+    public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
+        this.usersSettingsRepository = usersSettingsRepository;
+    }
 }

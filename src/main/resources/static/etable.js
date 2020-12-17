@@ -6,9 +6,9 @@ class ETable{
         this.headervalues=preferences.headerdata;
         this.checkTypes=preferences.checkTypes;
         this.tableId=preferences.tableId;
-        this.sortColumnName=1;
-        this.sortColumnNumber=1;
-        this.sortDirection=true;
+        this.sortColumnName=preferences.sortColumnName;
+        this.sortColumnNumber=preferences.sortColumnNumber;
+        this.sortDirection=preferences.sortDirection;
         this.spinnerId=preferences.spinnerId;
         this.paginator={};
         return this;
@@ -114,7 +114,7 @@ class ETable{
                     t.sortDirection=true;
                     t.sortColumnNumber=columnNumber;
                 }
-                t.sortQuery(this);
+                t.sortQuery(t);
             }
         });
         return this;
@@ -208,14 +208,16 @@ class ETable{
             ,function (response) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
+                t.sortColumnNumber=responseValue["pagination"].sortColumnNumber;
+                t.sortColumnName=responseValue["pagination"].sortColumnName;
+                t.sortDirection=responseValue["pagination"].sortDirection;
                 t.fillTable(responseValue["datatable"]);
 
                 if (paginator!==undefined){
                     if (paginator.currentPage!==responseValue["pagination"].currentPage){
                         paginator.currentPage=responseValue["pagination"].currentPage;
                         paginator.firstPage=responseValue["pagination"].firstPage;
-                        paginator.showPaginationPanel();
-                        /*t.paginator.setClickListener();*/
+                        t.showPaginationPanel();
                     }
                 }
             }
@@ -232,23 +234,20 @@ class ETable{
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
                 t.fillTable(responseValue["datatable"]);
-
                 if (paginator!==undefined){
-
                         paginator.currentPage=responseValue["pagination"].currentPage;
                         paginator.firstPage=responseValue["pagination"].firstPage;
                         paginator.buttonsCount=responseValue["pagination"].buttonsCount;
                         paginator.pagesCount=responseValue["pagination"].pageCount;
                         paginator.pageSize=responseValue["pagination"].pageSize;
                         paginator.showPaginationPanel();
-                        /*t.paginator.setClickListener();*/
-
                 }
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
     }
+
     getFieldsFromResponse(response){
         let values = JSON.parse(response);
         let datatable=values["datatable"];

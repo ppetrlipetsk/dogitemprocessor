@@ -1,7 +1,7 @@
 package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.domain.reserv.Message;
-import com.ppsdevelopment.domain.reserv.User;
+import com.ppsdevelopment.domain.User;
 import com.ppsdevelopment.repos.res.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

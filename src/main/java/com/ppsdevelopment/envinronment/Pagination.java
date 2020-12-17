@@ -1,35 +1,21 @@
 package com.ppsdevelopment.envinronment;
 
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import java.io.Serializable;
 
 
 public class Pagination implements Serializable {
-    int pageSize; // Размер страницы
-    int firstPage; // Номер первой страницы на панели кнопок
-    long pageCount; // Количество страниц
-    long recordsCount; // Количество записей
-    long currentPage; // Текущая страница
-    int buttonsCount; // Количество кнопок на панели
-    int maxButtonsCount;// Максимальное количество кнопок
-    String sortColumnName; // Столбец сортировки
-    boolean sortDirection;
-    int sortingColumnNumber;
+    private int pageSize; // Размер страницы
+    private int firstPage; // Номер первой страницы на панели кнопок
+    private long pagesCount; // Количество страниц
+    private long recordsCount; // Количество записей
+    private long currentPage; // Текущая страница
+    private int buttonsCount; // Количество кнопок на панели
+    private int maxButtonsCount;// Максимальное количество кнопок
+    private String sortColumnName; // Столбец сортировки
+    private boolean sortDirection;
+    private int sortColumnNumber;
 
-
-/*
-    public Pagination() {
-        pageSize=5;
-        firstPage=1;
-
-//        recordsCount=0;
-//        pageCount=200/pageSize;
-    }
-*/
     public Pagination(){
         this.setFirstPage(1);
         this.setMaxButtonsCount(5);
@@ -38,17 +24,15 @@ public class Pagination implements Serializable {
         this.setCurrentPage(1);
     }
 
-
-
     public int getPageSize() {
         return pageSize;
     }
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
-        this.pageCount=this.recordsCount/pageSize;
-        if ((this.recordsCount%pageSize>0)) this.pageCount++;
-        this.buttonsCount= (int) this.pageCount;
+        this.pagesCount =this.recordsCount/pageSize;
+        if ((this.recordsCount%pageSize>0)) this.pagesCount++;
+        this.buttonsCount= (int) this.pagesCount;
         if (this.buttonsCount>this.maxButtonsCount) this.buttonsCount= this.maxButtonsCount;
     }
 
@@ -60,12 +44,12 @@ public class Pagination implements Serializable {
         this.firstPage = firstPage;
     }
 
-    public long getPageCount() {
-        return pageCount;
+    public long getPagesCount() {
+        return pagesCount;
     }
 
-    public void setPageCount(long pageCount) {
-        this.pageCount = pageCount;
+    public void setPagesCount(long pagesCount) {
+        this.pagesCount = pagesCount;
     }
 
     public long getRecordsCount() {
@@ -75,8 +59,8 @@ public class Pagination implements Serializable {
     public void setRecordsCount(long recordsCount) {
         this.recordsCount = recordsCount;
         if (this.pageSize!=0){
-            this.pageCount=this.recordsCount/this.pageSize;
-            if ((this.recordsCount%this.pageSize)>0) this.pageCount++;
+            this.pagesCount =this.recordsCount/this.pageSize;
+            if ((this.recordsCount%this.pageSize)>0) this.pagesCount++;
         }
     }
 
@@ -99,13 +83,13 @@ public class Pagination implements Serializable {
     public String toValueString() {
         return   "\"pageSize\":"+pageSize
                 +",\"firstPage\":"+firstPage
-                +",\"pageCount\":"+pageCount
+                +",\"pageCount\":"+ pagesCount
                 +",\"recordsCount\":"+recordsCount
                 +",\"currentPage\":"+currentPage
                 +",\"buttonsCount\":"+buttonsCount
                 +",\"sortColumnName\":\""+sortColumnName+"\""
-                +",\"sortDirection\":\""+sortDirection+"\""
-                +",\"sortingColumnNumber\":"+sortingColumnNumber;
+                +",\"sortDirection\":"+sortDirection
+                +",\"sortColumnNumber\":"+ sortColumnNumber;
 
 /*
         int pageSize; // Размер страницы
@@ -141,11 +125,12 @@ public class Pagination implements Serializable {
         this.maxButtonsCount = maxButtonsCount;
     }
 
-    public int getSortingColumnNumber() {
-        return sortingColumnNumber;
+    public int getSortColumnNumber() {
+        return sortColumnNumber;
     }
 
-    public void setSortingColumnNumber(int sortingColumnNumber) {
-        this.sortingColumnNumber = sortingColumnNumber;
+    public void setSortColumnNumber(int sortColumnNumber) {
+        this.sortColumnNumber = sortColumnNumber;
     }
+
 }
