@@ -1,6 +1,7 @@
 package com.ppsdevelopment.service;
 
 import com.ppsdevelopment.SqlQueryPreparer;
+import com.ppsdevelopment.config.ConfigProperties;
 import com.ppsdevelopment.converters.DateFormatter;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
@@ -29,6 +30,7 @@ public class SourceTableImpl {
     private AliasesRepo aliasesRepo;
     private PropertiesService propertiesService;
     //private Pagination pagination;
+    private ConfigProperties configProperties;
     private HeaderAdapter headerAdapter;
 
 
@@ -43,7 +45,7 @@ public class SourceTableImpl {
 
     @PostConstruct
     private void init(){
-        tableName=propertiesService.properties().getProperty("tablename");
+        tableName=configProperties.getTableName();
         List<Tables> table=tablesRepo.findByTablename(tableName);
         this.tableId=table.get(0).getId();
         aliases=aliasesRepo.getAllByTable(tableId);
@@ -57,7 +59,7 @@ public class SourceTableImpl {
         String order=pagination.getSortColumnName();
         if (order==null) order="id";
         order+=((pagination.isSortDirection())?" ASC":" DESC");
-        queryString=queryString.replace("%fields%",this.aliasesStringList).replace("%tablename%",tableName).replace("%from%",from).replace("%count%",Long.valueOf(pagination.getPageSize()).toString()).replace("%order%", order);
+        queryString=queryString.replace("%fields%", aliasesStringList).replace("%tablename%",tableName).replace("%from%",from).replace("%count%",Long.valueOf(pagination.getPageSize()).toString()).replace("%order%", order);
         return em.createNativeQuery(queryString).getResultList();
     }
 
@@ -105,9 +107,11 @@ public class SourceTableImpl {
         return tableHeader;
     }
 
+/*
     public Long getTableId() {
         return tableId;
     }
+*/
 
     public String getPaginationJsonResponse(String datatable, Pagination pagination){
         String dataLine="\"datatable\":"+datatable;
@@ -115,17 +119,16 @@ public class SourceTableImpl {
         return "{"+dataLine+","+paging+"}";
     }
 
-
     @Autowired
     public void setTablesRepo(TablesRepo tablesRepo) {
         this.tablesRepo = tablesRepo;
     }
 
-
     @Autowired
     public void setAliasesRepo(AliasesRepo aliasesRepo) {
         this.aliasesRepo = aliasesRepo;
     }
+
 
     @Autowired
     public void setPropertiesService(PropertiesService propertiesService) {
@@ -133,10 +136,14 @@ public class SourceTableImpl {
     }
 
     @Autowired
+    public void setConfigProperties(ConfigProperties c){
+        this.configProperties=c;
+    }
+
+    @Autowired
     public void setHeaderAdapter(HeaderAdapter headerAdapter) {
         this.headerAdapter = headerAdapter;
     }
-
 
     public String getResultAsArrayLine(List all) {
         return DataAdapter.getResultAsArrayLine(all);

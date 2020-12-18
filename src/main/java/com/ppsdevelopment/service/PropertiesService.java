@@ -12,7 +12,7 @@ public class PropertiesService {
     public ConfigurableEnvironment properties() {
         if (context==null) {
             context = new AnnotationConfigApplicationContext();
-            context.register(ConfigProperties.class);
+            //context.register(ConfigProperties.class);
             context.register(QueriesProperties.class);
             context.refresh();
         }
@@ -20,6 +20,7 @@ public class PropertiesService {
     }
 
     public PropertiesService() {
-        System.out.println("Properties service construcrot...");
+
+        //System.out.println("Properties service construcrot...");
     }
 }
