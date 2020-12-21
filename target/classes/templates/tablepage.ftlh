@@ -1,7 +1,7 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable.css','../static/css/maintable.css']
-varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
+varjs=['/static/js/etable.js','/static/js/pagination.js']
 >
 
 <@c.page varcss varjs>
@@ -12,11 +12,11 @@ varjs=['jquery-3.5.1.min.js','etable.js','pagination.js']
     <div id="pagination_block"></div>
 
     <div>
-    <#if attr1??>
+    <#--<#if attr1??>
         attr=${attr1}
         <#else>
                 attr1=___
-    </#if>
+    </#if>-->
 
     </div>
     <script type="text/javascript">

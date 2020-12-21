@@ -203,8 +203,8 @@ class ETable{
 
     sortQuery(paginator) {
         let t=this;
-        this.ajaxQuery("/tablerest/sortmaintable"
-            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection}
+        this.ajaxQuery("/tablerest/pagination"
+            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sortmaintable"}
             ,function (response) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
@@ -228,8 +228,8 @@ class ETable{
 
     queryForPageSizeChange(value, paginator){
         let t=this;
-        this.ajaxQuery("/tablerest/maintablepagesize"
-            ,{pagesize:value}
+        this.ajaxQuery("/tablerest/pagination"
+            ,{pagesize:value, action:"pagesize"}
             ,function (response) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
@@ -260,8 +260,8 @@ class ETable{
     queryForPage(page) {
         let resultResponse={};
         let t=this;
-        this.ajaxQuery("/tablerest/setpage"
-            ,{pagenumber:page}
+        this.ajaxQuery("/tablerest/pagination"
+            ,{pagenumber:page, action:"setpage"}
             ,function (response) {
             let responseValue=t.getFieldsFromResponse(response);
                 t.fillTable(responseValue["datatable"]);
@@ -276,8 +276,8 @@ class ETable{
     queryForChangePagesBlock(firstPage, currentPage) {
         let resultResponse={};
         let t=this;
-        this.ajaxQuery("/tablerest/setpageblock"
-            ,{pagenumber:currentPage, firstpage:firstPage}
+        this.ajaxQuery("/tablerest/pagination"
+            ,{pagenumber:currentPage, firstpage:firstPage, action:"setpageblock"}
             ,function (response) {
                 let responseValue=t.getFieldsFromResponse(response);
                 t.fillTable(responseValue["datatable"]);

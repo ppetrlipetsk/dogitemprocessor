@@ -6,16 +6,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 
 public class MapJson {
-    public static Map<String,Object> map(String value) throws JsonProcessingException {
+    public static Map<String,Object> map(String value) {
+
         ObjectMapper objectMapper = new ObjectMapper();
-        Map empMap = objectMapper.readValue(value,Map.class);
+        Map empMap = null;
+        try {
+            empMap = objectMapper.readValue(value, Map.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         return empMap;
     }
 
-    public static JsonNode get(String name, String value) throws JsonProcessingException {
+    public static JsonNode get(String name, String value) {
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root=objectMapper.readTree(value);
-        return root.path(name);
+        JsonNode root= null;
+        try {
+            root = objectMapper.readTree(value);
+            return root.path(name);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

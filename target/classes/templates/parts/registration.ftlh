@@ -4,8 +4,8 @@
         </div>
         <div class="col-md-6">
             <form class="col-sm-3 py-4 mx-auto  border border-white rounded-sm shadow position-fixed needs-validation"  novalidate action="/registration" method="post" style="top:50%;margin-top:-200px;">
-                <div class="form-group row">
-                    <label class="col-sm-3 col-form-label " >Ф.И.О. : </label>
+                <div class="form-group row  mx-1 my-1">
+                    <label class="col-sm-4 col-form-label " >Ф.И.О. : </label>
                     <div class="col-sm-8">
                         <input type="text" name="fio" placeholder="Ф.И.О." class="form-control" required <#if fio!="null">value=${fio} </#if> />
                         <div class="invalid-feedback">
@@ -14,8 +14,8 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
-                    <label class="col-sm-3 col-form-label " >Логин : </label>
+                <div class="form-group row  mx-1 my-1">
+                    <label class="col-sm-4 col-form-label " >Логин : </label>
                     <div class="col-sm-8">
                         <input type="text" name="username" placeholder="Логин" class="form-control" required <#if login!="null">value=${login} </#if>/>
                         <div class="invalid-feedback">
@@ -25,8 +25,8 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
-                    <label class="col-sm-3 col-form-label"> Пароль:  </label>
+                <div class="form-group row  mx-1 my-1">
+                    <label class="col-sm-4 col-form-label"> Пароль:  </label>
                     <div class="col-sm-8">
                         <input type="password" name="password" placeholder="Пароль" class="form-control" required <#if password!="null">value=${password} </#if>/>
                         <div class="invalid-feedback">
@@ -36,8 +36,8 @@
                     </div>
                 </div>
 
-                <div class="form-group row">
-                    <label class="col-sm-3 col-form-label"> Подтверждение:  </label>
+                <div class="form-group row  mx-1 my-1">
+                    <label class="col-sm-4 col-form-label"> Подтверждение:  </label>
                     <div class="col-sm-8">
                         <input type="password" name="password2" placeholder="Пароль" class="form-control" required <#if password2!="null">value=${password2} </#if>/>
                         <div class="invalid-feedback">

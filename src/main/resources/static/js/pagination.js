@@ -1,4 +1,3 @@
-
 class Pagination{
     constructor(preferences) {
         this.firstPage=preferences.firstPage;
@@ -35,6 +34,7 @@ class Pagination{
         c1=this.pagPanelTag.indexOf(this.itemsTmpl);
         this.pagPanelTagLeft=this.pagPanelTag.slice(0,c1);
         this.pagPanelTagRight=this.pagPanelTag.slice(c1+this.itemsTmpl.length);
+        this.sizeStep=5;
         return this;
     }
 
@@ -55,8 +55,9 @@ class Pagination{
 
     getPageSizeSelector(){
         let s="<div class='pagecountblock'><span>Строк на странице: </span><select id=\"pageselector\" class='pagecountselect' size=\"1\">";
+        s=s+"<option value=\""+3+"\">"+3+"</option>";
         for (let i=0;i<10;i++){
-            let c=((i+1)*10);
+            let c=((i+1)*this.sizeStep);
             let selected="";
             if (c==this.pageSize) selected=" selected ";
             s=s+"<option"+selected+" value=\""+c+"\">"+c+"</option>";
