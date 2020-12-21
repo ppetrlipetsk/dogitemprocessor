@@ -2,8 +2,6 @@ package com.ppsdevelopment.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ppsdevelopment.datalib.TableCellRequest;
-import com.ppsdevelopment.domain.reserv.CellClass;
-import com.ppsdevelopment.domain.reserv.ETable;
 import com.ppsdevelopment.envinronment.Credentials;
 import com.ppsdevelopment.envinronment.Pagination;
 import com.ppsdevelopment.envinronment.UsersSettingsRepository;
@@ -16,18 +14,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("tablerest")
-public class RESTController {
+public class MainPageRESTController {
 
     private SourceTableImpl sourceTable;
     private HttpSession session;
     UsersSettingsRepository usersSettingsRepository;
 
-
+/*
     @PostMapping("/setitems")
     public @ResponseBody String setItems(@RequestBody Map<String, String> message){
         int x=Integer.parseInt(message.get("x"));
@@ -44,6 +40,19 @@ public class RESTController {
         return "cell="+cellClass.getValue();
     }
 
+    @PostMapping("/setcellw")
+    public @ResponseBody String setCell(@RequestParam(required = false, defaultValue = "-1") String i1,
+                                        @RequestParam(required = false, defaultValue = "-1") String i2,
+                                        @RequestParam(required = false,defaultValue = "-1") String i3) {
+        return i1+i2+i3;
+    }
+
+  @GetMapping
+    public String getItems(){
+        return "main";
+    }
+*/
+
     @PostMapping(value="/setcell", consumes = "application/json;charset=UTF-8")
     public @ResponseBody String setCell(@RequestBody TableCellRequest data){
         String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
@@ -52,13 +61,6 @@ public class RESTController {
             sourceTable.updateFieldValue(Long.valueOf(data.getId()),data.getValue(), fieldName, FieldType.valueOf(fieldType));
         }
         return data.toString();
-    }
-
-    @PostMapping("/setcellw")
-    public @ResponseBody String setCell(@RequestParam(required = false, defaultValue = "-1") String i1,
-                                        @RequestParam(required = false, defaultValue = "-1") String i2,
-                                        @RequestParam(required = false,defaultValue = "-1") String i3) {
-        return i1+i2+i3;
     }
 
     @PostMapping("/setpage")
@@ -77,7 +79,6 @@ public class RESTController {
         }
         return sourceTable.getPaginationJsonResponse(s,pagination);
     }
-
 
     @PostMapping("/setpageblock")
     public @ResponseBody String setPageBlock(@RequestBody String s, HttpServletRequest request) {
@@ -163,12 +164,6 @@ public class RESTController {
         session.setAttribute("pagination",pagination);
         this.usersSettingsRepository.set(Credentials.getUser(),"maintable.pagination",pagination);
     }
-
-    @GetMapping
-    public String getItems(){
-        return "main";
-    }
-
 
     @Autowired
     public void setSourceTable(@Qualifier("SourceTableImpl") SourceTableImpl sourceTable) {
