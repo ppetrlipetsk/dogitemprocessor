@@ -38,8 +38,8 @@
 </#macro>
 
 <#macro logout>
-<form class="border border-white rounded-sm shadow align-middle form-inline" action="/logout" method="post">
+<form class="rounded-sm shadow align-middle form-inline" action="/logout" method="post">
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
-    <input type="submit" value="Sign Out"/>
+    <input type="submit" value="Выход"/>
 </form>
 </#macro>

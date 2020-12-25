@@ -115,6 +115,7 @@ public class SourceTableImpl {
 
     public String getPaginationJsonResponse(String datatable, Pagination pagination){
         String dataLine="\"datatable\":"+datatable;
+        //.replace("\"","\\\"")
         String paging="\"pagination\":{"+pagination.toValueString()+"}";
         return "{"+dataLine+","+paging+"}";
     }
@@ -145,7 +146,12 @@ public class SourceTableImpl {
         this.headerAdapter = headerAdapter;
     }
 
-    public String getResultAsArrayLine(List all) {
+    public String getResultAsStringLine(List all) {
         return DataAdapter.getResultAsArrayLine(all);
     }
+
+    public String getResultAsJSONLine(List all) {
+        return DataAdapter.getResultAsJSONLine(all);
+    }
+
 }

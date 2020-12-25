@@ -56,7 +56,8 @@ public class MainPageRESTController {
             {
                 String[] nargs= new String[] {s};
                 Pagination pagination= (Pagination) m.invoke(this, nargs);
-                String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+                //String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll(pagination));
+                String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll(pagination));
                 return sourceTable.getPaginationJsonResponse(tableData,pagination);
             }
         }

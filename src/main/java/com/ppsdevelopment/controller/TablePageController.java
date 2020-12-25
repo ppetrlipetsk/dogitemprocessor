@@ -46,7 +46,7 @@ public class TablePageController {
         model.put("headervalues",tableHeader);
 
 
-        String tableData=sourceTable.getResultAsArrayLine(sourceTable.getAll(pagination));
+        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll(pagination));
         model.put("tabledata",tableData);
 
         pagination.setRecordsCount(sourceTable.getCount());

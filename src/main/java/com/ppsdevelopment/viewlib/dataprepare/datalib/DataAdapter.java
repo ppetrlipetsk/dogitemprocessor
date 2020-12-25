@@ -1,5 +1,6 @@
 package com.ppsdevelopment.viewlib.dataprepare.datalib;
 
+import com.google.gson.Gson;
 import com.ppsdevelopment.SqlQueryPreparer;
 import com.ppsdevelopment.converters.DateFormatter;
 import java.util.Arrays;
@@ -13,6 +14,20 @@ public class DataAdapter {
         String s="["+lines.stream().collect(getCollector(DataAdapter::getQueryValues)).toString()+"]";
         return s;
     }
+
+    public static String getResultAsJSONLine(List lines){
+        Object[] items=lines.toArray();
+        Gson gson = new Gson();
+        String value=gson.toJson(items);
+        return value;
+    }
+
+    private static String getJSONQueryValues(Object items) {
+        Gson gson = new Gson();
+        String value=gson.toJson(items);
+        return value;
+    }
+
 
     private static String getQueryValues(Object item) {
         List<Object> lines= Arrays.asList(((Object[]) item));
@@ -32,7 +47,11 @@ public class DataAdapter {
 
     private static String getFieldValueAsString(Object field) {
         try {
-            return SqlQueryPreparer.getCaptionFromValue(field, DateFormatter.INTERNATIONAL_DATE_FORMAT,"/","\"");
+            if (field.toString().contains("\"")){
+                System.out.println(field.toString());
+            }
+
+            return SqlQueryPreparer.getCaptionFromValue(field, DateFormatter.INTERNATIONAL_DATE_FORMAT,"/","\"",true);
         } catch (Exception e) {
             return "SQL query values generating error!!!";
         }
