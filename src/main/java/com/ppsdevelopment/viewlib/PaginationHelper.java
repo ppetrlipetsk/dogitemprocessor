@@ -15,36 +15,36 @@ public class PaginationHelper {
     private HttpSession session;
     private UsersSettingsRepository usersSettingsRepository;
 
-    public com.ppsdevelopment.envinronment.Pagination pageSize(Integer pageSizeNew){
-        Pagination pagination=getPagination();
+    public com.ppsdevelopment.envinronment.Pagination pageSize(Integer pageSizeNew, String paginationName){
+        Pagination pagination=getPagination(paginationName);
         int pageSize=pagination.getPageSize();
         if (pageSize!=pageSizeNew){
             pagination.setPageSize(pageSizeNew);
             pagination.setCurrentPage(1);
             pagination.setFirstPage(1);
-            setPagination(pagination);
+            setPagination(paginationName,pagination);
         }
         return pagination;
     }
 
-    public com.ppsdevelopment.envinronment.Pagination setPage(Integer pageNumber) {
-        com.ppsdevelopment.envinronment.Pagination pagination=getPagination();
+    public com.ppsdevelopment.envinronment.Pagination setPage(Integer pageNumber,String paginationName) {
+        com.ppsdevelopment.envinronment.Pagination pagination=getPagination(paginationName);
         pagination.setCurrentPage(pageNumber);
-        setPagination(pagination);
+        setPagination(paginationName,pagination);
         return pagination;
     }
 
-    public Pagination setPageBlock(Integer pageNumber, Integer firstPage) {
-        com.ppsdevelopment.envinronment.Pagination pagination=getPagination();
+    public Pagination setPageBlock(Integer pageNumber, Integer firstPage,String paginationName) {
+        com.ppsdevelopment.envinronment.Pagination pagination=getPagination(paginationName);
         pagination.setCurrentPage(pageNumber);
         pagination.setFirstPage(firstPage);
-        setPagination(pagination);
+        setPagination(paginationName,pagination);
         return pagination;
     }
 
-    public   Pagination sortMainPage(Integer columnnumber, List<Aliases> aliases){
-        com.ppsdevelopment.envinronment.Pagination pagination=getPagination();
-        String columnName=pagination.getSortColumnName();
+    public   Pagination sortPage(Integer columnnumber, List<Aliases> aliases, String paginationName){
+        Pagination pagination=getPagination(paginationName);
+        String columnName=aliases.get(pagination.getSortColumnNumber()-1).getFieldalias();// pagination.getSortColumnName();
         if (columnName.equals(aliases.get(columnnumber-1).getFieldalias())){
             pagination.setSortDirection(!pagination.isSortDirection());
         }
@@ -55,23 +55,22 @@ public class PaginationHelper {
         pagination.setCurrentPage(1);
         pagination.setFirstPage(1);
         pagination.setSortColumnNumber(columnnumber);
-        setPagination(pagination);
+        setPagination(paginationName,pagination);
     return pagination;
     }
 
-    private com.ppsdevelopment.envinronment.Pagination getPagination(){
-        com.ppsdevelopment.envinronment.Pagination pagination;
-        if (session.getAttribute("pagination")==null){
-            pagination=new com.ppsdevelopment.envinronment.Pagination();
+    public Pagination getPagination(String paginationName){ //"pagination"
+        Object value=session.getAttribute(paginationName);
+        if (value!=null){
+            return  (Pagination) value;
         }
         else
-            pagination=(com.ppsdevelopment.envinronment.Pagination) session.getAttribute("pagination");
-        return pagination;
+            return new Pagination();
     }
 
-    private void setPagination(com.ppsdevelopment.envinronment.Pagination pagination){
-        session.setAttribute("pagination",pagination);
-        this.usersSettingsRepository.set(Credentials.getUser(),"maintable.pagination",pagination);
+    private void setPagination(String paginationName, Pagination pagination){ //"pagination"
+        session.setAttribute(paginationName,pagination);
+        this.usersSettingsRepository.set(Credentials.getUser(),paginationName,pagination);//"maintable.pagination"
     }
 
     @Autowired

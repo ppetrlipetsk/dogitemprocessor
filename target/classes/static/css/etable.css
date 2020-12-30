@@ -1,19 +1,24 @@
 .spinner {
-    z-index: 1;
-    position: absolute;
-    top: 50%;
     margin-top: -30px;
     margin-left: -30px;
     display: none;
-    left: 50%;
     width:70px;
     height: 70px;
     background: url('/static/images/spinner.gif') no-repeat;
     /*background: url('/static/images/upsort.png') no-repeat;*/
 }
 
+.spinner, .filter_form_class{
+    z-index: 100;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+::-ms-clear {
+    display: none;
+}
 #tableblock{
-    width:90%;
     border:1px solid #101010;
     margin: 0 auto;
     overflow:auto;
@@ -22,6 +27,11 @@
 
 #tableblock input{
     border: 1px solid #424f95;
+    border-radius: 5px;
+}
+
+#tableblock td{
+    padding: 3px;
 }
 
 .pagecountblock{
@@ -32,4 +42,28 @@
 }
 
 .pagecountselect{
+}
+
+.filter_form_class{
+    display: block;
+    border: 1px solid #101010;
+    width:350px;
+    height:auto;
+    margin-top: -170px;
+    margin-left: -150px;
+    background-color: #ffffff;
+}
+
+.filter_form_class li{
+    list-style-type: none;
+}
+.filter_datablock{
+    display: block;
+    overflow: auto;
+    height:300px;
+    border:1px solid #424f95;
+}
+
+.even{
+    background-color: #ffffff;
 }

@@ -3,7 +3,7 @@
     <div class="col-md-2">
     </div>
     <div class="col-md-6" style="margin: 0 auto">
-        <form class="col-sm-3 pt-4 pb-1 mx-auto  border border-white rounded-sm shadow position-fixed"  action="${path}" method="post" style="top:50%;margin-top:-200px;">
+        <form class="col-sm-3 px-2 pt-4 pb-1 mx-auto  border border-white rounded-sm shadow position-fixed"  action="${path}" method="post" style="top:50%;margin-top:-200px;" name="login_form">
             <div class="form-group row  mx-1 my-1">
                 <label class="col-sm-3 col-form-label " >Логин : </label>
                     <div class="col-sm-8">

@@ -1,7 +1,7 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable.css','../static/css/maintable.css']
-varjs=['/static/js/etable.js','/static/js/pagination.js']
+varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_service.js']
 >
 
 <@c.page varcss varjs>
@@ -64,7 +64,6 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
         let pagPagesCount=${pagination.getPagesCount()};
         let pageSize=${pagination.getPageSize()};
         let sortColumnNumber=${pagination.getSortColumnNumber()};
-        let sortColumnName='${pagination.getSortColumnName()}';
         let sortDirection=${pagination.isSortDirection()?string('true','false')};
             <#else>
         let pagFirstPage=-1;
@@ -73,7 +72,6 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
         let pagPagesCount=-1;
         let pageSize=-1;
         let sortColumnNumber=1;
-        let sortColumnName="";
         let sortDirection=true;
         </#if>
 
@@ -87,6 +85,7 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
         let rightButtonDisabled='<li class="page-item right-item disabled"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
         let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
 
+
         let tableItem=new ETable({
             tablearray:dt,
             columnchecks:columnCheck,
@@ -97,17 +96,22 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
             headerdata:headervalues,
             spinnerId:'#spinner',
             checktypes:checktypes,
-            sotrColumnName:sortColumnName,
             sortColumnNumber:sortColumnNumber,
             sortDirection:sortDirection
         });
-        tableItem.drawTable().setHeaderClickListener().setCellClickListener();
+
+        tableItem.drawTable()
+        .setHeaderClickListener()
+        .setCellClickListener()
+        .setServiceClickListener();
 
         let paginator= new Pagination({
             firstPage:pagFirstPage,
             buttonsCount:pagButtonsCount,
             currentPage:pagCurrentPage,
-            pageCount:pagPagesCount,
+            pagesCount:pagPagesCount,
+            firstButtonNumber:1,
+            pageSize:pageSize,
             pagTag:pagtag,
             buttonTag:buttonTag,
             leftButton:leftButton,
@@ -115,7 +119,6 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
             buttonTagActive:buttonTagActive,
             leftButtonDisabled:leftButtonDisabled,
             rightButtonDisabled:rightButtonDisabled,
-            firstButtonNumber:1,
             buttonItemTmpl:'%button%',
             pagPanelTag:pagPanelTag,
             itemsTmpl:'%items%',
@@ -123,7 +126,6 @@ varjs=['/static/js/etable.js','/static/js/pagination.js']
             leftClass:'.left-item',
             rightClass:'.right-item',
             itemLinkClass:'.page-link',
-            pageSize:pageSize,
             tableClass:tableItem
             }
         );

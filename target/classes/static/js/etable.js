@@ -1,55 +1,48 @@
-class ETable{
-    constructor(preferences){
-        this.tabledata=preferences.tabledata;
-        /*this.columnChecks=preferences.columnchecks;*/
-        this.tableBlockId=preferences.tableblockid;
-        this.headervalues=preferences.headerdata;
-        this.checkTypes=preferences.checkTypes;
-        this.tableId=preferences.tableId;
-        this.sortColumnName=preferences.sortColumnName;
-        this.sortColumnNumber=preferences.sortColumnNumber;
-        this.sortDirection=preferences.sortDirection;
-        this.spinnerId=preferences.spinnerId;
-        this.paginator={};
-        return this;
-    }
-
-    setPaginator(paginator){
-        this.paginator=paginator;
-    }
-
-    getTableImage(){
-        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'"><thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
-    }
+/*let ETable=1;*/
 
 
-    getTableHeaderBlock(){
-        if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
-            let s = '<tr>';
-            let index=0;
-            for (let line of this.headervalues) {
-                for (let val of line) {
-                    let sortimage=index==this.sortColumnNumber-1?this.getSortImage():"";
-                    let c=((val['styleClass']).length>0)?" class=\""+val['styleClass']+"\"":this.getCSSByType(val);
-                    let columnNumber=" data-columnnumber=\""+(++index)+"\" ";
-                    s = s + '<th '+c+columnNumber+' >' + val['fieldname']+sortimage + '</th>\n';
+ETable=function(preferences) {
+    this.tabledata = preferences.tabledata;
+    this.tableBlockId = preferences.tableblockid;
+    this.headervalues = preferences.headerdata;
+    this.checkTypes = preferences.checkTypes;
+    this.tableId = preferences.tableId;
+    /*this.sortColumnName = preferences.sortColumnName;*/
+    this.sortColumnNumber = preferences.sortColumnNumber;
+    this.sortDirection = preferences.sortDirection;
+    this.spinnerId = preferences.spinnerId;
+    this.paginator = {};
+    this.isFilterFormActive=false;
+
+    this.setPaginator = function (paginator) {
+        this.paginator = paginator;
+    };
+
+    this.getTableImage=function(){
+        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getColumnsBlock()+this.getTableBody()+'</tbody></table>';
+    };
+
+    this.getColumnsBlock=function () {
+        if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
+            let s = '';
+            let columnEven=false;
+            for (let i=0;i<this.headervalues.length;i++) {
+                let line = this.headervalues[i];
+                for (let y=0; y<line.length;y++) {
+                    let evenStyle=undefined;
+                    evenStyle=columnEven?" even ":" odd ";
+                    let val= line[y];
+                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
+                    s = s + '<col ' + c+ ' >\n';
+                    columnEven=!columnEven;
                 }
             }
-            s += '</tr>' + "\n";
             return s;
-        }
-        else
+        } else
             return "";
-    }
+    };
 
-    getSortImage() {
-        if (this.sortDirection)
-            return  "<img src='/static/images/upsort.png'>";
-        else
-            return  "<img src='/static/images/downsort.png'>";
-    }
-
-    getCSSByType(val) {
+    this.getCSSByType=function(val, evenStyle) {
         let fstyle="";
         switch(val['fieldtype']){
            case "INTTYPE":
@@ -62,16 +55,17 @@ class ETable{
            default:
            {}
         }
-        if (fstyle.length>0) return "class=\""+fstyle+"\"";
+        if (fstyle.length>0) return "class=\""+fstyle+evenStyle+"\"";
         else
         return "";
-    }
+    };
 
-    getTableBody(){
+    this.getTableBody=function(){
         let s='';
         if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
             let indx=0;
-                for (let line of this.tabledata) {
+               for (let i=0;i<this.tabledata.length; i++) {
+                    let line=this.tabledata[i];
                     s = s + '<tr data-id="' + line[0] + '" data-index="' + indx + '">';
                     for (let i = 0; i < line.length; i++) {
                         if (i > 0)
@@ -82,29 +76,33 @@ class ETable{
                 }
         }
         return s;
-    }
+    };
 
-    drawTable(){
+    this.drawTable=function(){
         $('#'+this.tableBlockId).html(this.getTableImage());
         return this;
-    }
+    };
 
-    setInputPropertyes(input, td){
+    this.setInputPropertyes=function(input, td){
         input.style.width=(td.clientWidth-input.offsetWidth-input.clientWidth-td.clientLeft*2)+"px";
         input.style.height=(td.clientHeight-input.offsetHeight-input.clientHeight-td.clientTop*2)+"px";
         input.style.background="none";
         let t=this;
         input.addEventListener('keydown', function(e) {
-                if (e.keyCode === 13) {
-                    console.log(this.value);
+                if ((e.keyCode === 13)) {
                     input.blur();
                 }
+                else
+                    if (e.keyCode ===27){
+                        t.escapeElement(input,td);
+                        input.blur();
+                    }
             });
-    }
+    };
 
-    setHeaderClickListener(){
+    this.setHeaderClickListener=function(){
         let t=this;
-        $( "#"+this.tableId+" th" ).click(function() {
+        $( "#"+this.tableId+" #column_name th" ).click(function() {
 
             let attrcell = this.hasAttribute('data-columnnumber');
             if (attrcell!==undefined){
@@ -118,10 +116,112 @@ class ETable{
             }
         });
         return this;
-    }
+    };
+
+    this.getFilterValues=function(){
+        return "";
+    };
+
+    this.filterQuery=function(filter, columnNumber){
+        let t=this;
+        let data=[];
+        /*this.ajaxQuery('');*/
+        this.ajaxQuery("/tablerest/filterdata"
+            ,{columnNumber:columnNumber}
+            ,function (response) {
+                /*alert("Success"+response);*/
+                data=JSON.parse(response);
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        /*return this.getFilterData();*/
+        return data;
+    };
+
+    this.getFilterData=function(){
+        let data=[
+            {id:1,caption:'line1',checked:false}
+            ,{id:2,caption:'line2',checked:true}
+            ,{id:3,caption:'line3',checked:false}
+        ];
+        return data;
+    };
+
+    this.setServiceClickListener=function(){
+        if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
+        let t = this;
+        $("#" + this.tableId + " #service_row th").click(function () {
+            if (!t.getFilterFormActive()) {
+                t.setFilterFormActive(true);
+                let attrcell = this.hasAttribute('data-columnnumber');
+                if (attrcell !== undefined) {
+                    let columnNumber = $(this).attr("data-columnnumber");
+                    let filter = t.getFilterValues(columnNumber);
+                    let data=t.filterQuery(filter, columnNumber);
+                    t.filterColumnNumber=columnNumber;
+                    /*let formCode=this.serviceinstance.getFormCode(data);
+                    if ((formCode!==undefined)&&(formCode.length>0)){
+                    }
+                    */
+                    let tableBlock = $('#' + t.tableBlockId);
+                    let tableService = new ET_Service();
+                    tableService.setFilterCallBack(t.filterCallBack,t);
+                    tableService.showForm(data, tableBlock);
+                }
+                /*t.isFilterFormActive=false;*/
+            }
+            console.log(t);
+        });
+
+        return this;
+    };
+
+    this.setFilterFormActive=function(value){
+        this.isFilterFormActive=value;
+    };
+
+    this.getFilterFormActive=function(){
+        return this.isFilterFormActive;
+    };
+
+    this.filterCallBack=function (data,context, action) {
+        if (context!==undefined)
+            context.setFilterFormActive(false);
+        let el=$('#filterform');
+        if ((el!==undefined)&&el.length>0)
+        /*el.parentElement.removeChild(el);*/
+            el[0].parentElement.removeChild(el[0]);
+        if ((action!==undefined)&&(action==="ok"))context.applyFilter(context.filterColumnNumber,data);
+        context.filterColumnNumber=undefined;
+    };
+
+    this.applyFilter=function(columnNumber, data){
+        let t=this;
+        this.ajaxQuery("/tablerest/applyfilter"
+            ,{columnNumber:columnNumber, data:data}
+            ,function (response) {
+                let responseValue=t.getFieldsFromResponse(response);
+                t.fillTable(responseValue["datatable"]);
+                if (paginator!==undefined){
+                    paginator.currentPage=responseValue["pagination"].currentPage;
+                    paginator.firstPage=responseValue["pagination"].firstPage;
+                    paginator.buttonsCount=responseValue["pagination"].buttonsCount;
+                    paginator.pagesCount=responseValue["pagination"].pageCount;
+                    paginator.pageSize=responseValue["pagination"].pageSize;
+                    paginator.showPaginationPanel();
+                }
+                /*data=JSON.parse(response);*/
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        /*return this.getFilterData();*/
+        return data;
+    };
 
 
-    setCellClickListener(){
+    this.setCellClickListener=function(){
         let t=this;
         $( "#"+this.tableId+" tr td" ).click(function() {
             let attrcell = this.hasAttribute('data-activecell');
@@ -141,42 +241,50 @@ class ETable{
             }
         });
         return this;
-    }
+    };
 
-    getCheckType(x){
+    this.getCheckType=function(x){
         if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
             let ct=this.headervalues[x-1][0]['fieldtype'];
             if (ct!=="undefined")
                 return ct;
         }
         return "undefined";
-    }
+    };
 
-    setBlurListener(input, td, eTableInstance, x, y,id){
-        input.addEventListener('blur', function () {
+    this.escapeElement=function(input, td, eTableInstance, x, y){
             td.removeAttribute('data-activecell');
-            if ((eTableInstance.tabledata[y][x]+"")!==input.value) {
-                let inputError=false;
-                /*td.hasAttribute('data-check');*/
-                let checkType=eTableInstance.getCheckType(x);
-                if ((checkType!==undefined) &&(checkType!=='STRINGTYPE')){
-                    /*let checkType = td.getAttribute("data-check");*/
-                    if (!eTableInstance.checkValue(input.value,checkType)) inputError=true;
-                }
-                if (!inputError) {
+            /*td.innerHTML = eTableInstance.tabledata[y][x];*/
+    };
+
+    this.setBlurListener=function(input, td, eTableInstance, x, y,id){
+        input.addEventListener('blur', function () {
+            let isActive=td.hasAttribute('data-activecell');
+
+            if (isActive) {
+                td.removeAttribute('data-activecell');
+                if ((eTableInstance.tabledata[y][x] + "") !== input.value) {
+                    let inputError = false;
+                    let checkType = eTableInstance.getCheckType(x);
+                    if ((checkType !== undefined) && (checkType !== 'STRINGTYPE')) {
+                        if (!eTableInstance.checkValue(input.value, checkType)) inputError = true;
+                    }
+                    if (!inputError) {
                         eTableInstance.tabledata[y][x] = input.value;
-                        eTableInstance.postajax(x, y, input.value,id);
-                }
-                else {
+                        eTableInstance.postajax(x, y, input.value, id);
+                    } else {
                         alert("Ошибка ввода данных!");
-                        input.value=eTableInstance.tabledata[y][x];
+                        input.value = eTableInstance.tabledata[y][x];
                     }
                 }
-            td.innerHTML = input.value;
+                td.innerHTML = input.value;
+            }
+            else
+                td.innerHTML =  eTableInstance.tabledata[y][x];
         });
-    }
+    };
 
-    checkValue(value,checkType) {
+    this.checkValue=function(value,checkType) {
         switch (checkType) {
             case 'BIGINTTYPE':
             case 'INTTYPE':
@@ -187,9 +295,9 @@ class ETable{
                 return this.dateCheck(value);
             default: return false;
         }
-    }
+    };
 
-    postajax(x,y, value,id){
+    this.postajax=function(x,y, value,id){
         this.ajaxQuery("/tablerest/setcell"
             ,{id:id,fieldIndex:x,value:value}
             ,function (response) {
@@ -199,9 +307,9 @@ class ETable{
                 alert('Error: ' + response);
             });
 
-    }
+    };
 
-    sortQuery(paginator) {
+    this.sortQuery=function(paginator) {
         let t=this;
         this.ajaxQuery("/tablerest/pagination"
             ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sortmaintable"}
@@ -209,7 +317,7 @@ class ETable{
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
                 t.sortColumnNumber=responseValue["pagination"].sortColumnNumber;
-                t.sortColumnName=responseValue["pagination"].sortColumnName;
+                /*t.sortColumnName=responseValue["pagination"].sortColumnName;*/
                 t.sortDirection=responseValue["pagination"].sortDirection;
                 t.fillTable(responseValue["datatable"]);
 
@@ -224,9 +332,9 @@ class ETable{
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
-    }
+    };
 
-    queryForPageSizeChange(value, paginator){
+    this.queryForPageSizeChange=function(value, paginator){
         let t=this;
         this.ajaxQuery("/tablerest/pagination"
             ,{pagesize:value, action:"pagesize"}
@@ -246,18 +354,18 @@ class ETable{
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
-    }
+    };
 
-    getFieldsFromResponse(response){
+    this.getFieldsFromResponse=function(response){
         let values = JSON.parse(response);
         let datatable=values["datatable"];
         let pagination=values["pagination"];
         if (datatable===undefined) datatable=[];
         if (pagination===undefined) pagination={};
         return {datatable:datatable, pagination:pagination};
-    }
+    };
 
-    queryForPage(page) {
+    this.queryForPage=function(page) {
         let resultResponse={};
         let t=this;
         this.ajaxQuery("/tablerest/pagination"
@@ -271,9 +379,9 @@ class ETable{
                 alert('Error: ' + response);
             });
         return resultResponse;
-    }
+    };
 
-    queryForChangePagesBlock(firstPage, currentPage) {
+    this.queryForChangePagesBlock=function(firstPage, currentPage) {
         let resultResponse={};
         let t=this;
         this.ajaxQuery("/tablerest/pagination"
@@ -287,9 +395,9 @@ class ETable{
                 alert('Error: ' + response);
             });
         return resultResponse;
-    }
+    };
 
-    ajaxQuery(url,datafield,successfunction, errorfunction) {
+    this.ajaxQuery=function(url,datafield,successfunction, errorfunction) {
         let t=$(this.spinnerId);
         t.fadeIn();
         $.ajaxSetup({headers: {'X-CSRF-Token': _csrf}});
@@ -309,35 +417,87 @@ class ETable{
                 t.fadeOut();
             }
         });
-    }
+    };
 
-    fillTable(values){
+    this.fillTable=function(values){
         this.setTableData(values);
         this.tableFlush();
-        this.drawTable().setCellClickListener().setHeaderClickListener();
-    }
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+    };
 
-    numericCheck(val){
+    this.numericCheck=function(val){
         return  ((val !== '')&&(!isNaN(Number(val))));
-    }
+    };
 
-    dateCheck(value){
+    this.dateCheck=function(value){
         let regexp=/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
         let d=regexp.test(value);
         return  (value !== '')&&d;
-    }
+    };
 
-    getSpinnerCode(){
-        return ""; /*"<div  id=\"spinner\" class=\"spinner\" ></div>";*/
-    }
+    this.getSpinnerCode=function(){
+        return ""; /*!*"<div  id=\"spinner\" class=\"spinner\" ></div>";*!/*/
+    };
 
-    tableFlush(){
+    this.tableFlush=function(){
         $('#'+this.tableBlockId).html("");
-    }
-    setTableData(value){
-        this.tabledata=value;
-    }
+    };
 
-}
+    this.setTableData=function(value){
+        this.tabledata=value;
+    };
+
+    this.getServiceHeaderRow=function(){
+        let s = '<tr id=\"service_row\">';
+        let index = 0;
+        for (let i=0;i<this.headervalues.length;i++) {
+            let line = this.headervalues[i];
+            for (let y=0; y<line.length;y++) {
+                let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
+                s = s + '<th ' + columnNumber + ' >' +this.getServiceCellBlock()+ '</th>\n';
+            }
+        }
+        s += '</tr>' + "\n";
+        return s;
+    };
+
+    this.getServiceCellBlock = function () {
+        return "_";
+    };
+
+    this.getTableHeaderBlock=function() {
+        if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
+            let s = '<tr id=\"column_name\" >';
+            let index = 0;
+            for (let i=0;i<this.headervalues.length;i++) {
+                let line = this.headervalues[i];
+                for (let y=0; y<line.length;y++) {
+                    let val= line[y];
+                    let sortimage = index === this.sortColumnNumber - 1 ? this.getSortImage() : "";
+                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val);
+                    let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
+                    s = s + '<th ' + c + columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
+                    /*s = s + '<th ' +  columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';*/
+                }
+            }
+            s += '</tr>' + "\n";
+            return s+this.getServiceHeaderRow();
+        } else
+            return "";
+    };
+
+    this.getSortImage=function() {
+        if (this.sortDirection)
+            return  "<img src='/static/images/sort-up.gif' style='width: 16px;'>";
+        else
+            return  "<img src='/static/images/sort-dwn.gif' style='width: 16px;'>";
+    };
+
+
+
+
+return this;
+};
+
 
 

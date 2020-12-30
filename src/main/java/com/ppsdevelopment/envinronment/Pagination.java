@@ -61,6 +61,7 @@ public class Pagination implements Serializable {
         if (this.pageSize!=0){
             this.pagesCount =this.recordsCount/this.pageSize;
             if ((this.recordsCount%this.pageSize)>0) this.pagesCount++;
+            buttonsCount= this.pagesCount>this.maxButtonsCount?this.maxButtonsCount: (int) this.pagesCount;
         }
     }
 

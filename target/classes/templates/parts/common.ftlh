@@ -1,16 +1,17 @@
 <#macro page varcss="null" varjs="null">
 <!DOCTYPE html>
 <html lang="en">
-<script src="/static/js/jquery-3.5.1.min.js"></script>
-<script src="/static/js/bootstrap/popper.min.js" ></script>
-<script src="/static/js/bootstrap/bootstrap.min.js"></script>
-
 <head>
+
     <meta charset="UTF-8">
     <title>Sweater</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/main.css">
+    <script src="/static/js/jquery-3.5.1.min.js"></script>
+    <script src="/static/js/bootstrap/popper.min.js" ></script>
+    <script src="/static/js/bootstrap/bootstrap.min.js"></script>
+
     <#if varcss?is_enumerable>
         <#list varcss as item>
             <link rel="stylesheet" type="text/css" href="${item}"/>
@@ -29,6 +30,7 @@
 
     <div class="container-fluid" >
 
+<#--
 <#if browser??>
     <#if browser==true >
         <span style="color:#902020; font-weight: bold; font-size: 30px; padding-top:300px;display:block"> Браузер Internet Explorer устарел. Пожалуйста, используйте Google Chrome или Microsoft Edge</span>
@@ -36,8 +38,9 @@
         <#nested>
     </#if>
     <#else >
+-->
         <#nested>
-</#if>
+<#--</#if>-->
 
     </div>
 

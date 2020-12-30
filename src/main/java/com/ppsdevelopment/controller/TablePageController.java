@@ -1,10 +1,7 @@
 package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.domain.User;
-import com.ppsdevelopment.envinronment.Credentials;
-import com.ppsdevelopment.envinronment.HeaderParser;
-import com.ppsdevelopment.envinronment.Pagination;
-import com.ppsdevelopment.envinronment.UsersSettingsRepository;
+import com.ppsdevelopment.envinronment.*;
 import com.ppsdevelopment.service.SourceTableImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,7 +21,7 @@ public class TablePageController {
     private HttpSession session;
     private HttpServletRequest request;
     private SourceTableImpl sourceTable;
-    private UsersSettingsRepository usersSettingsRepository;
+    private SettingsProvider settingsProvider;
 
 
     @ModelAttribute("browser")
@@ -33,9 +30,9 @@ public class TablePageController {
     }
 
     @GetMapping
-    public String index(Map<String, Object> model){
-        User user= Credentials.getUser();
-        Pagination pagination= (Pagination) usersSettingsRepository.get(user,"maintable.pagination", Pagination.class);
+    public String index(Map<String, Object> model) throws Exception {
+   //     User user= Credentials.getUser();
+        Pagination pagination= (Pagination) settingsProvider.getSettingsValues(sourceTable.getPaginationName(), Pagination.class);
 
         if (pagination==null) {
             pagination = new Pagination();
@@ -46,14 +43,14 @@ public class TablePageController {
         model.put("headervalues",tableHeader);
 
 
-        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll(pagination));
+        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll());
         model.put("tabledata",tableData);
 
         pagination.setRecordsCount(sourceTable.getCount());
         model.put("pagination",pagination);
 
         session.setAttribute("pagination",pagination);
-        usersSettingsRepository.set(user,"maintable.pagination",pagination);
+        settingsProvider.setSettingsValue(sourceTable.getPaginationName(),pagination);
         return "tablepage";
     }
 
@@ -73,7 +70,8 @@ public class TablePageController {
     }
 
     @Autowired
-    public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
-        this.usersSettingsRepository = usersSettingsRepository;
+
+    public void setSettingsProvider(SettingsProvider settingsProvider) {
+        this.settingsProvider = settingsProvider;
     }
 }
