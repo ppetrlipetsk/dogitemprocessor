@@ -31,13 +31,18 @@
 #datatable{
     table-layout:fixed;
     width:7000px;
-    background-color: #FFFFFF;
-    opacity: 0.7;
+    /*background-color: #FFFFFF;*/
+    /*opacity: 0.7;*/
 }
 
 #datatable td{
     word-break: break-all;
 }
+
+#datatable thead{
+    background-color: #464bac;
+}
+
 #tableblock td{
     border-bottom:1px solid #101010;
 }
@@ -52,6 +57,14 @@
 
 #tableblock th{
     border-bottom:1px solid #000;
-    background-color: rgba(200, 200, 200, 0.7);
+    /*background-color: rgba(200, 200, 200, 0.7);*/
     color:#000000;
+}
+
+#column_name, #service_row{
+    background: linear-gradient(#9595b6, #5a567f);
+}
+
+#service_row{
+
 }

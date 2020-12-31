@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.logging.Filter;
 
 @Service("SourceTableImpl")
 @Repository
@@ -218,10 +219,24 @@ public class SourceTableImpl {
         return tableHeader;
     }
 
+/*
     public String getPaginationJsonResponse(String datatable, Pagination pagination){
         String dataLine="\"datatable\":"+datatable;
         String paging="\"pagination\":{"+pagination.toValueString()+"}";
         return "{"+dataLine+","+paging+"}";
+    }
+*/
+
+    public String getPaginationJsonResponse(String datatable, Pagination pagination, FilterQuery filter){
+        String dataLine="\"datatable\":"+datatable;
+        String paging="\"pagination\":{"+pagination.toValueString()+"}";
+        String filterStr="\"filtercolumns\":"+filter.getColumnsNamesAsJson();
+        return "{"+dataLine+","+paging+","+filterStr+"}";
+    }
+
+    public String getFilteredColumnsAsJson(){
+        FilterQuery filterItem=filterHelper.getFilter(getFilterName());
+        return filterItem.getColumnsNamesAsJson();
     }
 
     @Autowired

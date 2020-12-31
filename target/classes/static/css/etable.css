@@ -18,12 +18,18 @@
 ::-ms-clear {
     display: none;
 }
+
 #tableblock{
     border:1px solid #101010;
     margin: 0 auto;
     overflow:auto;
     max-height: 700px;
+    margin-top:50px;
+    background-color: #f0f0f0;
+    width: 90%;
+    box-shadow: 0.2em 0.2em 11px;
 }
+
 
 #tableblock input{
     border: 1px solid #424f95;
@@ -31,7 +37,7 @@
 }
 
 #tableblock td{
-    padding: 3px;
+    padding: 3px 5px;
 }
 
 .pagecountblock{
@@ -65,5 +71,11 @@
 }
 
 .even{
-    background-color: #ffffff;
+    /*background: linear-gradient(rgba(90,87,153,0.6), rgba(30,87,153,0));*/
+    background-color: rgba(90,87,153,0.2);
+    /*opacity: 0.5;*/
+}
+
+#pagination_block{
+    padding: 15px 0px;
 }

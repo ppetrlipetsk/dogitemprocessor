@@ -49,6 +49,10 @@ public class TablePageController {
         pagination.setRecordsCount(sourceTable.getCount());
         model.put("pagination",pagination);
 
+        String filterColumns=sourceTable.getFilteredColumnsAsJson();
+        model.put("filteredcolumns", filterColumns);
+
+
         session.setAttribute("pagination",pagination);
         settingsProvider.setSettingsValue(sourceTable.getPaginationName(),pagination);
         return "tablepage";

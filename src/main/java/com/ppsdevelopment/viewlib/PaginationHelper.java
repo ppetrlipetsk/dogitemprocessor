@@ -44,7 +44,9 @@ public class PaginationHelper {
 
     public   Pagination sortPage(Integer columnnumber, List<Aliases> aliases, String paginationName){
         Pagination pagination=getPagination(paginationName);
+        pagination.setSortColumnNumber(columnnumber);
         String columnName=aliases.get(pagination.getSortColumnNumber()-1).getFieldalias();// pagination.getSortColumnName();
+
         if (columnName.equals(aliases.get(columnnumber-1).getFieldalias())){
             pagination.setSortDirection(!pagination.isSortDirection());
         }

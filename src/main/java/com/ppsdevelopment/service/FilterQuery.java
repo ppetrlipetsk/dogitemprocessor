@@ -1,5 +1,7 @@
 package com.ppsdevelopment.service;
 
+import com.google.gson.Gson;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -11,7 +13,10 @@ public class FilterQuery implements Serializable {
     }
 
     public void set(String columnName, List value){
-        filter.put(columnName,value);
+        if ((value!=null)&&(value.size()>0))
+            filter.put(columnName,value);
+        else
+            filter.remove(columnName);
     }
 
     public void addFilterValue(String columnName, String value){
@@ -28,4 +33,19 @@ public class FilterQuery implements Serializable {
         return filter.keySet();
     }
 
+    public String toJson(){
+        return new Gson().toJson(filter);
+    }
+
+    public String getColumnsNamesAsJson(){
+        return new Gson().toJson(filter.keySet());
+    }
+
+
+    @Override
+    public String toString() {
+        return "FilterQuery{" +
+                "filter=" + filter +
+                '}';
+    }
 }

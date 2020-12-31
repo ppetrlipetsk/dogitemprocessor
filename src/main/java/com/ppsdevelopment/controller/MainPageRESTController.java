@@ -64,7 +64,8 @@ public class MainPageRESTController {
                 String[] nargs= new String[] {s};
                 Pagination pagination= (Pagination) m.invoke(this, nargs);
                 String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll()); //paginationName
-                return sourceTable.getPaginationJsonResponse(tableData,pagination);
+                FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
+                return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem);
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
@@ -90,7 +91,8 @@ public class MainPageRESTController {
         pagination.setCurrentPage(1);
         pagination.setFirstPage(1);
         String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll());
-        return sourceTable.getPaginationJsonResponse(tableData,pagination);
+        FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
+        return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem); //TODO сделать этот метод, чтобы tableData,pagination,filterItem брались в классе sourceTable
     }
 
     private void setFilter(Integer columnNumber, String[] data) {

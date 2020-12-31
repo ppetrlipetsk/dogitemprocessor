@@ -13,18 +13,21 @@ ETable=function(preferences) {
     this.spinnerId = preferences.spinnerId;
     this.paginator = {};
     this.isFilterFormActive=false;
+    this.filterColumns=preferences.filterColumns||[];
+    /*this.fc=99;*/
 
     this.setPaginator = function (paginator) {
         this.paginator = paginator;
     };
 
     this.getTableImage=function(){
-        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getColumnsBlock()+this.getTableBody()+'</tbody></table>';
+        /*return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+this.getColumnsBlock()+this.getTableHeaderBlock()+this.getTableBody()+'</table>';*/
+        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
     };
 
     this.getColumnsBlock=function () {
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
-            let s = '';
+            let s = '<colgroup>';
             let columnEven=false;
             for (let i=0;i<this.headervalues.length;i++) {
                 let line = this.headervalues[i];
@@ -33,11 +36,11 @@ ETable=function(preferences) {
                     evenStyle=columnEven?" even ":" odd ";
                     let val= line[y];
                     let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
-                    s = s + '<col ' + c+ ' >\n';
+                    s = s + '<col style="color:#ffc107;"' + c+ ' >\n';
                     columnEven=!columnEven;
                 }
             }
-            return s;
+            return s+'</colgroup>';
         } else
             return "";
     };
@@ -81,6 +84,56 @@ ETable=function(preferences) {
     this.drawTable=function(){
         $('#'+this.tableBlockId).html(this.getTableImage());
         return this;
+    };
+
+    this.getTableHeaderBlock=function() {
+        if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
+            let s = '<tr id=\"column_name\" >';
+            let index = 0;
+            for (let i=0;i<this.headervalues.length;i++) {
+                let line = this.headervalues[i];
+                for (let y=0; y<line.length;y++) {
+                    let val= line[y];
+                    let sortimage = index === this.sortColumnNumber - 1 ? this.getSortImage() : "";
+                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val);
+                    let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
+                    s = s + '<th ' + c + columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
+                    /*s = s + '<th ' +  columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';*/
+                }
+            }
+            s += '</tr>' + "\n";
+            return s+this.getServiceHeaderRow();
+        } else
+            return "";
+    };
+
+    this.getServiceHeaderRow=function(){
+        /*
+                if (this.filterColumns!==undefined) let filteredColumns=this.filterColumns;
+                else
+        */
+        let filteredColumns=this.filterColumns||[];
+
+        let s = '<tr id=\"service_row\">';
+        let index = 0;
+        for (let i=0;i<this.headervalues.length;i++) {
+            let line = this.headervalues[i];
+            for (let y=0; y<line.length;y++) {
+                let val= line[y];
+                let columnName=val["fieldalias"];
+                let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
+                if (filteredColumns.indexOf(columnName,0)!==-1)
+                    s = s + '<th ' + columnNumber + ' >f</th>\n';
+                else
+                    s = s + '<th ' + columnNumber + ' >' +this.getServiceCellBlock()+ '</th>\n';
+            }
+        }
+        s += '</tr>' + "\n";
+        return s;
+    };
+
+    this.getServiceCellBlock = function () {
+        return "_";
     };
 
     this.setInputPropertyes=function(input, td){
@@ -201,17 +254,7 @@ ETable=function(preferences) {
         this.ajaxQuery("/tablerest/applyfilter"
             ,{columnNumber:columnNumber, data:data}
             ,function (response) {
-                let responseValue=t.getFieldsFromResponse(response);
-                t.fillTable(responseValue["datatable"]);
-                if (paginator!==undefined){
-                    paginator.currentPage=responseValue["pagination"].currentPage;
-                    paginator.firstPage=responseValue["pagination"].firstPage;
-                    paginator.buttonsCount=responseValue["pagination"].buttonsCount;
-                    paginator.pagesCount=responseValue["pagination"].pageCount;
-                    paginator.pageSize=responseValue["pagination"].pageSize;
-                    paginator.showPaginationPanel();
-                }
-                /*data=JSON.parse(response);*/
+            t.fillTableByResponse(response,t);
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
@@ -342,28 +385,48 @@ ETable=function(preferences) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
                 t.fillTable(responseValue["datatable"]);
-                if (paginator!==undefined){
-                        paginator.currentPage=responseValue["pagination"].currentPage;
-                        paginator.firstPage=responseValue["pagination"].firstPage;
-                        paginator.buttonsCount=responseValue["pagination"].buttonsCount;
-                        paginator.pagesCount=responseValue["pagination"].pageCount;
-                        paginator.pageSize=responseValue["pagination"].pageSize;
-                        paginator.showPaginationPanel();
-                }
+                this.setPaginatorValues(paginator);
+                paginator.showPaginationPanel();
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
     };
 
+    this.setPaginatorValues=function (responseValue) {
+        if (responseValue!==undefined) {
+            paginator.currentPage = responseValue["pagination"].currentPage||1;
+            paginator.firstPage = responseValue["pagination"].firstPage||1;
+            paginator.buttonsCount = responseValue["pagination"].buttonsCount||1;
+            paginator.pagesCount = responseValue["pagination"].pageCount||0;
+            paginator.pageSize = responseValue["pagination"].pageSize||0;
+        }
+    };
+
     this.getFieldsFromResponse=function(response){
         let values = JSON.parse(response);
-        let datatable=values["datatable"];
-        let pagination=values["pagination"];
+        let datatable=values["datatable"]||[];
+        let pagination=values["pagination"]||this.getPaginationInstance();
+        let filteredColumns=values["filtercolumns"]||[];
         if (datatable===undefined) datatable=[];
         if (pagination===undefined) pagination={};
-        return {datatable:datatable, pagination:pagination};
+        return {datatable:datatable, pagination:pagination, filteredcolumns:filteredColumns};
     };
+
+    this.getPaginationInstance=function(){
+            return new {
+                pageSize:10,
+                firstPage:1,
+                pageCount:0,
+                recordsCount:0,
+                currentPage:0,
+                buttonsCount:0,
+                sortColumnName:'',
+                sortDirection:false,
+                sortColumnNumber:-1
+            };
+    };
+
 
     this.queryForPage=function(page) {
         let resultResponse={};
@@ -425,6 +488,26 @@ ETable=function(preferences) {
         this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
     };
 
+    this.fillTableByResponse=function(response,context){
+        let responseValue=this.getFieldsFromResponse(response);
+        this.setFilteredColumns(responseValue["filteredcolumns"]);
+        if (paginator!==undefined){
+            paginator.currentPage=responseValue["pagination"].currentPage;
+            paginator.firstPage=responseValue["pagination"].firstPage;
+            paginator.buttonsCount=responseValue["pagination"].buttonsCount;
+            paginator.pagesCount=responseValue["pagination"].pageCount;
+            paginator.pageSize=responseValue["pagination"].pageSize;
+            paginator.showPaginationPanel();
+        }
+        this.setTableData(responseValue["datatable"]);
+        this.tableFlush();
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+    };
+
+    this.setFilteredColumns=function(values){
+        this.filterColumns=values;
+    };
+
     this.numericCheck=function(val){
         return  ((val !== '')&&(!isNaN(Number(val))));
     };
@@ -445,45 +528,6 @@ ETable=function(preferences) {
 
     this.setTableData=function(value){
         this.tabledata=value;
-    };
-
-    this.getServiceHeaderRow=function(){
-        let s = '<tr id=\"service_row\">';
-        let index = 0;
-        for (let i=0;i<this.headervalues.length;i++) {
-            let line = this.headervalues[i];
-            for (let y=0; y<line.length;y++) {
-                let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
-                s = s + '<th ' + columnNumber + ' >' +this.getServiceCellBlock()+ '</th>\n';
-            }
-        }
-        s += '</tr>' + "\n";
-        return s;
-    };
-
-    this.getServiceCellBlock = function () {
-        return "_";
-    };
-
-    this.getTableHeaderBlock=function() {
-        if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
-            let s = '<tr id=\"column_name\" >';
-            let index = 0;
-            for (let i=0;i<this.headervalues.length;i++) {
-                let line = this.headervalues[i];
-                for (let y=0; y<line.length;y++) {
-                    let val= line[y];
-                    let sortimage = index === this.sortColumnNumber - 1 ? this.getSortImage() : "";
-                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val);
-                    let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
-                    s = s + '<th ' + c + columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
-                    /*s = s + '<th ' +  columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';*/
-                }
-            }
-            s += '</tr>' + "\n";
-            return s+this.getServiceHeaderRow();
-        } else
-            return "";
     };
 
     this.getSortImage=function() {

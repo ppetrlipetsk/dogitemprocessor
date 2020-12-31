@@ -39,6 +39,13 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
         let dt=new Array();
         </#if>
 
+        <#if filteredcolumns??>
+        let filteredcolumns=${filteredcolumns?no_esc};
+        <#else>
+        let filteredcolumns=[];
+        </#if>
+
+
         <#if _csrf.token??>
         let _csrf="${_csrf.token}";
         <#else>
@@ -97,7 +104,8 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
             spinnerId:'#spinner',
             checktypes:checktypes,
             sortColumnNumber:sortColumnNumber,
-            sortDirection:sortDirection
+            sortDirection:sortDirection,
+            filterColumns:filteredcolumns
         });
 
         tableItem.drawTable()
