@@ -12,7 +12,7 @@ public class SettingsProvider {
     private HttpSession session;
     private UsersSettingsRepository usersSettingsRepository;
 
-    public Object getSettingsValues(String fieldName, Class<?> instanceClass){
+    public Object getSettingsValue(String fieldName, Class<?> instanceClass){
         Object result=null;
         try {
             if (session.getAttribute(fieldName) == null) {

@@ -1,0 +1,86 @@
+.spinner {
+    margin-top: -30px;
+    margin-left: -30px;
+    display: none;
+    width:70px;
+    height: 70px;
+    background: url('/static/images/spinner.gif') no-repeat;
+    /*background: url('/static/images/upsort.png') no-repeat;*/
+}
+
+.spinner, .filter_form_class{
+    z-index: 100;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+::-ms-clear {
+    display: none;
+}
+
+.pagecountblock{
+    display: block;
+    margin: 0 auto;
+    width: 210px;
+}
+
+.pagecountselect{
+}
+
+.filter_form_class{
+    display: block;
+    border: 1px solid #101010;
+    width:350px;
+    height:auto;
+    margin-top: -170px;
+    margin-left: -150px;
+    background-color: #ffffff;
+}
+
+.filter_form_class li{
+    list-style-type: none;
+}
+.filter_datablock{
+    display: block;
+    overflow: auto;
+    height:300px;
+    border:1px solid #424f95;
+}
+.filter_image{
+    background: url(/static/images/filter_gray.gif);
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+    margin: 0 auto;
+}
+
+#pagination_block{
+    padding: 15px 0px;
+}
+
+.pagbuttonactive{
+    z-index: 3;
+    color: #fff;
+    background-color: gray;
+    border-color: #101010;
+}
+
+.pagbuttonactive div{
+    color: #f0f0f0 !important;
+    background-color: gray;
+    border-color: #404040;
+}
+
+.pagbuttonactive div:hover{
+    color: #303030 !important;
+    border-color: #404040;
+}
+
+.page-item div{
+    color: #303030;
+}
+
+.page-item div:hover{
+    color: #303030;
+}

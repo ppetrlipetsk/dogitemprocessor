@@ -1,6 +1,5 @@
 package com.ppsdevelopment.controller;
 
-import com.ppsdevelopment.domain.User;
 import com.ppsdevelopment.envinronment.*;
 import com.ppsdevelopment.service.SourceTableImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,7 @@ import java.util.Map;
 @RequestMapping("table")
 public class TablePageController {
 
-    private HttpSession session;
+    /*private HttpSession session;*/
     private HttpServletRequest request;
     private SourceTableImpl sourceTable;
     private SettingsProvider settingsProvider;
@@ -32,13 +31,15 @@ public class TablePageController {
     @GetMapping
     public String index(Map<String, Object> model) throws Exception {
    //     User user= Credentials.getUser();
-        Pagination pagination= (Pagination) settingsProvider.getSettingsValues(sourceTable.getPaginationName(), Pagination.class);
+        Pagination pagination= (Pagination) settingsProvider.getSettingsValue(sourceTable.getPaginationName(), Pagination.class);
 
         if (pagination==null) {
             pagination = new Pagination();
             pagination.setSortColumnName("id");
             pagination.setSortDirection(true);
         }
+        settingsProvider.setSettingsValue(sourceTable.getPaginationName(),pagination);
+
         String tableHeader= sourceTable.getTableHeader();
         model.put("headervalues",tableHeader);
 
@@ -53,8 +54,8 @@ public class TablePageController {
         model.put("filteredcolumns", filterColumns);
 
 
-        session.setAttribute("pagination",pagination);
-        settingsProvider.setSettingsValue(sourceTable.getPaginationName(),pagination);
+        //session.setAttribute("pagination",pagination);
+
         return "tablepage";
     }
 
@@ -63,10 +64,12 @@ public class TablePageController {
         this.sourceTable = xTable;
     }
 
+/*
     @Autowired
     public void setSession(HttpSession session) {
         this.session = session;
     }
+*/
 
     @Autowired
     public void setRequest(HttpServletRequest request) {
@@ -74,7 +77,6 @@ public class TablePageController {
     }
 
     @Autowired
-
     public void setSettingsProvider(SettingsProvider settingsProvider) {
         this.settingsProvider = settingsProvider;
     }

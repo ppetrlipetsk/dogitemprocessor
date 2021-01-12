@@ -13,6 +13,7 @@ ETable=function(preferences) {
     this.paginator = {};
     this.isFilterFormActive=false;
     this.filterColumns=preferences.filterColumns||[];
+    this.showLeftColumn=preferences.showLeftColumn||false;
 
     this.setPaginator = function (paginator) {
         this.paginator = paginator;
@@ -27,6 +28,11 @@ ETable=function(preferences) {
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
             let s = '<colgroup>';
             let columnEven=false;
+
+            if (this.showLeftColumn&&this.paginator!==undefined){
+                s = s + '<col class="leftcolumn" >\n';
+            }
+
             for (let i=0;i<this.headervalues.length;i++) {
                 let line = this.headervalues[i];
                 for (let y=0; y<line.length;y++) {
@@ -34,7 +40,8 @@ ETable=function(preferences) {
                     evenStyle=columnEven?" even ":" odd ";
                     let val= line[y];
                     let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
-                    s = s + '<col style="color:#ffc107;"' + c+ ' >\n';
+                    /*s = s + '<col style="color:#ffc107;"' + c+ ' >\n';*/
+                    s = s + '<col ' + c+ ' >\n';
                     columnEven=!columnEven;
                 }
             }
@@ -65,9 +72,15 @@ ETable=function(preferences) {
         let s='';
         if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
             let indx=0;
+
                for (let i=0;i<this.tabledata.length; i++) {
                     let line=this.tabledata[i];
                     s = s + '<tr data-id="' + line[0] + '" data-index="' + indx + '">';
+                    if (this.showLeftColumn&&this.paginator!==undefined){
+                            let rowNumber = (this.paginator.currentPage-1)*this.paginator.getPageSize()+indx+1;
+                            s = s + '<td class="leftcolumn">' + rowNumber + '</td>\n';
+                    }
+
                     for (let i = 0; i < line.length; i++) {
                         if (i > 0)
                             s = s + '<td data-index="' + i + '">' + line[i] + '</td>\n';
@@ -83,6 +96,10 @@ ETable=function(preferences) {
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
             let s = '<tr id=\"column_name\" >';
             let index = 0;
+            if (this.showLeftColumn&&this.paginator!==undefined){
+                s = s + '<th class="leftcolumn"></th>\n';
+            }
+
             for (let i=0;i<this.headervalues.length;i++) {
                 let line = this.headervalues[i];
                 for (let y=0; y<line.length;y++) {
@@ -108,6 +125,10 @@ ETable=function(preferences) {
         let filteredColumns=this.filterColumns||[];
 
         let s = '<tr id=\"service_row\">';
+        if (this.showLeftColumn&&this.paginator!==undefined){
+            s = s + '<th class="leftcolumn"></th>\n';
+        }
+
         let index = 0;
         for (let i=0;i<this.headervalues.length;i++) {
             let line = this.headervalues[i];
@@ -116,7 +137,7 @@ ETable=function(preferences) {
                 let columnName=val["fieldalias"];
                 let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
                 if (filteredColumns.indexOf(columnName,0)!==-1)
-                    s = s + '<th ' + columnNumber + ' >f</th>\n';
+                    s = s + '<th ' + columnNumber + ' ><div class="filter_image"></div></th>\n';
                 else
                     s = s + '<th ' + columnNumber + ' >' +this.getServiceCellBlock()+ '</th>\n';
             }
@@ -134,26 +155,57 @@ ETable=function(preferences) {
         return this;
     };
 
-    this.setInputPropertyes=function(input, td){
-        input.style.width=(td.clientWidth-input.offsetWidth-input.clientWidth-td.clientLeft*2)+"px";
-        input.style.height=(td.clientHeight-input.offsetHeight-input.clientHeight-td.clientTop*2)+"px";
-        input.style.background="none";
-        let t=this;
-        input.addEventListener('keydown', function(e) {
+    /**
+     * @return {string}
+     */
+    this.attrStyleToValue=function(attrStyle){
+        let pxPos=attrStyle.indexOf('px');
+        if (pxPos>0){
+            return attrStyle.substr(0,pxPos);
+        }
+        return 0;
+    };
+
+    this.setInputPropertyes=function(input, td) {
+        /*
+                input.style.position="relative";
+                input.style.left="0px";
+        */
+        let cs = window.getComputedStyle(td, null);
+        if (cs !== undefined) {
+            let elPaddingLeftStr=cs.getPropertyValue("padding-left");
+            let elPaddingRightStr = cs.getPropertyValue("padding-right");
+            let elPaddingTopStr=cs.getPropertyValue("padding-top");
+            let elPaddingBottomStr = cs.getPropertyValue("padding-bottom");
+
+            let pl=this.attrStyleToValue(elPaddingLeftStr);
+            let pr=this.attrStyleToValue(elPaddingRightStr);
+            let pt=this.attrStyleToValue(elPaddingTopStr);
+            let pb=this.attrStyleToValue(elPaddingBottomStr);
+
+
+            input.style.width = (td.clientWidth - input.offsetWidth - input.clientWidth - td.clientLeft * 2-pl-pr) + "px";
+            input.style.height = (td.clientHeight - input.offsetHeight - input.clientHeight - td.clientTop * 2-pt-pb) + "px";
+            input.style.background = "none";
+            input.style.border="none";
+
+            let t=this;
+            input.addEventListener('keydown', function(e) {
                 if ((e.keyCode === 13)) {
                     input.blur();
                 }
                 else
-                    if (e.keyCode ===27){
-                        t.escapeElement(input,td);
-                        input.blur();
-                    }
+                if (e.keyCode ===27){
+                    t.escapeElement(input,td);
+                    input.blur();
+                }
             });
+        }
     };
 
     this.setHeaderClickListener=function(){
         let t=this;
-        $( "#"+this.tableId+" #column_name th" ).click(function() {
+        $( "#"+this.tableId+" #column_name th:not(.leftcolumn)" ).click(function() {
             let attrcell = this.hasAttribute('data-columnnumber');
             if (attrcell!==undefined){
                 let columnNumber = $(this).attr("data-columnnumber");
@@ -188,7 +240,7 @@ ETable=function(preferences) {
     this.setServiceClickListener=function(){
         if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
         let t = this;
-        $("#" + this.tableId + " #service_row th").click(function () {
+        $("#" + this.tableId + " #service_row th:not(.leftcolumn)").click(function () {
             if (!t.getFilterFormActive()) {
                 t.setFilterFormActive(true);
                 let attrcell = this.hasAttribute('data-columnnumber');
@@ -244,7 +296,7 @@ ETable=function(preferences) {
 
     this.setCellClickListener=function(){
         let t=this;
-        $( "#"+this.tableId+" tr td" ).click(function() {
+        $( "#"+this.tableId+" tr td:not(.leftcolumn)" ).click(function() {
             let attrcell = this.hasAttribute('data-activecell');
             if (!attrcell) {
                 let td = this;
@@ -362,8 +414,8 @@ ETable=function(preferences) {
             ,function (response) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
+                t.setPaginatorValues(responseValue["pagination"]);
                 t.fillTable(responseValue["datatable"]);
-                this.setPaginatorValues(paginator);
                 paginator.showPaginationPanel();
             }
             , function (thisItem,response) {
@@ -373,11 +425,11 @@ ETable=function(preferences) {
 
     this.setPaginatorValues=function (responseValue) {
         if (responseValue!==undefined) {
-            paginator.currentPage = responseValue["pagination"].currentPage||1;
-            paginator.firstPage = responseValue["pagination"].firstPage||1;
-            paginator.buttonsCount = responseValue["pagination"].buttonsCount||1;
-            paginator.pagesCount = responseValue["pagination"].pageCount||0;
-            paginator.pageSize = responseValue["pagination"].pageSize||0;
+            this.paginator.currentPage = responseValue.currentPage||1;
+            this.paginator.firstPage = responseValue.firstPage||1;
+            this.paginator.buttonsCount = responseValue.buttonsCount||1;
+            this.paginator.pagesCount = responseValue.pageCount||0;
+            this.paginator.pageSize = responseValue.pageSize||0;
         }
     };
 
@@ -413,6 +465,8 @@ ETable=function(preferences) {
             ,{pagenumber:page, action:"setpage"}
             ,function (response) {
             let responseValue=t.getFieldsFromResponse(response);
+                /*this.setPagesFromQuery(pag);*/
+                if (t.paginator!==undefined) t.paginator.setPagesFromQuery(responseValue["pagination"]);
                 t.fillTable(responseValue["datatable"]);
                 resultResponse=responseValue["pagination"];
             }
@@ -510,9 +564,9 @@ ETable=function(preferences) {
 
     this.getSortImage=function() {
         if (this.sortDirection)
-            return  "<img src='/static/images/sort-up.gif' style='width: 16px;'>";
+            return  "<img src='/static/images/sort-up-gray.gif' style='width: 16px;'>";
         else
-            return  "<img src='/static/images/sort-dwn.gif' style='width: 16px;'>";
+            return  "<img src='/static/images/sort-dwn-gray.gif' style='width: 16px;'>";
     };
 
 

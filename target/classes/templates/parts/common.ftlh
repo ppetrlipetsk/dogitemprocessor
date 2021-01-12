@@ -7,7 +7,7 @@
     <title>Sweater</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/main_light.css">
     <script src="/static/js/jquery-3.5.1.min.js"></script>
     <script src="/static/js/bootstrap/popper.min.js" ></script>
     <script src="/static/js/bootstrap/bootstrap.min.js"></script>
@@ -26,7 +26,7 @@
 
 
 </head>
-<body style="background-image: url('/static/images/architecture.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center center;">
+<body>
 
     <div class="container-fluid" >
 

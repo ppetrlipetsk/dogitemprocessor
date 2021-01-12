@@ -1,0 +1,70 @@
+.w1, .w3, .w4{
+    width:100px;
+}
+.w2{
+    width: 130px;
+}
+.w5{
+    width:200px;
+}
+.w6{
+    width:200px;
+}
+.w10{
+    width: 300px;
+}
+
+.stringcell{
+    width:200px;
+}
+.datecell{
+    width:100px;
+}
+.numericcell{
+    width:70px;
+}
+#datatable th{
+    word-break: break-word;
+    text-align: center;
+}
+
+#datatable{
+    table-layout:fixed;
+    width:7000px;
+    /*background-color: #FFFFFF;*/
+    /*opacity: 0.7;*/
+}
+
+#datatable td{
+    word-break: break-all;
+}
+
+#datatable thead{
+    background-color: #464bac;
+}
+
+#tableblock td{
+    border-bottom:1px solid #101010;
+}
+
+#tableblock, #tableid td, th{
+    border-collapse: collapse;
+}
+
+.t1{width:200px;}
+.t2{width:150px;}
+.t3{width:100px;}
+
+#tableblock th{
+    border-bottom:1px solid #000;
+    /*background-color: rgba(200, 200, 200, 0.7);*/
+    color:#000000;
+}
+
+#column_name, #service_row{
+    background: linear-gradient(#9595b6, #5a567f);
+}
+
+#service_row{
+
+}

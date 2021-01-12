@@ -38,6 +38,14 @@ Pagination=function(preferences){
       /*  return this;
     }
 */
+      this.getCurrentPage=function () {
+          return this.currentPage;
+      };
+
+      this.getPageSize=function () {
+        return this.pageSize;
+      };
+
     this.showPaginationPanel=function(){
         let s=this.firstPage===1?this.leftButtonDisabled:this.leftButton;
         let len=(this.firstPage+this.buttonsCount-1)>this.pagesCount? (this.pagesCount-this.firstPage+1) :this.buttonsCount;
@@ -59,7 +67,7 @@ Pagination=function(preferences){
         for (let i=0;i<10;i++){
             let c=((i+1)*this.sizeStep);
             let selected="";
-            if (c==this.pageSize) selected=" selected ";
+            if (c===this.pageSize) selected=" selected ";
             s=s+"<option"+selected+" value=\""+c+"\">"+c+"</option>";
         }
         s=s+"</select>";
@@ -76,7 +84,7 @@ Pagination=function(preferences){
 
     this.setClickListener=function(){
         let t=this;
-        $( this.itemClass ).click(function() {
+        $(this.itemClass+":not(.pagbuttonactive)").click(function() {
             let el=this.querySelector(t.itemLinkClass);
             if ((el!==undefined)&&(el!=null)){
                 let page=el.innerText;

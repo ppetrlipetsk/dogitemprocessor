@@ -1,6 +1,5 @@
 package com.ppsdevelopment.service;
 
-import com.ppsdevelopment.config.ConfigProperties;
 import com.ppsdevelopment.config.QueriesProperties;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;

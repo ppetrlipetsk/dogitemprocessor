@@ -7,6 +7,7 @@ import com.ppsdevelopment.converters.DateFormatter;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
 import com.ppsdevelopment.envinronment.Pagination;
+import com.ppsdevelopment.envinronment.SettingsProvider;
 import com.ppsdevelopment.repos.AliasesRepo;
 import com.ppsdevelopment.repos.TablesRepo;
 import com.ppsdevelopment.tmctypeslib.FieldType;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
-import java.util.logging.Filter;
 
 @Service("SourceTableImpl")
 @Repository
@@ -35,24 +35,19 @@ public class SourceTableImpl {
     private TablesRepo tablesRepo;
     private AliasesRepo aliasesRepo;
     private PropertiesService propertiesService;
-    //private Pagination pagination;
     private ConfigProperties configProperties;
     private HeaderAdapter headerAdapter;
     private PaginationHelper paginationHelper;
     private FilterHelper filterHelper;
 
-    //private static final String PAGENAME="mainpage";
-    private static final String FILTERNAME="filter";
-    private static final String PAGINATIONNAME="pagination";
-
-    private static final String WHERE_WORD="%where%";
-
-
     @PersistenceContext
     private EntityManager em;
 
+    private static final String FILTERNAME="filter";
+    private static final String PAGINATIONNAME="pagination";
+    private static final String WHERE_WORD="%where%";
+
     private  String tableName;
-    private  Long tableId;
     private static List<Aliases> aliases;
     private static String aliasesStringList;
     private String tableHeader;
@@ -61,7 +56,7 @@ public class SourceTableImpl {
     private void init(){
         tableName=configProperties.getTableName();
         List<Tables> table=tablesRepo.findByTablename(tableName);
-        this.tableId=table.get(0).getId();
+        Long tableId=table.get(0).getId();
         aliases=aliasesRepo.getAllByTable(tableId);
         aliasesStringList="id,".concat(headerAdapter.getColumnsList(aliases));
         tableHeader= headerAdapter.getHeaderDataList(aliases);
@@ -153,7 +148,8 @@ public class SourceTableImpl {
 
 
     public List getAll() throws Exception {
-        Pagination pagination=paginationHelper.getPagination(getPaginationName());
+        //Pagination pagination=paginationHelper.getPagination(getPaginationName());
+        Pagination pagination= (Pagination) paginationHelper.getPagination(this.getPaginationName());// .getSettingsValue(this.getPaginationName(), Pagination.class);
         String queryString=propertiesService.properties().getProperty("tableselectpageble");
         if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
         queryString=prepareQuery(queryString);
@@ -275,6 +271,12 @@ public class SourceTableImpl {
         this.filterHelper = filterHelper;
     }
 
+/*
+    @Autowired
+    public void setSettingsProvider(SettingsProvider settingsProvider) {
+        this.settingsProvider = settingsProvider;
+    }
+*/
 
     public String getResultAsStringLine(List all) {
         return DataAdapter.getResultAsArrayLine(all);
@@ -325,5 +327,6 @@ public class SourceTableImpl {
     public String getPaginationName(){
         return configProperties.getTableName()+"."+PAGINATIONNAME;
     }
+
 
 }

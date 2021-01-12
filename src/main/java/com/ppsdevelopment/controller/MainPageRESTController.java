@@ -27,9 +27,7 @@ public class MainPageRESTController {
 
     private SourceTableImpl sourceTable;
     private PaginationHelper paginationHelper;
-    private UsersSettingsRepository usersSettingsRepository;
     private FilterHelper filterHelper;
-    private ConfigProperties configProperties;
     private static final Map<String, Method> actions = new HashMap<>();
 
     static
@@ -138,17 +136,8 @@ public class MainPageRESTController {
 
 
     @Autowired
-    public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
-        this.usersSettingsRepository = usersSettingsRepository;
-    }
-
-    @Autowired
     public void setFilterHelper(FilterHelper filterHelper) {
         this.filterHelper = filterHelper;
     }
 
-    @Autowired
-    public void setConfigProperties(ConfigProperties configProperties) {
-        this.configProperties = configProperties;
-    }
 }

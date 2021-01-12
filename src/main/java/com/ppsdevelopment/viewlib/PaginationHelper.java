@@ -3,6 +3,7 @@ package com.ppsdevelopment.viewlib;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.envinronment.Credentials;
 import com.ppsdevelopment.envinronment.Pagination;
+import com.ppsdevelopment.envinronment.SettingsProvider;
 import com.ppsdevelopment.envinronment.UsersSettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,8 +13,12 @@ import java.util.List;
 @Component
 public class PaginationHelper {
 
+/*
     private HttpSession session;
     private UsersSettingsRepository usersSettingsRepository;
+*/
+
+    private SettingsProvider settingsProvider;
 
     public com.ppsdevelopment.envinronment.Pagination pageSize(Integer pageSizeNew, String paginationName){
         Pagination pagination=getPagination(paginationName);
@@ -47,11 +52,11 @@ public class PaginationHelper {
         pagination.setSortColumnNumber(columnnumber);
         String columnName=aliases.get(pagination.getSortColumnNumber()-1).getFieldalias();// pagination.getSortColumnName();
 
+        pagination.setSortColumnName(aliases.get(columnnumber-1).getFieldalias());
         if (columnName.equals(aliases.get(columnnumber-1).getFieldalias())){
             pagination.setSortDirection(!pagination.isSortDirection());
         }
         else{
-            pagination.setSortColumnName(aliases.get(columnnumber-1).getFieldalias());
             pagination.setSortDirection(true);
         }
         pagination.setCurrentPage(1);
@@ -62,7 +67,7 @@ public class PaginationHelper {
     }
 
     public Pagination getPagination(String paginationName){ //"pagination"
-        Object value=session.getAttribute(paginationName);
+        Object value=settingsProvider.getSettingsValue(paginationName,Object.class);
         if (value!=null){
             return  (Pagination) value;
         }
@@ -71,10 +76,14 @@ public class PaginationHelper {
     }
 
     private void setPagination(String paginationName, Pagination pagination){ //"pagination"
+        settingsProvider.setSettingsValue(paginationName,pagination);
+/*
         session.setAttribute(paginationName,pagination);
         this.usersSettingsRepository.set(Credentials.getUser(),paginationName,pagination);//"maintable.pagination"
+*/
     }
 
+/*
     @Autowired
     public void setSession(HttpSession session) {
         this.session = session;
@@ -83,5 +92,11 @@ public class PaginationHelper {
     @Autowired
     public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
         this.usersSettingsRepository = usersSettingsRepository;
+    }
+*/
+
+    @Autowired
+    public void setSettingsProvider(SettingsProvider settingsProvider) {
+        this.settingsProvider = settingsProvider;
     }
 }

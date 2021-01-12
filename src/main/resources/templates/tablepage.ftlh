@@ -1,6 +1,6 @@
 <#import "parts/common.ftlh" as c>
 <#assign
-varcss=['../static/css/etable.css','../static/css/maintable.css']
+varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css']
 varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_service.js']
 >
 
@@ -85,12 +85,13 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
 
         let pagtag='#pagination_block';
         let buttonTag='<li class=\"page-item pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
-        let buttonTagActive='<li class=\"page-item active pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
+        let buttonTagActive='<li class=\"page-item pagbuttonactive pagination-item\"><div class=\"page-link\">%button%</div></li>\n';
         let leftButton='<li class="page-item left-item">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
         let leftButtonDisabled='<li class="page-item left-item disabled">\n <div class="page-link" aria-label="Назад" id="pageback">\n <span aria-hidden="true">&laquo;</span>\n </div>\n</li>\n';
         let rightButton='<li class="page-item right-item"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
         let rightButtonDisabled='<li class="page-item right-item disabled"> <div class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></div>\n</li>\n</ul>\n';
         let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
+        let showLeftColumn=true;
 
 
         let tableItem=new ETable({
@@ -105,13 +106,10 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
             checktypes:checktypes,
             sortColumnNumber:sortColumnNumber,
             sortDirection:sortDirection,
-            filterColumns:filteredcolumns
+            filterColumns:filteredcolumns,
+            showLeftColumn:true
         });
 
-        tableItem.drawTable()
-        .setHeaderClickListener()
-        .setCellClickListener()
-        .setServiceClickListener();
 
         let paginator= new Pagination({
             firstPage:pagFirstPage,
@@ -138,7 +136,12 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
             }
         );
         tableItem.setPaginator(paginator);
+        tableItem.drawTable()
+            .setHeaderClickListener()
+            .setCellClickListener()
+            .setServiceClickListener();
         paginator.showPaginationPanel();/*.setClickListener();*/
+
     </script>
 
 </@c.page>
