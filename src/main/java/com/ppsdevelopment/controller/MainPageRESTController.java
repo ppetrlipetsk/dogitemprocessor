@@ -90,6 +90,7 @@ public class MainPageRESTController {
         pagination.setFirstPage(1);
         String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll());
         FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
+        paginationHelper.setPagination(sourceTable.getPaginationName(),pagination);
         return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem); //TODO сделать этот метод, чтобы tableData,pagination,filterItem брались в классе sourceTable
     }
 
@@ -118,7 +119,7 @@ public class MainPageRESTController {
         return paginationHelper.setPageBlock(pageNumber,firstPage,sourceTable.getPaginationName());
     }
 
-    @Action(name="sortmaintable")
+    @Action(name="sorttable")
     public   Pagination sortMainPage(String s){
         Integer columnnumber= Objects.requireNonNull(MapJson.get("columnnumber", s)).asInt();
         return paginationHelper.sortPage(columnnumber,sourceTable.getAliases(),sourceTable.getPaginationName());

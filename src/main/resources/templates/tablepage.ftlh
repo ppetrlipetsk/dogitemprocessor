@@ -1,7 +1,7 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css']
-varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_service.js']
+varjs=['/static/js/etable.js']
 >
 
 <@c.page varcss varjs>
@@ -107,9 +107,30 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
             sortColumnNumber:sortColumnNumber,
             sortDirection:sortDirection,
             filterColumns:filteredcolumns,
-            showLeftColumn:true
+            showLeftColumn:true,
+            firstPage:pagFirstPage,
+            buttonsCount:pagButtonsCount,
+            currentPage:pagCurrentPage,
+            pagesCount:pagPagesCount,
+            firstButtonNumber:1,
+            pageSize:pageSize,
+            pagTag:pagtag,
+            buttonTag:buttonTag,
+            leftButton:leftButton,
+            rightButton:rightButton,
+            buttonTagActive:buttonTagActive,
+            leftButtonDisabled:leftButtonDisabled,
+            rightButtonDisabled:rightButtonDisabled,
+            buttonItemTmpl:'%button%',
+            pagPanelTag:pagPanelTag,
+            itemsTmpl:'%items%',
+            itemClass:'.pagination-item',
+            leftClass:'.left-item',
+            rightClass:'.right-item',
+            itemLinkClass:'.page-link'
         });
 
+/*
 
         let paginator= new Pagination({
             firstPage:pagFirstPage,
@@ -135,12 +156,17 @@ varjs=['/static/js/etable.js','/static/js/pagination.js','/static/js/etable_serv
             tableClass:tableItem
             }
         );
+
         tableItem.setPaginator(paginator);
-        tableItem.drawTable()
+*/
+        tableItem.showTable();
+/*
+            .drawTable()
             .setHeaderClickListener()
             .setCellClickListener()
-            .setServiceClickListener();
-        paginator.showPaginationPanel();/*.setClickListener();*/
+            .setServiceClickListener().showPaginationPanel().setPaginationClickListener();
+*/
+  /*      paginator.showPaginationPanel();/!*.setClickListener();*!/*/
 
     </script>
 

@@ -71,8 +71,13 @@ public class SourceTableImpl {
     private String getOrderQuery(){
         Pagination pagination=paginationHelper.getPagination(getPaginationName());
         String order=pagination.getSortColumnName();
-        if (order==null) order="id";
+        boolean isId=false;
+        if (order==null) {
+            order = "id";
+            isId=true;
+        }
         order+=((pagination.isSortDirection())?" ASC":" DESC");
+        if (!isId) order+=", id ASC";
         return order;
     }
 

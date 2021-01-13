@@ -1,6 +1,5 @@
 /*let ETable=1;*/
 
-
 ETable=function(preferences) {
     this.tabledata = preferences.tabledata;
     this.tableBlockId = preferences.tableblockid;
@@ -10,29 +9,88 @@ ETable=function(preferences) {
     this.sortColumnNumber = preferences.sortColumnNumber;
     this.sortDirection = preferences.sortDirection;
     this.spinnerId = preferences.spinnerId;
-    this.paginator = {};
+    /*this.paginator = {};*/
     this.isFilterFormActive=false;
     this.filterColumns=preferences.filterColumns||[];
     this.showLeftColumn=preferences.showLeftColumn||false;
 
-    this.setPaginator = function (paginator) {
-        this.paginator = paginator;
-    };
+    this.firstPage=preferences.firstPage;
+    this.pagesCount=preferences.pagesCount;
+    this.buttonsCount=preferences.buttonsCount;
+    this.currentPage=preferences.currentPage;
+    this.pagTag=preferences.pagTag;
+    this.buttonTag=preferences.buttonTag;
+    this.leftButton=preferences.leftButton;
+    this.rightButton=preferences.rightButton;
+    this.buttonTagActive=preferences.buttonTagActive;
+    this.leftButtonDisabled=preferences.leftButtonDisabled;
+    this.rightButtonDisabled=preferences.rightButtonDisabled;
+    this.pageSize=preferences.pageSize;
+
+    this.buttonItemTmpl=preferences.buttonItemTmpl;
+    this.pagPanelTag=preferences.pagPanelTag;
+    this.itemsTmpl=preferences.itemsTmpl;
+    this.itemClass=preferences.itemClass;
+    this.leftClass=preferences.leftClass;
+    this.rightClass=preferences.rightClass;
+    this.itemLinkClass=preferences.itemLinkClass
+    /*this.spinnerId=preferences.spinnerId;*/
+    this.tableClass=preferences.tableClass;
+
+    let c1=this.buttonTag.indexOf(this.buttonItemTmpl);
+    this.buttonTagLeft=this.buttonTag.slice(0,c1);
+    this.buttonTagRight=this.buttonTag.slice(c1+this.buttonItemTmpl.length);
+
+    c1=this.buttonTagActive.indexOf(this.buttonItemTmpl);
+    this.buttonTagLeftActive=this.buttonTagActive.slice(0,c1);
+    this.buttonTagRightActive=this.buttonTagActive.slice(c1+this.buttonItemTmpl.length);
+
+    c1=this.pagPanelTag.indexOf(this.itemsTmpl);
+    this.pagPanelTagLeft=this.pagPanelTag.slice(0,c1);
+    this.pagPanelTagRight=this.pagPanelTag.slice(c1+this.itemsTmpl.length);
+    this.sizeStep=5;
+
+    /* Table output.  Begin... */
 
     this.getTableImage=function(){
-        /*return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+this.getColumnsBlock()+this.getTableHeaderBlock()+this.getTableBody()+'</table>';*/
-        return this.getSpinnerCode()+'\n'+'<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+        return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+    };
+
+    this.drawTable=function(){
+        $('#'+this.tableBlockId).html(this.getTableImage());
+        return this;
+    };
+
+    this.getTableBody=function(){
+        let s='';
+        if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
+            let index=0;
+            for (let i=0;i<this.tabledata.length; i++) {
+                let line=this.tabledata[i];
+                s = s + '<tr data-id="' + line[0] + '" data-index="' + index + '">';
+                if (this.showLeftColumn){
+                    let rowNumber = (this.currentPage-1)*this.getPageSize()+index+1;
+                    s = s + '<td class="leftcolumn">' + rowNumber + '</td>\n';
+                }
+
+                for (let i = 0; i < line.length; i++) {
+                    if (i > 0)
+                        s = s + '<td data-index="' + i + '">' + line[i] + '</td>\n';
+                }
+                s = s + '</tr>\n';
+                index++;
+            }
+        }
+        return s;
     };
 
     this.getColumnsBlock=function () {
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
             let s = '<colgroup>';
             let columnEven=false;
-
-            if (this.showLeftColumn&&this.paginator!==undefined){
+            if (this.showLeftColumn){
                 s = s + '<col class="leftcolumn" >\n';
             }
-
             for (let i=0;i<this.headervalues.length;i++) {
                 let line = this.headervalues[i];
                 for (let y=0; y<line.length;y++) {
@@ -40,7 +98,6 @@ ETable=function(preferences) {
                     evenStyle=columnEven?" even ":" odd ";
                     let val= line[y];
                     let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
-                    /*s = s + '<col style="color:#ffc107;"' + c+ ' >\n';*/
                     s = s + '<col ' + c+ ' >\n';
                     columnEven=!columnEven;
                 }
@@ -50,56 +107,13 @@ ETable=function(preferences) {
             return "";
     };
 
-    this.getCSSByType=function(val, evenStyle) {
-        let fstyle="";
-        switch(val['fieldtype']){
-           case "INTTYPE":
-           case "BIGINTTYPE":
-           case "DECIMALTYPE":
-           case "FLOATTYPE": fstyle="numericcell";
-                break;
-           case "DATETYPE": fstyle="datecell"; break;
-           case "STRINGTYPE": fstyle="stringcell"; break;
-           default:
-           {}
-        }
-        if (fstyle.length>0) return "class=\""+fstyle+evenStyle+"\"";
-        else
-        return "";
-    };
-
-    this.getTableBody=function(){
-        let s='';
-        if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
-            let indx=0;
-
-               for (let i=0;i<this.tabledata.length; i++) {
-                    let line=this.tabledata[i];
-                    s = s + '<tr data-id="' + line[0] + '" data-index="' + indx + '">';
-                    if (this.showLeftColumn&&this.paginator!==undefined){
-                            let rowNumber = (this.paginator.currentPage-1)*this.paginator.getPageSize()+indx+1;
-                            s = s + '<td class="leftcolumn">' + rowNumber + '</td>\n';
-                    }
-
-                    for (let i = 0; i < line.length; i++) {
-                        if (i > 0)
-                            s = s + '<td data-index="' + i + '">' + line[i] + '</td>\n';
-                    }
-                    s = s + '</tr>\n';
-                    indx++;
-                }
-        }
-        return s;
-    };
-
     this.getTableHeaderBlock=function() {
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
             let s = '<tr id=\"column_name\" >';
             let index = 0;
-            if (this.showLeftColumn&&this.paginator!==undefined){
+            if (this.showLeftColumn){
                 s = s + '<th class="leftcolumn"></th>\n';
             }
-
             for (let i=0;i<this.headervalues.length;i++) {
                 let line = this.headervalues[i];
                 for (let y=0; y<line.length;y++) {
@@ -125,7 +139,7 @@ ETable=function(preferences) {
         let filteredColumns=this.filterColumns||[];
 
         let s = '<tr id=\"service_row\">';
-        if (this.showLeftColumn&&this.paginator!==undefined){
+        if (this.showLeftColumn){
             s = s + '<th class="leftcolumn"></th>\n';
         }
 
@@ -150,14 +164,39 @@ ETable=function(preferences) {
         return "_";
     };
 
-    this.drawTable=function(){
-        $('#'+this.tableBlockId).html(this.getTableImage());
-        return this;
+    this.fillTable=function(values){
+        this.setTableData(values);
+        this.clearTableBlock();
+        this.showTable();
     };
 
-    /**
-     * @return {string}
-     */
+    this.showTable=function () {
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+        this.showPaginationPanel();/*.setPaginationClickListener();*/
+    };
+
+    this.clearTableBlock=function(){
+        $('#'+this.tableBlockId).html("");
+    };
+
+    this.getCSSByType=function(val, evenStyle) {
+        let fstyle="";
+        switch(val['fieldtype']){
+           case "INTTYPE":
+           case "BIGINTTYPE":
+           case "DECIMALTYPE":
+           case "FLOATTYPE": fstyle="numericcell";
+                break;
+           case "DATETYPE": fstyle="datecell"; break;
+           case "STRINGTYPE": fstyle="stringcell"; break;
+           default:
+           {}
+        }
+        if (fstyle.length>0) return "class=\""+fstyle+evenStyle+"\"";
+        else
+        return "";
+    };
+
     this.attrStyleToValue=function(attrStyle){
         let pxPos=attrStyle.indexOf('px');
         if (pxPos>0){
@@ -167,10 +206,6 @@ ETable=function(preferences) {
     };
 
     this.setInputPropertyes=function(input, td) {
-        /*
-                input.style.position="relative";
-                input.style.left="0px";
-        */
         let cs = window.getComputedStyle(td, null);
         if (cs !== undefined) {
             let elPaddingLeftStr=cs.getPropertyValue("padding-left");
@@ -203,97 +238,6 @@ ETable=function(preferences) {
         }
     };
 
-    this.setHeaderClickListener=function(){
-        let t=this;
-        $( "#"+this.tableId+" #column_name th:not(.leftcolumn)" ).click(function() {
-            let attrcell = this.hasAttribute('data-columnnumber');
-            if (attrcell!==undefined){
-                let columnNumber = $(this).attr("data-columnnumber");
-                if (t.sortColumnNumber===columnNumber) t.sortDirection=!t.sortDirection;
-                else{
-                    t.sortDirection=true;
-                    t.sortColumnNumber=columnNumber;
-                }
-                t.sortQuery(t.paginator);
-            }
-        });
-        return this;
-    };
-
-    this.getFilterValues=function(){
-        return "";
-    };
-
-    this.filterQuery=function(filter, columnNumber){
-        let data=[];
-        this.ajaxQuery("/tablerest/filterdata"
-            ,{columnNumber:columnNumber}
-            ,function (response) {
-                data=JSON.parse(response);
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            });
-        return data;
-    };
-
-    this.setServiceClickListener=function(){
-        if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
-        let t = this;
-        $("#" + this.tableId + " #service_row th:not(.leftcolumn)").click(function () {
-            if (!t.getFilterFormActive()) {
-                t.setFilterFormActive(true);
-                let attrcell = this.hasAttribute('data-columnnumber');
-                if (attrcell !== undefined) {
-                    let columnNumber = $(this).attr("data-columnnumber");
-                    let filter = t.getFilterValues(columnNumber);
-                    let data=t.filterQuery(filter, columnNumber);
-                    t.filterColumnNumber=columnNumber;
-                    let tableBlock = $('#' + t.tableBlockId);
-                    let tableService = new ET_Service();
-                    tableService.setFilterCallBack(t.filterCallBack,t);
-                    tableService.showForm(data, tableBlock);
-                }
-            }
-            console.log(t);
-        });
-        return this;
-    };
-
-    this.setFilterFormActive=function(value){
-        this.isFilterFormActive=value;
-    };
-
-    this.getFilterFormActive=function(){
-        return this.isFilterFormActive;
-    };
-
-    this.filterCallBack=function (data,context, action) {
-        if (context!==undefined)
-            context.setFilterFormActive(false);
-        let el=$('#filterform');
-        if ((el!==undefined)&&el.length>0)
-        /*el.parentElement.removeChild(el);*/
-            el[0].parentElement.removeChild(el[0]);
-        if ((action!==undefined)&&(action==="ok"))context.applyFilter(context.filterColumnNumber,data);
-        context.filterColumnNumber=undefined;
-    };
-
-    this.applyFilter=function(columnNumber, data){
-        let t=this;
-        this.ajaxQuery("/tablerest/applyfilter"
-            ,{columnNumber:columnNumber, data:data}
-            ,function (response) {
-            t.fillTableByResponse(response,t);
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            });
-        /*return this.getFilterData();*/
-        return data;
-    };
-
-
     this.setCellClickListener=function(){
         let t=this;
         $( "#"+this.tableId+" tr td:not(.leftcolumn)" ).click(function() {
@@ -314,20 +258,6 @@ ETable=function(preferences) {
             }
         });
         return this;
-    };
-
-    this.getCheckType=function(x){
-        if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
-            let ct=this.headervalues[x-1][0]['fieldtype'];
-            if (ct!=="undefined")
-                return ct;
-        }
-        return "undefined";
-    };
-
-    this.escapeElement=function(input, td, eTableInstance, x, y){
-            td.removeAttribute('data-activecell');
-            /*td.innerHTML = eTableInstance.tabledata[y][x];*/
     };
 
     this.setBlurListener=function(input, td, eTableInstance, x, y,id){
@@ -357,6 +287,20 @@ ETable=function(preferences) {
         });
     };
 
+    this.getCheckType=function(x){
+        if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
+            let ct=this.headervalues[x-1][0]['fieldtype'];
+            if (ct!=="undefined")
+                return ct;
+        }
+        return "undefined";
+    };
+
+    this.escapeElement=function(input, td, eTableInstance, x, y){
+        td.removeAttribute('data-activecell');
+        /*td.innerHTML = eTableInstance.tabledata[y][x];*/
+    };
+
     this.checkValue=function(value,checkType) {
         switch (checkType) {
             case 'BIGINTTYPE':
@@ -382,81 +326,289 @@ ETable=function(preferences) {
 
     };
 
-    this.sortQuery=function(paginator) {
+    this.getSortImage=function() {
+        if (this.sortDirection)
+            return  "<img src='/static/images/sort-up-gray.gif' style='width: 16px;'>";
+        else
+            return  "<img src='/static/images/sort-dwn-gray.gif' style='width: 16px;'>";
+    };
+
+    /* Table output. End... */
+
+    /* Filter block. Begin... */
+    this.filterQuery=function(columnNumber){
+        let data=[];
+        this.ajaxQuery("/tablerest/filterdata"
+            ,{columnNumber:columnNumber}
+            ,function (response) {
+                data=JSON.parse(response);
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        return data;
+    };
+
+    this.setServiceClickListener=function(){
+        if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
+        let t = this;
+        $("#" + this.tableId + " #service_row th:not(.leftcolumn)").click(function () {
+            if (!t.getFilterFormActive()) {
+                t.setFilterFormActive(true);
+                let attrcell = this.hasAttribute('data-columnnumber');
+                if (attrcell !== undefined) {
+                    let columnNumber = $(this).attr('data-columnnumber');
+                    let data=t.filterQuery(columnNumber);
+                    t.filterColumnNumber=columnNumber;
+                    let tableBlock = $('#' + t.tableBlockId);
+                    t.showFilterForm(data, tableBlock);
+                }
+            }
+        });
+        return this;
+    };
+
+    this.applyFilter=function(columnNumber){
+        let t=this;
+        let data=t.getSelectedFilterItems();
+        this.ajaxQuery("/tablerest/applyfilter"
+            ,{columnNumber:columnNumber, data:data}
+            ,function (response) {
+                let responseValue=t.getFieldsFromResponse(response);
+                t.setFilteredColumns(responseValue["filteredcolumns"]);
+                /*t.fillTableByResponse(response);*/
+                t.generateTableFromQueryData(responseValue)
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+        return data!==undefined;
+    };
+
+    this.getFormCode=function(data){
+        let formElement=document.createElement('div');
+        formElement.setAttribute("id","filterform");
+        formElement.className="filter_form_class p-2 rounded";
+
+        let s="<form name='filter_form' action='/'><div class='filter_datablock'>";
+        if ((data!==undefined)&&(Array.isArray(data))){
+            for (let i=0;i<data.length;i++){
+                let checked=data[i]["checked"]?"CHECKED":"";
+                s+='<div class="ps-2"><label><input type="checkbox" name="filter" value="'+data[i]["value"]+'" class="me-2" '+checked+' >'+data[i]["value"]+"</label></div> ";
+            }
+        }
+        s+='</div></form>';
+        s+=this.getFilterButtonsBlock();
+        formElement.innerHTML=s;
+        return formElement;
+    };
+
+    this.showFilterForm=function (data, parentTag) {
+        let form = this.getFormCode(data);
+        parentTag.append(form);
+        this.setButtonsListeners();
+        document.addEventListener('keydown', this);
+    };
+
+    this.filterFormClose = function () {
+        let t=this;
+        if (this.getFilterFormActive()) {
+            document.removeEventListener('keydown',this);
+            t.setFilterFormActive(false);
+            t.filterColumnNumber=undefined;
+            $('#filterform').fadeOut(200, function () {
+                let el=$('#filterform');
+                if ((el!==undefined)&&el.length>0)
+                    el[0].parentElement.removeChild(el[0]);
+            });
+        }
+    };
+
+    this.getFilterButtonsBlock=function(){
+        return '<div class="container-fluid mt-3">\n' +
+            '<div class="row">\n' +
+            '<div class="col btn  btn-outline-dark " id="filterform_ok_button"> Ok</div>\n' +
+            '<div class="col-3"></div>\n' +
+            '<div class="col btn btn-outline-dark  push" id="filterform_cancel_button">Отмена</div>\n' +
+            '</div>\n' +
+            '</div>';
+    };
+
+    this.setButtonsListeners=function(){
+        let t=this;
+        let action=undefined;
+        $("#filterform .btn").click(
+            function(){
+                let appResult=true;
+                let elId=this.getAttribute("id");
+                if (elId==="filterform_ok_button"){
+                    action="ok";
+                    if ((action === "ok")) appResult=t.applyFilter(t.filterColumnNumber);
+                }
+                else
+                if(elId==="filterform_cancel_button"){
+                    action="cancel";
+                }
+                !appResult||t.filterFormClose();
+            }
+        );
+    };
+
+    this.getSelectedFilterItems=function () {
+        let data=[];
+        let datafields=$('input[name="filter"]:checked');
+
+        for(let i=0;i<datafields.length;i++){
+            data[i]=datafields[i].value;
+        }
+        return data;
+    };
+
+    this.setFilterFormActive=function(value){
+        this.isFilterFormActive=value;
+    };
+
+    /* Events listener block begin*/
+    this.handleEvent=function(event){
+        switch(event.type) {
+            case 'keydown':
+                if (event.key==='Escape'){
+                    if (this.isFilterFormActive){
+                        this.filterFormClose();
+                    }
+                }
+                else
+                if (event.key==='Enter'){
+                    let appResult=this.applyFilter(this.filterColumnNumber);
+                    !appResult||this.filterFormClose();
+                }
+                break;
+        }
+    };
+    /* Events listener block end*/
+    /* Filter block. End... */
+
+    /* Sort block. Begin */
+
+    this.setHeaderClickListener=function(){
+        let t=this;
+        $( "#"+this.tableId+" #column_name th:not(.leftcolumn)" ).click(function() {
+            let attrcell = this.hasAttribute('data-columnnumber');
+            if (attrcell!==undefined){
+                let columnNumber = $(this).attr("data-columnnumber");
+                if (t.sortColumnNumber===columnNumber) t.sortDirection=!t.sortDirection;
+                else{
+                    t.sortDirection=true;
+                    t.sortColumnNumber=columnNumber;
+                }
+                t.sortQuery();
+            }
+        });
+        return this;
+    };
+
+    this.sortQuery=function() {
         let t=this;
         this.ajaxQuery("/tablerest/pagination"
-            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sortmaintable"}
+            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sorttable"}
             ,function (response) {
                 $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
                 t.sortColumnNumber=responseValue["pagination"].sortColumnNumber;
-                /*t.sortColumnName=responseValue["pagination"].sortColumnName;*/
                 t.sortDirection=responseValue["pagination"].sortDirection;
-                t.fillTable(responseValue["datatable"]);
-
-                if (paginator!==undefined){
-                    if (paginator.currentPage!==responseValue["pagination"].currentPage){
-                        paginator.currentPage=responseValue["pagination"].currentPage;
-                        paginator.firstPage=responseValue["pagination"].firstPage;
-                        paginator.showPaginationPanel();
-                    }
+                if ((t.currentPage!==responseValue["pagination"].currentPage)||(t.firstPage!==responseValue["pagination"].firstPage)){
+                    t.currentPage=responseValue["pagination"].currentPage;
+                    t.firstPage=responseValue["pagination"].firstPage;
                 }
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            });
-    };
-
-    this.queryForPageSizeChange=function(value, paginator){
-        let t=this;
-        this.ajaxQuery("/tablerest/pagination"
-            ,{pagesize:value, action:"pagesize"}
-            ,function (response) {
-                $('#spinner').fadeOut();
-                let responseValue=t.getFieldsFromResponse(response);
-                t.setPaginatorValues(responseValue["pagination"]);
                 t.fillTable(responseValue["datatable"]);
-                paginator.showPaginationPanel();
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
     };
 
-    this.setPaginatorValues=function (responseValue) {
-        if (responseValue!==undefined) {
-            this.paginator.currentPage = responseValue.currentPage||1;
-            this.paginator.firstPage = responseValue.firstPage||1;
-            this.paginator.buttonsCount = responseValue.buttonsCount||1;
-            this.paginator.pagesCount = responseValue.pageCount||0;
-            this.paginator.pageSize = responseValue.pageSize||0;
-        }
-    };
+    /* Sort block. End... */
 
-    this.getFieldsFromResponse=function(response){
-        let values = JSON.parse(response);
-        let datatable=values["datatable"]||[];
-        let pagination=values["pagination"]||this.getPaginationInstance();
-        let filteredColumns=values["filtercolumns"]||[];
-        if (datatable===undefined) datatable=[];
-        if (pagination===undefined) pagination={};
-        return {datatable:datatable, pagination:pagination, filteredcolumns:filteredColumns};
-    };
+    /*Pagination block begin...*/
 
     this.getPaginationInstance=function(){
-            return new {
-                pageSize:10,
-                firstPage:1,
-                pageCount:0,
-                recordsCount:0,
-                currentPage:0,
-                buttonsCount:0,
-                sortColumnName:'',
-                sortDirection:false,
-                sortColumnNumber:-1
-            };
+        return new {
+            pageSize:10,
+            firstPage:1,
+            pageCount:0,
+            recordsCount:0,
+            currentPage:0,
+            buttonsCount:0,
+            sortColumnName:'',
+            sortDirection:false,
+            sortColumnNumber:-1
+        };
     };
 
+    this.getPageSize=function () {
+        return this.pageSize;
+    };
+
+    this.showPaginationPanel=function(){
+        let s=this.firstPage===1?this.leftButtonDisabled:this.leftButton;
+        let len=(this.firstPage+this.buttonsCount-1)>this.pagesCount? (this.pagesCount-this.firstPage+1) :this.buttonsCount;
+        for(let i=0;i<len;i++){
+            s+=this.getButtonBody(i+this.firstPage);
+        }
+        let rb=(this.firstPage+len-1)>=this.pagesCount? this.rightButtonDisabled:this.rightButton;
+        s+=rb;
+        let h=this.pagPanelTagLeft+s+this.pagPanelTagRight;
+        h=h+this.getPageSizeSelector();
+        $(this.pagTag).html(h);
+        this.setPaginationClickListener();
+        return this;
+    };
+
+    this.getPageSizeSelector=function(){
+        let s="<div class='pagecountblock'><span>Строк на странице: </span><select id=\"pageselector\" class='pagecountselect' size=\"1\">";
+        s=s+"<option value=\""+3+"\">"+3+"</option>";
+        for (let i=0;i<10;i++){
+            let c=((i+1)*this.sizeStep);
+            let selected="";
+            if (c===this.pageSize) selected=" selected ";
+            s=s+"<option"+selected+" value=\""+c+"\">"+c+"</option>";
+        }
+        s=s+"</select>";
+        s=s+"</div>";
+        return s;
+    };
+
+    this.getButtonBody=function(value) {
+        return (value ) === this.currentPage ?
+            this.buttonTagLeftActive + (value) + this.buttonTagRightActive
+            :
+            this.buttonTagLeft + (value) + this.buttonTagRight;
+    };
+
+    this.setPaginationClickListener=function(){
+        let t=this;
+        $(this.itemClass+":not(.pagbuttonactive)").click(function() {
+            let el=this.querySelector(t.itemLinkClass);
+            if ((el!==undefined)&&(el!=null)){
+                let page=el.innerText;
+                t.queryForPage(page);
+            }
+        });
+
+        $( this.leftClass ).click(function() {
+            t.predPageBlock();
+        });
+
+        $( this.rightClass).click(function() {
+            t.nextPagingBlock();
+        });
+
+        $("#pageselector").change(function(){
+            let pageSize=$(this).val();
+            t.queryForPageSizeChange(pageSize,this);
+        });
+
+    };
 
     this.queryForPage=function(page) {
         let resultResponse={};
@@ -464,16 +616,36 @@ ETable=function(preferences) {
         this.ajaxQuery("/tablerest/pagination"
             ,{pagenumber:page, action:"setpage"}
             ,function (response) {
-            let responseValue=t.getFieldsFromResponse(response);
-                /*this.setPagesFromQuery(pag);*/
-                if (t.paginator!==undefined) t.paginator.setPagesFromQuery(responseValue["pagination"]);
-                t.fillTable(responseValue["datatable"]);
-                resultResponse=responseValue["pagination"];
+                let responseValue=t.getFieldsFromResponse(response);
+                t.generateTableFromQueryData(responseValue);
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
-        return resultResponse;
+    };
+
+    this.generateTableFromQueryData=function(responseValue){
+        //this.setPagesFromQuery(responseValue["pagination"]);
+        this.setPaginatorValues(responseValue["pagination"]);
+        this.fillTable(responseValue["datatable"]);
+    };
+
+    this.predPageBlock=function() {
+        if (this.firstPage>1) {
+            let np = this.firstPage - this.buttonsCount;
+            this.firstPage = (np <= 0) ? 1 : np;
+            if (this.currentPage > (this.buttonsCount + this.firstPage - 1)) this.currentPage = this.buttonsCount + this.firstPage - 1;
+            this.queryForChangePagesBlock(this.firstPage, this.currentPage);
+        }
+    };
+
+    this.nextPagingBlock=function() {
+        if ((this.firstPage+this.buttonsCount-1)<this.pagesCount) {
+            let np = this.firstPage + this.buttonsCount;
+            this.firstPage = (np + this.buttonsCount - 1) > this.pagesCount ? this.pagesCount - this.buttonsCount + 1 : np;
+            this.currentPage = this.currentPage > this.firstPage ? this.currentPage : this.firstPage;
+            this.queryForChangePagesBlock(this.firstPage, this.currentPage);
+        }
     };
 
     this.queryForChangePagesBlock=function(firstPage, currentPage) {
@@ -482,15 +654,68 @@ ETable=function(preferences) {
         this.ajaxQuery("/tablerest/pagination"
             ,{pagenumber:currentPage, firstpage:firstPage, action:"setpageblock"}
             ,function (response) {
-                let responseValue=t.getFieldsFromResponse(response);
-                t.fillTable(responseValue["datatable"]);
-                resultResponse=responseValue["pagination"];
+                resultResponse=t.getFieldsFromResponse(response);
+                t.generateTableFromQueryData(resultResponse)
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
             });
-        return resultResponse;
     };
+
+    this.setPaginatorValues=function (responseValue) {
+        if (responseValue!==undefined) {
+            this.currentPage = responseValue.currentPage||this.currentPage;
+            this.firstPage = responseValue.firstPage||this.firstPage;
+            this.buttonsCount = responseValue.buttonsCount||this.buttonsCount;
+            this.pagesCount = responseValue.pageCount||this.pagesCount;
+            this.pageSize = responseValue.pageSize||this.pageSize;
+        }
+    };
+
+    this.queryForPageSizeChange=function(value){
+        let t=this;
+        this.ajaxQuery("/tablerest/pagination"
+            ,{pagesize:value, action:"pagesize"}
+            ,function (response) {
+                $('#spinner').fadeOut();
+                let responseValue=t.getFieldsFromResponse(response);
+                t.setPaginatorValues(responseValue["pagination"]);
+                t.generateTableFromQueryData(responseValue);
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+    };
+
+    /*Pagination block end...*/
+
+    /*Getters, setters block. Begin...*/
+
+    this.getFilterFormActive=function(){
+        return this.isFilterFormActive;
+    };
+
+    this.setFilteredColumns=function(values){
+        this.filterColumns=values;
+    };
+
+    this.numericCheck=function(val){
+        return  ((val !== '')&&(!isNaN(Number(val))));
+    };
+
+    this.dateCheck=function(value){
+        let regexp=/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
+        let d=regexp.test(value);
+        return  (value !== '')&&d;
+    };
+
+    this.setTableData=function(value){
+        this.tabledata=value;
+    };
+
+    /*Getters, setters block. End...*/
+
+    /*Ajax block begin*/
 
     this.ajaxQuery=function(url,datafield,successfunction, errorfunction) {
         let t=$(this.spinnerId);
@@ -514,65 +739,24 @@ ETable=function(preferences) {
         });
     };
 
-    this.fillTable=function(values){
-        this.setTableData(values);
-        this.tableFlush();
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+    /*Ajax block end*/
+
+    /* Service methods block begin...*/
+
+    this.getFieldsFromResponse=function(response){
+        let values = JSON.parse(response);
+        let datatable=values["datatable"]||[];
+        let pagination=values["pagination"]||this.getPaginationInstance();
+        let filteredColumns=values["filtercolumns"]||[];
+        if (datatable===undefined) datatable=[];
+        if (pagination===undefined) pagination={};
+        return {datatable:datatable, pagination:pagination, filteredcolumns:filteredColumns};
     };
 
-    this.fillTableByResponse=function(response,context){
-        let responseValue=this.getFieldsFromResponse(response);
-        this.setFilteredColumns(responseValue["filteredcolumns"]);
-        if (paginator!==undefined){
-            paginator.currentPage=responseValue["pagination"].currentPage;
-            paginator.firstPage=responseValue["pagination"].firstPage;
-            paginator.buttonsCount=responseValue["pagination"].buttonsCount;
-            paginator.pagesCount=responseValue["pagination"].pageCount;
-            paginator.pageSize=responseValue["pagination"].pageSize;
-            paginator.showPaginationPanel();
-        }
-        this.setTableData(responseValue["datatable"]);
-        this.tableFlush();
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
-    };
-
-    this.setFilteredColumns=function(values){
-        this.filterColumns=values;
-    };
-
-    this.numericCheck=function(val){
-        return  ((val !== '')&&(!isNaN(Number(val))));
-    };
-
-    this.dateCheck=function(value){
-        let regexp=/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
-        let d=regexp.test(value);
-        return  (value !== '')&&d;
-    };
-
-    this.getSpinnerCode=function(){
-        return ""; /*!*"<div  id=\"spinner\" class=\"spinner\" ></div>";*!/*/
-    };
-
-    this.tableFlush=function(){
-        $('#'+this.tableBlockId).html("");
-    };
-
-    this.setTableData=function(value){
-        this.tabledata=value;
-    };
-
-    this.getSortImage=function() {
-        if (this.sortDirection)
-            return  "<img src='/static/images/sort-up-gray.gif' style='width: 16px;'>";
-        else
-            return  "<img src='/static/images/sort-dwn-gray.gif' style='width: 16px;'>";
-    };
+    /* Service methods block end...*/
 
 
-
-
-return this;
+    return this;
 };
 
 

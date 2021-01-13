@@ -75,7 +75,7 @@ public class PaginationHelper {
             return new Pagination();
     }
 
-    private void setPagination(String paginationName, Pagination pagination){ //"pagination"
+    public void setPagination(String paginationName, Pagination pagination){ //"pagination"
         settingsProvider.setSettingsValue(paginationName,pagination);
 /*
         session.setAttribute(paginationName,pagination);
