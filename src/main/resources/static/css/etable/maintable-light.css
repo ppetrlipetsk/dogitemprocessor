@@ -73,7 +73,7 @@
     margin: 0 auto;
     overflow:auto;
     max-height: 700px;
-    margin-top:50px;
+    /*margin-top:10px;*/
     /*background-color: #f0f0f0;*/
     width: 90%;
     box-shadow: 0.2em 0.2em 11px;
@@ -108,4 +108,37 @@
     text-align: center;
     background-color: #f1f1f1;
     color:#a0a0a0;
+}
+
+.toolspanelblockstyle{
+    /*
+    border: 1px solid #707070;
+    box-shadow: 0.2em 0.2em 11px;
+    background-color: #a0a0a0;
+    */
+    margin: 50px auto 0;
+    width: 90%;
+    height: 54px;
+}
+
+.tp-button{
+    display: block;
+    height: 43px;
+    width: 43px;
+    border: 0px solid #707070;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+.tp-button:hover{
+    box-shadow: 0.2em 0.2em 11px;
+}
+
+.button-image{
+    width:42px;
+    height: 42px;
+}
+
+.save-image{
+    background: url(/static/images/save.gif) no-repeat;
+    background-size: 42px 42px;
 }

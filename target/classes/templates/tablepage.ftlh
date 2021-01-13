@@ -6,7 +6,8 @@ varjs=['/static/js/etable.js']
 
 <@c.page varcss varjs>
     <div  id="spinner" class="spinner" ></div>
-    <div id="tableblock"></div>
+    <#--<div id="tableblock"></div>-->
+    <div id="tableform"></div>
 
 
     <div id="pagination_block"></div>
@@ -99,7 +100,9 @@ varjs=['/static/js/etable.js']
             columnchecks:columnCheck,
             columnname:columnName,
             tabledata:tabledata,
+            tableformid:"tableform",
             tableblockid:"tableblock",
+            toolsPanelBlockId:"toolspanelblock",
             tableId:"datatable",
             headerdata:headervalues,
             spinnerId:'#spinner',
@@ -159,7 +162,7 @@ varjs=['/static/js/etable.js']
 
         tableItem.setPaginator(paginator);
 */
-        tableItem.showTable();
+        tableItem.showTableForm();
 /*
             .drawTable()
             .setHeaderClickListener()

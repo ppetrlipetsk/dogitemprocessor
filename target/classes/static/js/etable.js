@@ -3,6 +3,8 @@
 ETable=function(preferences) {
     this.tabledata = preferences.tabledata;
     this.tableBlockId = preferences.tableblockid;
+    this.tableformid=preferences.tableformid;
+    this.toolsPanelBlockId=preferences.toolsPanelBlockId;
     this.headervalues = preferences.headerdata;
     this.checkTypes = preferences.checkTypes;
     this.tableId = preferences.tableId;
@@ -13,7 +15,6 @@ ETable=function(preferences) {
     this.isFilterFormActive=false;
     this.filterColumns=preferences.filterColumns||[];
     this.showLeftColumn=preferences.showLeftColumn||false;
-
     this.firstPage=preferences.firstPage;
     this.pagesCount=preferences.pagesCount;
     this.buttonsCount=preferences.buttonsCount;
@@ -51,6 +52,39 @@ ETable=function(preferences) {
     this.sizeStep=5;
 
     /* Table output.  Begin... */
+
+    this.showTableForm=function(){
+        if (this.createTableBlocks()) {
+            this.showToolsPanel();
+            this.showTable();
+        }
+        else
+            alert('Ошибка создание структуры отображения таблицы!');
+    };
+
+    this.showTable=function () {
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+        this.showPaginationPanel();/*.setPaginationClickListener();*/
+    };
+
+    this.createTableBlocks = function () {
+        let tableForm=document.getElementById(this.tableformid);
+        if (tableForm!==undefined){
+            let panelElement=document.createElement('div');
+            panelElement.setAttribute("id",this.toolsPanelBlockId);
+            panelElement.className=this.toolsPanelBlockId+'style';
+            tableForm.appendChild(panelElement);
+
+            let tableElement=document.createElement('div');
+            tableElement.setAttribute("id",this.tableBlockId);
+            tableElement.className=this.tableBlockId+'style';
+            tableForm.appendChild(tableElement);
+            return true;
+        }
+        else
+            return false;
+    };
+
 
     this.getTableImage=function(){
         return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
@@ -168,11 +202,6 @@ ETable=function(preferences) {
         this.setTableData(values);
         this.clearTableBlock();
         this.showTable();
-    };
-
-    this.showTable=function () {
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
-        this.showPaginationPanel();/*.setPaginationClickListener();*/
     };
 
     this.clearTableBlock=function(){
@@ -335,13 +364,32 @@ ETable=function(preferences) {
 
     /* Table output. End... */
 
+    /* Top panel block begin*/
+    this.getTopPanelImage=function(){
+        let s='<div class="et-top-panel">';
+        s+='<div class="tp-button save-image" id="button-save"></div>';
+        s+='</div>';
+        return s;
+    };
+
+    this.showToolsPanel = function () {
+        $('#'+this.toolsPanelBlockId).html(this.getTopPanelImage());
+        return this;
+    };
+
+    /* Top panel block end*/
+
     /* Filter block. Begin... */
     this.filterQuery=function(columnNumber){
         let data=[];
+        let t=this;
         this.ajaxQuery("/tablerest/filterdata"
             ,{columnNumber:columnNumber}
             ,function (response) {
                 data=JSON.parse(response);
+                t.filterColumnNumber=columnNumber;
+                let tableBlock = $('#' + t.tableBlockId);
+                t.showFilterForm(data, tableBlock);
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
@@ -358,10 +406,7 @@ ETable=function(preferences) {
                 let attrcell = this.hasAttribute('data-columnnumber');
                 if (attrcell !== undefined) {
                     let columnNumber = $(this).attr('data-columnnumber');
-                    let data=t.filterQuery(columnNumber);
-                    t.filterColumnNumber=columnNumber;
-                    let tableBlock = $('#' + t.tableBlockId);
-                    t.showFilterForm(data, tableBlock);
+                    t.filterQuery(columnNumber);
                 }
             }
         });
@@ -472,7 +517,7 @@ ETable=function(preferences) {
     this.handleEvent=function(event){
         switch(event.type) {
             case 'keydown':
-                if (event.key==='Escape'){
+                if ((event.key==='Escape')||(event.key.toLowerCase()==='esc')){
                     if (this.isFilterFormActive){
                         this.filterFormClose();
                     }
@@ -724,7 +769,7 @@ ETable=function(preferences) {
         $.ajax({
             type: "POST",
             url: url,
-            async: true,
+            /*async: false,*/
             contentType: 'application/json',
             processData: false,
             data:   JSON.stringify(datafield),
@@ -754,7 +799,6 @@ ETable=function(preferences) {
     };
 
     /* Service methods block end...*/
-
 
     return this;
 };
