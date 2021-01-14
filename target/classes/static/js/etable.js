@@ -131,8 +131,9 @@ ETable=function(preferences) {
                     let evenStyle=undefined;
                     evenStyle=columnEven?" even ":" odd ";
                     let val= line[y];
+                    let cs=(val['columnStyle'].length>0)?' style="'+val['columnStyle']+'" ':'';
                     let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
-                    s = s + '<col ' + c+ ' >\n';
+                    s = s + '<col ' + c+ cs+' >\n';
                     columnEven=!columnEven;
                 }
             }
@@ -153,9 +154,10 @@ ETable=function(preferences) {
                 for (let y=0; y<line.length;y++) {
                     let val= line[y];
                     let sortimage = index === this.sortColumnNumber - 1 ? this.getSortImage() : "";
-                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val);
+                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val,'');
+                    let cs=(val['columnStyle'].length>0)?' style="'+val['columnStyle']+'" ':'';
                     let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
-                    s = s + '<th ' + c + columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
+                    s = s + '<th ' + c + cs+columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
                     /*s = s + '<th ' +  columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';*/
                 }
             }

@@ -66,12 +66,12 @@ varjs=['/static/js/etable.js']
         </#if>
 
         <#if pagination??>
-        let pagFirstPage=${pagination.getFirstPage()};
-        let pagCurrentPage=${pagination.getCurrentPage()};
-        let pagButtonsCount=${pagination.getButtonsCount()};
-        let pagPagesCount=${pagination.getPagesCount()};
-        let pageSize=${pagination.getPageSize()};
-        let sortColumnNumber=${pagination.getSortColumnNumber()};
+        let pagFirstPage=${pagination.getFirstPage()?c};
+        let pagCurrentPage=${pagination.getCurrentPage()?c};
+        let pagButtonsCount=${pagination.getButtonsCount()?c};
+        let pagPagesCount=${pagination.getPagesCount()?c};
+        let pageSize=${pagination.getPageSize()?c};
+        let sortColumnNumber=${pagination.getSortColumnNumber()?c};
         let sortDirection=${pagination.isSortDirection()?string('true','false')};
             <#else>
         let pagFirstPage=-1;

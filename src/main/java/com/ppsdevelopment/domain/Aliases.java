@@ -14,6 +14,7 @@ public class Aliases {
   private String fieldalias;
   private String fieldname;
 
+  private String columnstyle;
 
 //  @ManyToOne(fetch = FetchType.EAGER)
 //  @JoinColumn(name="table_id")
@@ -79,6 +80,14 @@ public class Aliases {
       return "";
   }
 
+  public String getColumnstyle() {
+    return columnstyle;
+  }
+
+  public void setColumnstyle(String columnstyle) {
+    this.columnstyle = columnstyle;
+  }
+
   @Override
   public String toString() {
     return "Aliases{" +
@@ -92,13 +101,16 @@ public class Aliases {
   }
 
   public String toCellString() {
+    if (columnstyle ==null) columnstyle ="";
     return "[{" +
             "id:" + id +
             ", fieldalias:'" + fieldalias + '\'' +
             ", fieldname:'" + fieldname + '\'' +
             ", styleClass:'" + this.getStyleClass() +"'"+
             ", fieldtype:'" + fieldtype + '\'' +
+            ", columnStyle:'" + columnstyle + '\'' +
             "}]";
   }
+
 
 }

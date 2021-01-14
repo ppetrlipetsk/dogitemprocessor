@@ -15,6 +15,7 @@ public class Styles {
 
     String styleClass;
 
+
     public Styles() {
     }
 

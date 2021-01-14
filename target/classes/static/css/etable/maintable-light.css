@@ -16,7 +16,7 @@
 .t1{width:200px;}
 .t2{width:150px;}
 .t3{width:100px;}
-
+.width100{width:100px;}
 
 .stringcell{
     width:200px;
@@ -31,7 +31,7 @@
 }
 
 #datatable th{
-    word-break: break-word;
+    word-break: break-all;
     text-align: center;
     border-right:1px solid #d5d5d5;
     color:#707070;
