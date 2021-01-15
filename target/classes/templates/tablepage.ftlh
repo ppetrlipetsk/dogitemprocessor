@@ -96,6 +96,7 @@ varjs=['/static/js/etable.js']
 
 
         let tableItem=new ETable({
+            datacache:true,
             tablearray:dt,
             columnchecks:columnCheck,
             columnname:columnName,

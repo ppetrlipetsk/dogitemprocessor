@@ -1,7 +1,7 @@
 package com.ppsdevelopment.config;
 
 
-import com.ppsdevelopment.service.UserService;
+import com.ppsdevelopment.service.tableImpl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

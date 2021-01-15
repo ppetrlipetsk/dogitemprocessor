@@ -1,7 +1,7 @@
 package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.envinronment.*;
-import com.ppsdevelopment.service.SourceTableImpl;
+import com.ppsdevelopment.service.tableImpl.SourceTableImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 @Controller
@@ -44,7 +43,8 @@ public class TablePageController {
         model.put("headervalues",tableHeader);
 
 
-        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll());
+        /*String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll());*/
+        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAllWithCache());
         model.put("tabledata",tableData);
 
         pagination.setRecordsCount(sourceTable.getCount());

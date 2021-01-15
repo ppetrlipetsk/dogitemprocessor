@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 public class FilterHelper {
     private HttpSession session;
     private UsersSettingsRepository usersSettingsRepository;
+    private Credentials credentials;
 
     public FilterQuery getFilter(String filterName){
             Object value=session.getAttribute(filterName);
@@ -25,7 +26,7 @@ public class FilterHelper {
 
     public void setFilter(String filterName, FilterQuery filter){ //"pagination"
         session.setAttribute(filterName,filter);
-        this.usersSettingsRepository.set(Credentials.getUser(),filterName,filter);//"maintable.pagination"
+        this.usersSettingsRepository.set(credentials.getUser(),filterName,filter);//"maintable.pagination"
     }
 
 
@@ -37,5 +38,10 @@ public class FilterHelper {
     @Autowired
     public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
         this.usersSettingsRepository = usersSettingsRepository;
+    }
+
+    @Autowired
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
     }
 }

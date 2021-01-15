@@ -15,6 +15,8 @@ public class Aliases {
   private String fieldname;
 
   private String columnstyle;
+  private Integer columnwidth;
+  /*private boolean columnvisible;*/
 
 //  @ManyToOne(fetch = FetchType.EAGER)
 //  @JoinColumn(name="table_id")
@@ -87,6 +89,24 @@ public class Aliases {
   public void setColumnstyle(String columnstyle) {
     this.columnstyle = columnstyle;
   }
+
+  public Integer getColumnwidth() {
+    return columnwidth;
+  }
+
+  public void setColumnwidth(Integer columnwidth) {
+    this.columnwidth = columnwidth;
+  }
+
+/*
+  public boolean isColumnvisible() {
+    return columnvisible;
+  }
+
+  public void setColumnvisible(boolean columnvisible) {
+    this.columnvisible = columnvisible;
+  }
+*/
 
   @Override
   public String toString() {

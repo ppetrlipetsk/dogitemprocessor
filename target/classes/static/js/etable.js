@@ -1,6 +1,7 @@
 /*let ETable=1;*/
 
 ETable=function(preferences) {
+    this.datacache=preferences.datacache||false;
     this.tabledata = preferences.tabledata;
     this.tableBlockId = preferences.tableblockid;
     this.tableformid=preferences.tableformid;
@@ -346,7 +347,16 @@ ETable=function(preferences) {
     };
 
     this.postajax=function(x,y, value,id){
-        this.ajaxQuery("/tablerest/setcell"
+        let url=undefined;
+
+        if (this.datacache) {
+            url = '/tablerest/setcachedcell';
+        }
+        else {
+            url = "/tablerest/setcell";
+        }
+
+        this.ajaxQuery(url
             ,{id:id,fieldIndex:x,value:value}
             ,function (response) {
                 $('#spinner').fadeOut();
@@ -376,7 +386,40 @@ ETable=function(preferences) {
 
     this.showToolsPanel = function () {
         $('#'+this.toolsPanelBlockId).html(this.getTopPanelImage());
+        this.setPanelClickListener();
         return this;
+    };
+
+    this.buttonClickAction = function (id) {
+        if (id === 'button-save') {
+            this.saveAjaxRequest();
+        }
+    };
+
+    this.setPanelClickListener=function(){
+        let t=this;
+        $( ".tp-button").click(function() {
+            let hasId = this.hasAttribute('id');
+            if (hasId) {
+                let id=$(this).attr("id");
+                t.buttonClickAction(id);
+            }
+        });
+        return this;
+    };
+
+    this.saveAjaxRequest=function(x,y, value,id){
+            let url = '/tablerest/save';
+
+        this.ajaxQuery(url
+            ,{}
+            ,function (response) {
+                $('#spinner').fadeOut();
+            }
+            , function (thisItem,response) {
+                alert('Error: ' + response);
+            });
+
     };
 
     /* Top panel block end*/

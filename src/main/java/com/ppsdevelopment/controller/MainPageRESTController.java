@@ -1,15 +1,13 @@
 package com.ppsdevelopment.controller;
 
 import com.google.gson.Gson;
-import com.ppsdevelopment.config.ConfigProperties;
 import com.ppsdevelopment.controller.annotations.Action;
 import com.ppsdevelopment.controller.requestclass.ApplyFilter;
 import com.ppsdevelopment.datalib.TableCellRequest;
 import com.ppsdevelopment.envinronment.Pagination;
-import com.ppsdevelopment.envinronment.UsersSettingsRepository;
 import com.ppsdevelopment.json.MapJson;
 import com.ppsdevelopment.service.FilterQuery;
-import com.ppsdevelopment.service.SourceTableImpl;
+import com.ppsdevelopment.service.tableImpl.SourceTableImpl;
 import com.ppsdevelopment.tmctypeslib.DetectType;
 import com.ppsdevelopment.tmctypeslib.FieldType;
 import com.ppsdevelopment.viewlib.FilterHelper;
@@ -52,6 +50,22 @@ public class MainPageRESTController {
         return data.toString();
     }
 
+    @PostMapping(value="/setcachedcell", consumes = "application/json;charset=UTF-8")
+    public @ResponseBody String setCachedCell(@RequestBody TableCellRequest data){
+        String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
+        String fieldType=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
+        if (DetectType.isValueValid(FieldType.valueOf(fieldType),data.getValue())){
+            sourceTable.updateFieldValueToCache(Long.valueOf(data.getId()),data.getValue(), fieldName);
+        }
+        return data.toString();
+    }
+
+    @PostMapping(value="/save", consumes = "application/json;charset=UTF-8")
+    public @ResponseBody String save(){
+            sourceTable.updateFieldValueFromCache();
+        return "data.toString()";
+    }
+
     @PostMapping("/pagination")
     public @ResponseBody String pagination(@RequestBody String s) throws Exception {
         try {
@@ -61,7 +75,7 @@ public class MainPageRESTController {
             {
                 String[] nargs= new String[] {s};
                 Pagination pagination= (Pagination) m.invoke(this, nargs);
-                String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll()); //paginationName
+                String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAllWithCache()); //paginationName
                 FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
                 return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem);
             }
@@ -99,6 +113,13 @@ public class MainPageRESTController {
         filterItem.set(sourceTable.getAliases().get(columnNumber).getFieldalias(),Arrays.asList(data));
         filterHelper.setFilter(sourceTable.getFilterName(),filterItem);
     }
+
+    @PostMapping("/savecache")
+    public @ResponseBody String saveCache(){
+            sourceTable.updateFieldValueFromCache();
+        return "";
+    }
+
 
     @Action(name="pagesize")
     public Pagination mainTablePageSize(String s){

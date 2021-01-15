@@ -11,12 +11,13 @@ import java.lang.reflect.InvocationTargetException;
 public class SettingsProvider {
     private HttpSession session;
     private UsersSettingsRepository usersSettingsRepository;
+    private Credentials credentials;
 
     public Object getSettingsValue(String fieldName, Class<?> instanceClass){
         Object result=null;
         try {
             if (session.getAttribute(fieldName) == null) {
-                Object value = usersSettingsRepository.get(Credentials.getUser(), fieldName, instanceClass);
+                Object value = usersSettingsRepository.get(credentials.getUser(), fieldName, instanceClass);
                 if ((value != null) && (value.getClass() == instanceClass)) result = instanceClass.cast(value);
                 else {
                     try {
@@ -34,7 +35,7 @@ public class SettingsProvider {
 
     public void setSettingsValue(String fieldName, Object value){
         session.setAttribute(fieldName,value);
-        this.usersSettingsRepository.set(Credentials.getUser(),fieldName,value);
+        this.usersSettingsRepository.set(credentials.getUser(),fieldName,value);
     }
 
 
@@ -46,5 +47,10 @@ public class SettingsProvider {
     @Autowired
     public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
         this.usersSettingsRepository = usersSettingsRepository;
+    }
+
+    @Autowired
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
     }
 }
