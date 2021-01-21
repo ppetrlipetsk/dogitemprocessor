@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class UsersSettingsRepository {
+class UsersSettingsRepository {
 
     private UserPrefRepo userPrefRepo;
     private static Map<User, UserEnvinronmentSettings> settingsCollection =new HashMap<>();
@@ -39,9 +39,10 @@ public class UsersSettingsRepository {
 
     private UserEnvinronmentSettings getEnv(User user) {
         UserEnvinronmentSettings env= settingsCollection.get(user);
-        if (env==null)
-            env=new UserEnvinronmentSettings();
-            settingsCollection.put(user,env);
+        if (env==null) {
+            env = new UserEnvinronmentSettings();
+            settingsCollection.put(user, env);
+        }
         return  env;
     }
 

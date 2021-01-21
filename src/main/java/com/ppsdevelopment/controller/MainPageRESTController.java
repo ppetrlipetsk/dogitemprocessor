@@ -3,15 +3,16 @@ package com.ppsdevelopment.controller;
 import com.google.gson.Gson;
 import com.ppsdevelopment.controller.annotations.Action;
 import com.ppsdevelopment.controller.requestclass.ApplyFilter;
-import com.ppsdevelopment.datalib.TableCellRequest;
-import com.ppsdevelopment.envinronment.Pagination;
-import com.ppsdevelopment.json.MapJson;
+import com.ppsdevelopment.controller.requestclass.TableCellRequest;
+import com.ppsdevelopment.envinronment.SettingsManager;
+import com.ppsdevelopment.service.viewservices.Pagination;
 import com.ppsdevelopment.service.FilterQuery;
-import com.ppsdevelopment.service.tableImpl.SourceTableImpl;
+import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
 import com.ppsdevelopment.tmctypeslib.DetectType;
 import com.ppsdevelopment.tmctypeslib.FieldType;
-import com.ppsdevelopment.viewlib.FilterHelper;
+import com.ppsdevelopment.viewlib.dataprepare.statichelpers.FilterHelper;
 import com.ppsdevelopment.viewlib.PaginationHelper;
+import com.ppsdevelopment.service.databasetableimpl.helpers.DataAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class MainPageRESTController {
 
     private SourceTableImpl sourceTable;
     private PaginationHelper paginationHelper;
-    private FilterHelper filterHelper;
+    private SettingsManager settingsManager;
     private static final Map<String, Method> actions = new HashMap<>();
 
     static
@@ -40,6 +41,7 @@ public class MainPageRESTController {
         }
     }
 
+/*
     @PostMapping(value="/setcell", consumes = "application/json;charset=UTF-8")
     public @ResponseBody String setCell(@RequestBody TableCellRequest data){
         String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
@@ -49,8 +51,10 @@ public class MainPageRESTController {
         }
         return data.toString();
     }
+*/
 
-    @PostMapping(value="/setcachedcell", consumes = "application/json;charset=UTF-8")
+    /*@PostMapping(value="/setcachedcell", consumes = "application/json;charset=UTF-8")*/
+    @PostMapping(value="/setcell", consumes = "application/json;charset=UTF-8")
     public @ResponseBody String setCachedCell(@RequestBody TableCellRequest data){
         String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
         String fieldType=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
@@ -66,18 +70,27 @@ public class MainPageRESTController {
         return "data.toString()";
     }
 
-    @PostMapping("/pagination")
-    public @ResponseBody String pagination(@RequestBody String s) throws Exception {
+
+    @PostMapping("/paginations/{action}")
+    public @ResponseBody String pagination(@PathVariable String action, @RequestBody String s) throws Exception {
+        System.out.println(action+s);
+        Gson g=new Gson();
+        Pagination p=g.fromJson(s,Pagination.class);
+        System.out.println(p.getPageSize());
+        return action;
+    }
+
+    @PostMapping("/pagination/{action}")
+    public @ResponseBody String pagination(@PathVariable String action, @RequestBody Pagination pag) throws Exception {
         try {
-            String action = Objects.requireNonNull(MapJson.get("action", s)).asText();
+            //String action = Objects.requireNonNull(DataAdapter.valueFromJson("action", s).toString());
             Method m = actions.get(action);
             if (m != null)
             {
-                String[] nargs= new String[] {s};
+                Object[] nargs= new Object[] {pag};
                 Pagination pagination= (Pagination) m.invoke(this, nargs);
-                String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAllWithCache()); //paginationName
-                FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
-                return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem);
+                paginationHelper.setPagination(sourceTable.getPaginationName(),pagination);
+                return sourceTable.getJsonResponseForFilterApply();
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
@@ -88,30 +101,24 @@ public class MainPageRESTController {
 
     @PostMapping("/filterdata")
     public @ResponseBody String filter(@RequestBody String s) throws Exception {
+        sourceTable.updateFieldValueFromCache();
         Gson gson = new Gson();
-        int cn = Objects.requireNonNull(MapJson.get("columnNumber", s)).asInt();
+        int cn = Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("columnNumber", s).toString()));
         List lines=sourceTable.getColumnUniqValues(--cn);
-        //List response=
         return gson.toJson(lines);
     }
 
     @PostMapping("/applyfilter")
     public @ResponseBody String applyFilter(@RequestBody ApplyFilter request) throws Exception {
         setFilter(request.getColumnNumber()-1, request.getData());
-        Pagination pagination=paginationHelper.getPagination(sourceTable.getPaginationName());
-        pagination.setRecordsCount(sourceTable.getCount());
-        pagination.setCurrentPage(1);
-        pagination.setFirstPage(1);
-        String tableData=sourceTable.getResultAsJSONLine(sourceTable.getAll());
-        FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
-        paginationHelper.setPagination(sourceTable.getPaginationName(),pagination);
-        return sourceTable.getPaginationJsonResponse(tableData,pagination,filterItem); //TODO сделать этот метод, чтобы tableData,pagination,filterItem брались в классе sourceTable
+        sourceTable.setActualPaginationValues();
+        return sourceTable.getJsonResponseForFilterApply();
     }
 
     private void setFilter(Integer columnNumber, String[] data) {
-        FilterQuery filterItem=filterHelper.getFilter(sourceTable.getFilterName());
+        FilterQuery filterItem=FilterHelper.getFilter(sourceTable.getFilterName(),settingsManager);
         filterItem.set(sourceTable.getAliases().get(columnNumber).getFieldalias(),Arrays.asList(data));
-        filterHelper.setFilter(sourceTable.getFilterName(),filterItem);
+        FilterHelper.setFilter(sourceTable.getFilterName(),filterItem,settingsManager);
     }
 
     @PostMapping("/savecache")
@@ -122,28 +129,32 @@ public class MainPageRESTController {
 
 
     @Action(name="pagesize")
-    public Pagination mainTablePageSize(String s){
-        Integer pageSizeNew= Objects.requireNonNull(MapJson.get("pagesize", s)).asInt();
-        return paginationHelper.pageSize(pageSizeNew,sourceTable.getPaginationName());
+    public Pagination mainTablePageSize(Pagination pagination){
+        //Integer pageSizeNew= Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("pagesize", s).toString()));
+        return paginationHelper.pageSize(pagination.getPageSize(),sourceTable.getPaginationName());
     }
 
     @Action(name="setpage")
-    public  Pagination setPage( String s) {
-        Integer pageNumber= Objects.requireNonNull(MapJson.get("pagenumber", s)).asInt();
+    public  Pagination setPage( Pagination p) {
+        Integer pageNumber=(int)p.getCurrentPage();
+                //Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("pagenumber", s).toString()));
         return paginationHelper.setPage(pageNumber,sourceTable.getPaginationName());
     }
 
     @Action(name="setpageblock")
-    public  Pagination setPageBlock(String s) {
-        Integer pageNumber= Objects.requireNonNull(MapJson.get("pagenumber", s)).asInt();
-        Integer firstPage= Objects.requireNonNull(MapJson.get("firstpage", s)).asInt();
-        return paginationHelper.setPageBlock(pageNumber,firstPage,sourceTable.getPaginationName());
+    public  Pagination setPageBlock(Pagination pag) {
+/*
+        Integer pageNumber= Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("pagenumber", s).toString()));
+        Integer firstPage= Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("firstpage", s).toString()));
+*/
+        return paginationHelper.setPageBlock((int)pag.getCurrentPage(),pag.getFirstPage(),sourceTable.getPaginationName());
     }
 
     @Action(name="sorttable")
-    public   Pagination sortMainPage(String s){
-        Integer columnnumber= Objects.requireNonNull(MapJson.get("columnnumber", s)).asInt();
-        return paginationHelper.sortPage(columnnumber,sourceTable.getAliases(),sourceTable.getPaginationName());
+    public   Pagination sortMainPage(Pagination pag){
+//        Integer columnnumber= Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("columnnumber", s).toString()));
+        sourceTable.updateFieldValueFromCache();
+        return paginationHelper.sortPage(pag.getSortColumnNumber(),sourceTable.getAliases(),sourceTable.getPaginationName());
     }
 
     @Autowired
@@ -158,8 +169,7 @@ public class MainPageRESTController {
 
 
     @Autowired
-    public void setFilterHelper(FilterHelper filterHelper) {
-        this.filterHelper = filterHelper;
+    public void setSettingsManager(SettingsManager settingsManager) {
+        this.settingsManager = settingsManager;
     }
-
 }

@@ -1,26 +1,19 @@
 package com.ppsdevelopment.viewlib;
 
 import com.ppsdevelopment.domain.Aliases;
-import com.ppsdevelopment.envinronment.Credentials;
-import com.ppsdevelopment.envinronment.Pagination;
-import com.ppsdevelopment.envinronment.SettingsProvider;
-import com.ppsdevelopment.envinronment.UsersSettingsRepository;
+import com.ppsdevelopment.service.viewservices.Pagination;
+import com.ppsdevelopment.envinronment.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import javax.servlet.http.HttpSession;
+
 import java.util.List;
 
 @Component
 public class PaginationHelper {
 
-/*
-    private HttpSession session;
-    private UsersSettingsRepository usersSettingsRepository;
-*/
+    private SettingsManager settingsProvider;
 
-    private SettingsProvider settingsProvider;
-
-    public com.ppsdevelopment.envinronment.Pagination pageSize(Integer pageSizeNew, String paginationName){
+    public Pagination pageSize(Integer pageSizeNew, String paginationName){
         Pagination pagination=getPagination(paginationName);
         int pageSize=pagination.getPageSize();
         if (pageSize!=pageSizeNew){
@@ -32,15 +25,15 @@ public class PaginationHelper {
         return pagination;
     }
 
-    public com.ppsdevelopment.envinronment.Pagination setPage(Integer pageNumber,String paginationName) {
-        com.ppsdevelopment.envinronment.Pagination pagination=getPagination(paginationName);
+    public Pagination setPage(Integer pageNumber, String paginationName) {
+        Pagination pagination=getPagination(paginationName);
         pagination.setCurrentPage(pageNumber);
         setPagination(paginationName,pagination);
         return pagination;
     }
 
     public Pagination setPageBlock(Integer pageNumber, Integer firstPage,String paginationName) {
-        com.ppsdevelopment.envinronment.Pagination pagination=getPagination(paginationName);
+        Pagination pagination=getPagination(paginationName);
         pagination.setCurrentPage(pageNumber);
         pagination.setFirstPage(firstPage);
         setPagination(paginationName,pagination);
@@ -96,7 +89,7 @@ public class PaginationHelper {
 */
 
     @Autowired
-    public void setSettingsProvider(SettingsProvider settingsProvider) {
+    public void setSettingsProvider(SettingsManager settingsProvider) {
         this.settingsProvider = settingsProvider;
     }
 }

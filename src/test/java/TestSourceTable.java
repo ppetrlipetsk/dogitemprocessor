@@ -2,7 +2,7 @@ import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
 import com.ppsdevelopment.repos.AliasesRepo;
 import com.ppsdevelopment.repos.TablesRepo;
-import com.ppsdevelopment.service.tableImpl.SourceTableImpl;
+import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

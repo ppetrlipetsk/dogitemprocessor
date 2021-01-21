@@ -1,7 +1,6 @@
 /*let ETable=1;*/
 
 ETable=function(preferences) {
-    this.datacache=preferences.datacache||false;
     this.tabledata = preferences.tabledata;
     this.tableBlockId = preferences.tableblockid;
     this.tableformid=preferences.tableformid;
@@ -35,7 +34,7 @@ ETable=function(preferences) {
     this.itemClass=preferences.itemClass;
     this.leftClass=preferences.leftClass;
     this.rightClass=preferences.rightClass;
-    this.itemLinkClass=preferences.itemLinkClass
+    this.itemLinkClass=preferences.itemLinkClass;
     /*this.spinnerId=preferences.spinnerId;*/
     this.tableClass=preferences.tableClass;
 
@@ -64,9 +63,62 @@ ETable=function(preferences) {
     };
 
     this.showTable=function () {
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener();
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();
         this.showPaginationPanel();/*.setPaginationClickListener();*/
     };
+
+/*
+    this.showTableX=function () {
+        let tableBlock=document.querySelector('#'+this.tableBlockId);
+        if (tableBlock!==undefined){
+            let blocks=this.generateTableEntity();
+            tableBlock.innerHTML='';
+            tableBlock.appendChild(blocks["header"]);
+            tableBlock.appendChild(blocks["datatable"]);
+        }
+        /!*this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();*!/
+        this.setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();
+        this.showPaginationPanel();/!*.setPaginationClickListener();*!/
+    };
+*/
+/*
+    this.createHeaderDiv=function()
+    {
+        let divEl=document.createElement('div');
+        /!*divEl.setAttribute("id",);*!/
+        divEl.className='header_block';
+        return divEl;
+    };
+
+    this.createDataBlockDiv = function () {
+        let divEl=document.createElement('div');
+        divEl.className='datablock';
+        return divEl;
+    };
+
+    this.getHeaderTable = function () {
+        let table=document.createElement('table');
+        table.setAttribute("id",'datatable_header');
+        table.innerHTML='<thead>' + this.getTableHeaderBlock() + '</thead><tbody>';
+        return table;
+    };
+
+    this.getDataTable = function () {
+        let table=document.createElement('table');
+        table.setAttribute("id",this.tableId);
+        table.innerHTML=this.getColumnsBlock()+'<tbody>'+this.getTableBody()+'</tbody>';
+        return table;
+    };*/
+
+   /* this.generateTableEntity = function () {
+        let headerDiv=this.createHeaderDiv();
+        let dataBlockDiv=this.createDataBlockDiv();
+        let headerTable=this.getHeaderTable();
+        let dataTable=this.getDataTable();
+        headerDiv.appendChild(headerTable);
+        dataBlockDiv.appendChild(dataTable);
+        return {header:headerDiv, datatable:dataBlockDiv};
+    };*/
 
     this.createTableBlocks = function () {
         let tableForm=document.getElementById(this.tableformid);
@@ -76,25 +128,45 @@ ETable=function(preferences) {
             panelElement.className=this.toolsPanelBlockId+'style';
             tableForm.appendChild(panelElement);
 
+
+
             let tableElement=document.createElement('div');
             tableElement.setAttribute("id",this.tableBlockId);
             tableElement.className=this.tableBlockId+'style';
+
+            let headerElement=document.createElement('div');
+            headerElement.className='header_block';
+            tableElement.appendChild(headerElement);
+
+            let dataElement=document.createElement('div');
+            dataElement.className='datablock';
+            tableElement.appendChild(dataElement);
+
             tableForm.appendChild(tableElement);
+
             return true;
         }
         else
             return false;
     };
 
+    this.getHeaderTableImage=function(){
+        return '<table id="'+this.tableId+'_header">'+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody></tbody></table>';
+    };
 
     this.getTableImage=function(){
-        return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody>'+this.getTableBody()+'</tbody></table>';
+        return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<tbody>'+this.getTableBody()+'</tbody></table>';
     };
 
     this.drawTable=function(){
-        $('#'+this.tableBlockId).html(this.getTableImage());
+        let tableBlock=document.querySelector('#'+this.tableBlockId+'>.datablock');
+        if (tableBlock!==undefined)
+            tableBlock.innerHTML=this.getTableImage();
+            let headerBlock=document.querySelector('#'+this.tableBlockId+'>.header_block');
+            headerBlock.innerHTML=this.getHeaderTableImage();
         return this;
     };
+
 
     this.getTableBody=function(){
         let s='';
@@ -203,13 +275,15 @@ ETable=function(preferences) {
 
     this.fillTable=function(values){
         this.setTableData(values);
-        this.clearTableBlock();
+        /*this.clearTableBlock();*/
         this.showTable();
     };
 
+/*
     this.clearTableBlock=function(){
         $('#'+this.tableBlockId).html("");
     };
+*/
 
     this.getCSSByType=function(val, evenStyle) {
         let fstyle="";
@@ -291,6 +365,21 @@ ETable=function(preferences) {
         });
         return this;
     };
+    this.setScrollListener=function(){
+        $( ".datablock").scroll(function() {
+            let scrollLeft=document.querySelector('.datablock').scrollLeft;
+            let blockWidth=document.querySelector('.datablock').offsetWidth;
+            let scrollerWidth=blockWidth-document.querySelector('.datablock').clientWidth;
+            let scrollWidth=document.querySelector('.datablock').scrollWidth;
+            let sl=0;
+            document.querySelector('.header_block').scrollLeft=this.scrollLeft;
+            if (scrollLeft+blockWidth+1>=(scrollWidth-scrollerWidth)){
+                sl=scrollLeft-scrollerWidth;
+                document.querySelector('.datablock').scrollLeft=sl;
+            }
+        });
+        return this;
+    };
 
     this.setBlurListener=function(input, td, eTableInstance, x, y,id){
         input.addEventListener('blur', function () {
@@ -328,9 +417,8 @@ ETable=function(preferences) {
         return "undefined";
     };
 
-    this.escapeElement=function(input, td, eTableInstance, x, y){
+    this.escapeElement=function(input, td){
         td.removeAttribute('data-activecell');
-        /*td.innerHTML = eTableInstance.tabledata[y][x];*/
     };
 
     this.checkValue=function(value,checkType) {
@@ -347,15 +435,7 @@ ETable=function(preferences) {
     };
 
     this.postajax=function(x,y, value,id){
-        let url=undefined;
-
-        if (this.datacache) {
-            url = '/tablerest/setcachedcell';
-        }
-        else {
-            url = "/tablerest/setcell";
-        }
-
+        let url = "/tablerest/setcell";
         this.ajaxQuery(url
             ,{id:id,fieldIndex:x,value:value}
             ,function (response) {
@@ -369,11 +449,10 @@ ETable=function(preferences) {
 
     this.getSortImage=function() {
         if (this.sortDirection)
-            return  "<img src='/static/images/sort-up-gray.gif' style='width: 16px;'>";
+            return  "<img alt='DESC' src='/static/images/sort-up-gray.gif' style='width: 16px;'>";
         else
-            return  "<img src='/static/images/sort-dwn-gray.gif' style='width: 16px;'>";
+            return  '<img alt="ASC" src="/static/images/sort-dwn-gray.gif"" style="width: 16px;">';
     };
-
     /* Table output. End... */
 
     /* Top panel block begin*/
@@ -408,9 +487,8 @@ ETable=function(preferences) {
         return this;
     };
 
-    this.saveAjaxRequest=function(x,y, value,id){
+    this.saveAjaxRequest=function(){
             let url = '/tablerest/save';
-
         this.ajaxQuery(url
             ,{}
             ,function (response) {
@@ -445,7 +523,7 @@ ETable=function(preferences) {
     this.setServiceClickListener=function(){
         if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
         let t = this;
-        $("#" + this.tableId + " #service_row th:not(.leftcolumn)").click(function () {
+        $("#" + this.tableId + "_header #service_row th:not(.leftcolumn)").click(function () {
             if (!t.getFilterFormActive()) {
                 t.setFilterFormActive(true);
                 let attrcell = this.hasAttribute('data-columnnumber');
@@ -559,6 +637,7 @@ ETable=function(preferences) {
     };
 
     /* Events listener block begin*/
+    /* Не удалять!!!*/
     this.handleEvent=function(event){
         switch(event.type) {
             case 'keydown':
@@ -582,7 +661,7 @@ ETable=function(preferences) {
 
     this.setHeaderClickListener=function(){
         let t=this;
-        $( "#"+this.tableId+" #column_name th:not(.leftcolumn)" ).click(function() {
+        $( "#"+this.tableId+"_header #column_name th:not(.leftcolumn)" ).click(function() {
             let attrcell = this.hasAttribute('data-columnnumber');
             if (attrcell!==undefined){
                 let columnNumber = $(this).attr("data-columnnumber");
@@ -599,10 +678,11 @@ ETable=function(preferences) {
 
     this.sortQuery=function() {
         let t=this;
-        this.ajaxQuery("/tablerest/pagination"
-            ,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sorttable"}
+        this.ajaxQuery("/tablerest/pagination/sorttable"
+            /*,{columnnumber:this.sortColumnNumber,sortdirection:this.sortDirection, action:"sorttable"}*/
+            ,{sortColumnNumber:this.sortColumnNumber,sortDirection:this.sortDirection}
             ,function (response) {
-                $('#spinner').fadeOut();
+
                 let responseValue=t.getFieldsFromResponse(response);
                 t.sortColumnNumber=responseValue["pagination"].sortColumnNumber;
                 t.sortDirection=responseValue["pagination"].sortDirection;
@@ -611,6 +691,7 @@ ETable=function(preferences) {
                     t.firstPage=responseValue["pagination"].firstPage;
                 }
                 t.fillTable(responseValue["datatable"]);
+                $('#spinner').fadeOut();
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);
@@ -701,10 +782,10 @@ ETable=function(preferences) {
     };
 
     this.queryForPage=function(page) {
-        let resultResponse={};
         let t=this;
-        this.ajaxQuery("/tablerest/pagination"
-            ,{pagenumber:page, action:"setpage"}
+        this.ajaxQuery("/tablerest/pagination/setpage"
+            /*,{pagenumber:page, action:"setpage"}*/
+            ,{currentPage:page}
             ,function (response) {
                 let responseValue=t.getFieldsFromResponse(response);
                 t.generateTableFromQueryData(responseValue);
@@ -713,9 +794,9 @@ ETable=function(preferences) {
                 alert('Error: ' + response);
             });
     };
+/*Ошибка пагинации, при выборе следующего блока*/
 
     this.generateTableFromQueryData=function(responseValue){
-        //this.setPagesFromQuery(responseValue["pagination"]);
         this.setPaginatorValues(responseValue["pagination"]);
         this.fillTable(responseValue["datatable"]);
     };
@@ -741,8 +822,9 @@ ETable=function(preferences) {
     this.queryForChangePagesBlock=function(firstPage, currentPage) {
         let resultResponse={};
         let t=this;
-        this.ajaxQuery("/tablerest/pagination"
-            ,{pagenumber:currentPage, firstpage:firstPage, action:"setpageblock"}
+        this.ajaxQuery("/tablerest/pagination/setpageblock"
+            /*,{pagenumber:currentPage, firstpage:firstPage, action:"setpageblock"}*/
+            ,{currentPage:currentPage, firstPage:firstPage}
             ,function (response) {
                 resultResponse=t.getFieldsFromResponse(response);
                 t.generateTableFromQueryData(resultResponse)
@@ -764,13 +846,14 @@ ETable=function(preferences) {
 
     this.queryForPageSizeChange=function(value){
         let t=this;
-        this.ajaxQuery("/tablerest/pagination"
-            ,{pagesize:value, action:"pagesize"}
+        this.ajaxQuery("/tablerest/pagination/pagesize"
+            /*,{pagesize:value, action:"pagesize"}*/
+            ,{pageSize:value}
             ,function (response) {
-                $('#spinner').fadeOut();
                 let responseValue=t.getFieldsFromResponse(response);
                 t.setPaginatorValues(responseValue["pagination"]);
                 t.generateTableFromQueryData(responseValue);
+                $('#spinner').fadeOut();
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);

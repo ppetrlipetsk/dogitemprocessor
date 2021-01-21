@@ -36,6 +36,7 @@
     margin-top: -170px;
     margin-left: -150px;
     background-color: #ffffff;
+    box-shadow: 0.2em 0.2em 11px
 }
 
 .filter_form_class li{

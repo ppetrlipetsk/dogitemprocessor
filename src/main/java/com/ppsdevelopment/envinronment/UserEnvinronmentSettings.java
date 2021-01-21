@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserEnvinronmentSettings implements Serializable {
-    // <String,Object>=<name, value>
+class UserEnvinronmentSettings implements Serializable {
+
     private Map<String, Object> envinronment=new HashMap<>();
 
     public void put(String name, Object value){
@@ -15,6 +15,5 @@ public class UserEnvinronmentSettings implements Serializable {
     public Object get(String name){
         return  envinronment.get(name);
     }
-
 
 }

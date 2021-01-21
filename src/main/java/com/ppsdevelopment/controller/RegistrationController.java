@@ -1,7 +1,7 @@
 package com.ppsdevelopment.controller;
 
 import com.ppsdevelopment.domain.User;
-import com.ppsdevelopment.service.tableImpl.UserService;
+import com.ppsdevelopment.service.databasetableimpl.tableImpl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

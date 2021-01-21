@@ -1,13 +1,14 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css']
-varjs=['/static/js/etable.js']
+varjs=['/static/js/etable.js','/static/js/fixtable.js']
 >
 
 <@c.page varcss varjs>
     <div  id="spinner" class="spinner" ></div>
     <#--<div id="tableblock"></div>-->
-    <div id="tableform"></div>
+    <div id="tableform">
+    </div>
 
 
     <div id="pagination_block"></div>
@@ -96,7 +97,6 @@ varjs=['/static/js/etable.js']
 
 
         let tableItem=new ETable({
-            datacache:true,
             tablearray:dt,
             columnchecks:columnCheck,
             columnname:columnName,
