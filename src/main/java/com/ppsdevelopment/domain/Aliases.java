@@ -1,6 +1,10 @@
 package com.ppsdevelopment.domain;
 
+import org.hibernate.annotations.Filter;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "aliases")
@@ -13,22 +17,14 @@ public class Aliases {
 
   private String fieldalias;
   private String fieldname;
-
   private String columnstyle;
   private Integer columnwidth;
-  /*private boolean columnvisible;*/
-
-//  @ManyToOne(fetch = FetchType.EAGER)
-//  @JoinColumn(name="table_id")
-//  public Tables tables;
-
   private Long table_id;
+  private String fieldtype;
 
   @OneToOne(cascade = CascadeType.DETACH)
   @JoinColumn(name="style_id")
   private Styles style;
-
-  private String fieldtype;
 
 
   public long getId() {
@@ -67,6 +63,7 @@ public class Aliases {
   public void setFieldtype(String fieldtype) {
     this.fieldtype = fieldtype;
   }
+
 
   public Styles getStyle() {
     return style;
@@ -131,6 +128,5 @@ public class Aliases {
             ", columnStyle:'" + columnstyle + '\'' +
             "}]";
   }
-
 
 }

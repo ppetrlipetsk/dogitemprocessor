@@ -1,4 +1,4 @@
-package com.ppsdevelopment.controller;
+package com.ppsdevelopment.controller.rest;
 
 import com.google.gson.Gson;
 import com.ppsdevelopment.controller.annotations.Action;
@@ -70,7 +70,7 @@ public class MainPageRESTController {
         return "data.toString()";
     }
 
-
+/*
     @PostMapping("/paginations/{action}")
     public @ResponseBody String pagination(@PathVariable String action, @RequestBody String s) throws Exception {
         System.out.println(action+s);
@@ -78,7 +78,7 @@ public class MainPageRESTController {
         Pagination p=g.fromJson(s,Pagination.class);
         System.out.println(p.getPageSize());
         return action;
-    }
+    }*/
 
     @PostMapping("/pagination/{action}")
     public @ResponseBody String pagination(@PathVariable String action, @RequestBody Pagination pag) throws Exception {

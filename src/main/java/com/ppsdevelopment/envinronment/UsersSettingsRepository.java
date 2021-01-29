@@ -15,21 +15,32 @@ class UsersSettingsRepository {
     private UserPrefRepo userPrefRepo;
     private static Map<User, UserEnvinronmentSettings> settingsCollection =new HashMap<>();
 
-    public Object get(User user, String paramName, Class<?>  itemClass) {
+
+    public Object get(User user, String paramName, Class<?>  itemClass, boolean dbSearch) {
         UserEnvinronmentSettings settings=getEnv(user);
         Object value=null;
         if (settings!=null)
             value=settings.get(paramName);
-        if (value==null){
+        if ((value==null)&&(dbSearch)) {
             value=getFromDataBase(user, paramName, itemClass);
         }
         return value;
     }
 
-    public void set(User user, String paramName, Object value)
+
+    public Object get(User user, String paramName, Class<?>  itemClass) {
+        return get(user,paramName,itemClass,true);
+    }
+
+    public void set(User user, String paramName, Object value, boolean saveToDataBase)
     {
         setToRepository(user, paramName, value);
-        save(user,paramName);
+        if (saveToDataBase) save(user,paramName);
+    }
+
+    public void set(User user, String paramName, Object value)
+    {
+        set(user,paramName,value,true);
     }
 
     private void setToRepository(User user, String paramName, Object value){

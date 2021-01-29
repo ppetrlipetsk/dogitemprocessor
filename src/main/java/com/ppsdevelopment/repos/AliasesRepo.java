@@ -11,5 +11,13 @@ public interface AliasesRepo extends CrudRepository<Aliases,Long> {
     @Query("from Aliases as al where al.table_id=?1 order by id asc")
     List<Aliases> getAllByTable(Long id);
 
+
+/*
+    @Query("select al, c.width from Aliases as al left join ColumnSettings c on c.userId=?1 and c.aliasId=al.id where al.table_id=?2 order by al.id asc")
+    //where al.table_id=?1 and al.columnstyle.user_id=11   order by id asc")
+    List getAllByTableUser(Long id, Long t);
+*/
+
+
 }
 

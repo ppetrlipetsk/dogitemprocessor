@@ -6,21 +6,25 @@ import com.ppsdevelopment.controller.requestclass.FilterDataClass;
 import com.ppsdevelopment.converters.DateFormatter;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
+import com.ppsdevelopment.envinronment.Credentials;
 import com.ppsdevelopment.envinronment.SettingsManager;
 import com.ppsdevelopment.repos.AliasesRepo;
 import com.ppsdevelopment.repos.TablesRepo;
 import com.ppsdevelopment.service.FilterQuery;
-import com.ppsdevelopment.service.databasetableimpl.tablecacheservice.*;
+import com.ppsdevelopment.service.databasetableimpl.helpers.DataAdapter;
+import com.ppsdevelopment.service.databasetableimpl.tablecacheservice.RowCollection;
+import com.ppsdevelopment.service.databasetableimpl.tablecacheservice.RowFields;
+import com.ppsdevelopment.service.databasetableimpl.tablecacheservice.TableCache;
+import com.ppsdevelopment.service.databasetableimpl.tablecacheservice.UsersTablesCache;
 import com.ppsdevelopment.service.viewservices.Pagination;
 import com.ppsdevelopment.tmctypeslib.FieldType;
-import com.ppsdevelopment.viewlib.dataprepare.statichelpers.FilterHelper;
 import com.ppsdevelopment.viewlib.PaginationHelper;
-import com.ppsdevelopment.service.databasetableimpl.helpers.DataAdapter;
+import com.ppsdevelopment.viewlib.dataprepare.statichelpers.FilterHelper;
 import com.ppsdevelopment.viewlib.dataprepare.statichelpers.HeaderGenerator;
-import org.aspectj.lang.ProceedingJoinPoint;
 import org.hibernate.jpa.QueryHints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -28,37 +32,40 @@ import java.util.*;
 
 public abstract class TableClass {
     protected Map<String,String> queries=new HashMap<>();
-    protected TablesRepo tablesRepo;
-    protected AliasesRepo aliasesRepo;
-    protected PropertiesService propertiesService;
-    protected PaginationHelper paginationHelper;
-    protected UsersTablesCache usersTablesCache;
-    protected SettingsManager settingsManager;
+    private TablesRepo tablesRepo;
+    private AliasesRepo aliasesRepo;
+     PropertiesService propertiesService;
+     PaginationHelper paginationHelper;
+    private UsersTablesCache usersTablesCache;
+    private SettingsManager settingsManager;
+
 
     @PersistenceContext
     protected EntityManager em;
 
-    protected static final String FILTERNAME="filter";
-    protected static final String PAGINATIONNAME="pagination";
-    protected static final String WHERE_WORD="%where%";
-    protected static final String TABLENAME_PROPERTY="tablename";
-    protected static final String CACHABLE_PROPERTY="data.chachable";
-    protected static final String TABLENAME_TAG="%tablename%";
-    protected static final String FILTER_TAG="%filter%";
-    protected static final String ORDER_TAG="%order%";
-    protected static final String WHERE_TAG="%where%";
-    protected static final String FIELDNAME_TAG="%fieldname%";
-    protected static final String FIELDS_TAG="%fields%";
-    protected static final String VALUE_TAG="%value%";
-    protected static final String ID_TAG="%id%";
-    protected static final String FIELDS_SET_TAG="%fieldsset%";
-    protected static final String FROM_TAG="%from%";
-    protected static final String COUNT_TAG="%count%";
+     static final String FILTERNAME="filter";
+     static final String PAGINATIONNAME="pagination";
+     static final String WHERE_WORD="%where%";
+     static final String TABLENAME_PROPERTY="tablename";
+     static final String CACHABLE_PROPERTY="data.chachable";
+     static final String TABLENAME_TAG="%tablename%";
+     protected static final String FILTER_TAG="%filter%";
+     static final String ORDER_TAG="%order%";
+     static final String WHERE_TAG="%where%";
+     static final String FIELDNAME_TAG="%fieldname%";
+     static final String FIELDS_TAG="%fields%";
+     static final String VALUE_TAG="%value%";
+     static final String ID_TAG="%id%";
+     static final String FIELDS_SET_TAG="%fieldsset%";
 
-    protected static final String QUERY_SELECT_ALL="query_select_all";
-    protected static final String QUERY_COUNT="query_count";
-    protected static final String QUERY_UPDATE="query_update";
-    protected static final String QUERY_UPDATE_FROM_CACHE="query_update_from_cache";
+     static final String FROM_TAG="%from%";
+     static final String COUNT_TAG="%count%";
+
+
+     static final String QUERY_SELECT_ALL="query_select_all";
+     static final String QUERY_COUNT="query_count";
+     static final String QUERY_UPDATE="query_update";
+     static final String QUERY_UPDATE_FROM_CACHE="query_update_from_cache";
 
 
     private   String tableName;
@@ -66,10 +73,33 @@ public abstract class TableClass {
     protected static String aliasesStringList;
     private String tableHeader;
     private boolean cachable;
+    private Long tableId;
+
+
+    @PostConstruct
+    protected void init(){
+        tableName=propertiesService.get(TABLENAME_PROPERTY);
+        cachable=Boolean.parseBoolean(propertiesService.get(CACHABLE_PROPERTY));
+        List<Tables> table=tablesRepo.findByTablename(tableName);
+        if ((table!=null)&&(table.size()>0))  tableId=table.get(0).getId();
+        else
+            throw new RuntimeException("Table"+tableName+" not found!");
+        aliases=aliasesRepo.getAllByTable(tableId);
+        aliasesStringList="id,".concat(HeaderGenerator.getColumnsList(aliases));
+        tableHeader= HeaderGenerator.getHeaderDataList(aliases);
+        fillQueriesCollection();
+    }
+
 
 
     /* Public Methods block begin*/
 
+/*
+    public String getAliasesSettingsString(){
+        List list=getAliasesSettings();
+        return list.toString();
+    }
+*/
 
     public Long getCount() {
         String queryString=getQuery(QUERY_COUNT);
@@ -81,6 +111,12 @@ public abstract class TableClass {
             return ((Number)result.get(0)).longValue();
         return 0L;
     }
+
+
+    public List getAliasesWithStyle(){
+        return null;// aliasesRepo.getAllByTableUser(credentials.getUserId(),tableId);
+    }
+
 
     @Transactional
     public void updateFieldValue(Long id, String value, String fieldName, FieldType fieldType) {
@@ -240,6 +276,15 @@ public abstract class TableClass {
     public List<Aliases> getAliases() {
         return aliases;
     }
+
+    public Long getTableId() {
+        return tableId;
+    }
+
+    public void setTableId(Long tableId) {
+        this.tableId = tableId;
+    }
+
     /* Properties block end*/
 
     public String getTableName() {
@@ -254,20 +299,6 @@ public abstract class TableClass {
             throw new RuntimeException("Query "+queryName+" not found!");
     }
 
-    @PostConstruct
-    protected void init(){
-        tableName=propertiesService.get(TABLENAME_PROPERTY);
-        cachable=Boolean.valueOf(propertiesService.get(CACHABLE_PROPERTY));
-        List<Tables> table=tablesRepo.findByTablename(tableName);
-        Long tableId=null;
-        if ((table!=null)&&(table.size()>0))  tableId=table.get(0).getId();
-        else
-            throw new RuntimeException("Table"+tableName+" not found!");
-        aliases=aliasesRepo.getAllByTable(tableId);
-        aliasesStringList="id,".concat(HeaderGenerator.getColumnsList(aliases));
-        tableHeader= HeaderGenerator.getHeaderDataList(aliases);
-        fillQueriesCollection();
-    }
 
     protected abstract void fillQueriesCollection();
 
@@ -461,6 +492,5 @@ public abstract class TableClass {
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
     }
-
 
 }
