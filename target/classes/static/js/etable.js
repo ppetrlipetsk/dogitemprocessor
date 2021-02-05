@@ -81,6 +81,7 @@ ETable=function(preferences) {
         this.showPaginationPanel();/!*.setPaginationClickListener();*!/
     };
 */
+
 /*
     this.createHeaderDiv=function()
     {
@@ -166,7 +167,6 @@ ETable=function(preferences) {
             headerBlock.innerHTML=this.getHeaderTableImage();
         return this;
     };
-
 
     this.getTableBody=function(){
         let s='';
@@ -365,6 +365,7 @@ ETable=function(preferences) {
         });
         return this;
     };
+
     this.setScrollListener=function(){
         $( ".datablock").scroll(function() {
             let scrollLeft=document.querySelector('.datablock').scrollLeft;
@@ -459,6 +460,7 @@ ETable=function(preferences) {
     this.getTopPanelImage=function(){
         let s='<div class="et-top-panel">';
         s+='<div class="tp-button save-image" id="button-save"></div>';
+        s+='<div class="tp-button visible-set-image" id="button-visible-settings"></div>';
         s+='</div>';
         return s;
     };
@@ -469,10 +471,30 @@ ETable=function(preferences) {
         return this;
     };
 
+    /*function isFunctionDefined(functionName) {
+        if(eval("typeof(" + functionName + ") == typeof(Function)")) {
+            return true;
+        }
+        else
+            return false;
+    }*/
+
+    this.tableSettingsForm = function () {
+        if (isFunctionDefined('VisibilitySettingsForm')){
+            let f=new VisibilitySettingsForm();
+            f.show(this.redrawTableByResponse, this);
+        }
+    };
+
     this.buttonClickAction = function (id) {
         if (id === 'button-save') {
             this.saveAjaxRequest();
         }
+        else
+        if (id === 'button-visible-settings') {
+            this.tableSettingsForm();
+        }
+
     };
 
     this.setPanelClickListener=function(){
@@ -556,7 +578,7 @@ ETable=function(preferences) {
     this.getFormCode=function(data){
         let formElement=document.createElement('div');
         formElement.setAttribute("id","filterform");
-        formElement.className="filter_form_class p-2 rounded";
+        formElement.className="form-class filter_form_class p-2 rounded";
 
         let s="<form name='filter_form' action='/'><div class='filter_datablock'>";
         if ((data!==undefined)&&(Array.isArray(data))){
@@ -921,9 +943,21 @@ ETable=function(preferences) {
         let datatable=values["datatable"]||[];
         let pagination=values["pagination"]||this.getPaginationInstance();
         let filteredColumns=values["filtercolumns"]||[];
+        let headerValues=values["header"]||[];
         if (datatable===undefined) datatable=[];
         if (pagination===undefined) pagination={};
-        return {datatable:datatable, pagination:pagination, filteredcolumns:filteredColumns};
+        return {datatable:datatable, pagination:pagination, filteredcolumns:filteredColumns,header:headerValues};
+    };
+
+    this.reDrawTable = function (responseValue) {
+        if (responseValue['header']!==undefined)
+            this.headervalues=responseValue['header'];
+        this.generateTableFromQueryData(responseValue);
+    };
+
+    this.redrawTableByResponse=function(response, instance){
+        let responseValue=instance.getFieldsFromResponse(response);
+        instance.reDrawTable(responseValue);
     };
 
     /* Service methods block end...*/

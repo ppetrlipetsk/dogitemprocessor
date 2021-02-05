@@ -23,6 +23,13 @@ public class DataAdapter {
             return null;
     }
 
+    public static Object objectFromJson(String jsonValue, Class c){
+        Gson gson = new Gson();
+        Object values=gson.fromJson(jsonValue, c);
+        return values;
+    }
+
+
     public static String asJSON(List lines){
         return newJSonInstance().toJson(lines);
     }
@@ -78,7 +85,7 @@ public class DataAdapter {
     }
 
     // Оставлено для примера
-    private static JsonNode getValueFromJson(String name, String value) {
+    public static JsonNode getValueFromJson(String name, String value) {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root;
         try {

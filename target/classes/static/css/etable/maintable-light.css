@@ -138,6 +138,7 @@
     border: 0px solid #707070;
     margin-top: 5px;
     margin-left: 5px;
+    float:left;
 }
 .tp-button:hover{
     box-shadow: 0.2em 0.2em 11px;
@@ -150,6 +151,12 @@
 
 .save-image{
     background: url(/static/images/save.gif) no-repeat;
+    background-size: 30px 30px;
+}
+
+.visible-set-image{
+    margin-left:15px;
+    background: url(/static/images/table_button.gif) no-repeat;
     background-size: 30px 30px;
 }
 

@@ -18,7 +18,7 @@ public class SourceTableImpl  extends TableClass{
     }
 
     @Override
-    protected String replaceTagsGetAllQuery(String query) {
+    protected String replaceTagsGetAllQuery(String query, String aliasesStringList) {
         Pagination pagination= paginationHelper.getPagination(this.getPaginationName());
         return query
                 .replace(FIELDS_TAG, aliasesStringList)

@@ -1,6 +1,10 @@
 package com.ppsdevelopment.controller;
 
+import com.ppsdevelopment.domain.Aliases;
+import com.ppsdevelopment.domain.dictclasses.AliasSettings;
+import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
 import com.ppsdevelopment.envinronment.*;
+import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
 import com.ppsdevelopment.service.viewservices.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,8 @@ import java.util.Map;
 public class TablePageController {
     private SourceTableImpl sourceTable;
     private SettingsManager settingsManager;
+    private AliasesSettingsImpl aliasesSettingsImpl;
+    private AliasesSettingsCollection aliasesSettingsCollection;
 
     @GetMapping
     public String index(Map<String, Object> model) throws Exception {
@@ -28,11 +34,20 @@ public class TablePageController {
         }
         settingsManager.setSettingsValue(sourceTable.getPaginationName(),pagination);
 
-        String tableHeader= sourceTable.getTableHeader();
+
+        //AliasesSettingsCollection aliasesSettingsCollection=aliasesSettings.getSettingsList(sourceTable.getTableName(),sourceTable.getTableId(),sourceTable.getAliases());
+        Map<Long, AliasSettings> aliasSettings=aliasesSettingsImpl.getSettingsCollection(
+                sourceTable.getTableName()
+                ,aliasesSettingsCollection
+                ,sourceTable.getAliasesKeys()
+                ,sourceTable.getAliases()
+        );
+
+        String tableHeader= sourceTable.getTableHeader(sourceTable.getAliases(),aliasSettings);
         model.put("headervalues",tableHeader);
 
 
-        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll());
+        String tableData=sourceTable.getResultAsStringLine(sourceTable.getAll(aliasSettings));
         model.put("tabledata",tableData);
 
         pagination.setRecordsCount(sourceTable.getCount());
@@ -52,22 +67,18 @@ public class TablePageController {
         this.sourceTable = xTable;
     }
 
-/*
-    @Autowired
-    public void setSession(HttpSession session) {
-        this.session = session;
-    }
-*/
-
-/*
-    @Autowired
-    public void setRequest(HttpServletRequest request) {
-        this.request = request;
-    }
-*/
-
     @Autowired
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
+    }
+
+    @Autowired
+    public void setAliasesSettingsImpl(AliasesSettingsImpl aliasesSettingsImpl) {
+        this.aliasesSettingsImpl = aliasesSettingsImpl;
+    }
+
+    @Autowired
+    public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
+        this.aliasesSettingsCollection = aliasesSettingsCollection;
     }
 }

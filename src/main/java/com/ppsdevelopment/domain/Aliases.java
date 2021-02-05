@@ -1,5 +1,6 @@
 package com.ppsdevelopment.domain;
 
+import com.google.gson.Gson;
 import org.hibernate.annotations.Filter;
 
 import javax.persistence.*;
@@ -126,6 +127,17 @@ public class Aliases {
             ", styleClass:'" + this.getStyleClass() +"'"+
             ", fieldtype:'" + fieldtype + '\'' +
             ", columnStyle:'" + columnstyle + '\'' +
+            "}]";
+  }
+
+  public String toCellJSon() {
+    return "[{" +
+            "\"id\":" + id +
+            ", \"fieldalias\":\"" + fieldalias + "\"" +
+            ", \"fieldname\":\"" + fieldname + "\"" +
+            ", \"styleClass\":\"" + this.getStyleClass() +"\""+
+            ", \"fieldtype\":\"" + fieldtype + "\"" +
+            ", \"columnStyle\":\"" + columnstyle + "\"" +
             "}]";
   }
 

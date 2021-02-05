@@ -6,7 +6,7 @@ import com.ppsdevelopment.controller.requestclass.FilterDataClass;
 import com.ppsdevelopment.converters.DateFormatter;
 import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.Tables;
-import com.ppsdevelopment.envinronment.Credentials;
+import com.ppsdevelopment.domain.dictclasses.AliasSettings;
 import com.ppsdevelopment.envinronment.SettingsManager;
 import com.ppsdevelopment.repos.AliasesRepo;
 import com.ppsdevelopment.repos.TablesRepo;
@@ -39,7 +39,6 @@ public abstract class TableClass {
     private UsersTablesCache usersTablesCache;
     private SettingsManager settingsManager;
 
-
     @PersistenceContext
     protected EntityManager em;
 
@@ -70,8 +69,9 @@ public abstract class TableClass {
 
     private   String tableName;
     private static List<Aliases> aliases;
-    protected static String aliasesStringList;
-    private String tableHeader;
+    private static Set<Long> aliasesKeys;
+    //protected static String aliasesStringList;
+    /*private String tableHeader;*/
     private boolean cachable;
     private Long tableId;
 
@@ -85,11 +85,38 @@ public abstract class TableClass {
         else
             throw new RuntimeException("Table"+tableName+" not found!");
         aliases=aliasesRepo.getAllByTable(tableId);
-        aliasesStringList="id,".concat(HeaderGenerator.getColumnsList(aliases));
-        tableHeader= HeaderGenerator.getHeaderDataList(aliases);
+        aliasesKeys= collectAliasesKeys(aliases);
+        /*tableHeader= HeaderGenerator.getHeaderDataList(aliases);*/
         fillQueriesCollection();
     }
 
+    public String createHeader(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap){
+        String tableHeader= HeaderGenerator.getHeaderDataList(aliases, settingsMap);
+        return tableHeader;
+
+    }
+
+    public String createHeaderJSon(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap){
+        String tableHeader= HeaderGenerator.getHeaderDataListJson(aliases, settingsMap);
+        return tableHeader;
+    }
+
+
+    private Set<Long> collectAliasesKeys(List<Aliases> aliases) {
+        Set<Long> keys=new HashSet<>();
+        for (Aliases alias:aliases){
+            keys.add(alias.getId());
+        }
+        return keys;
+    }
+
+    public Set<Long> getAliasesKeys() {
+        return aliasesKeys;
+    }
+
+    public  Set<Long> collectAliasesKeys() {
+        return aliasesKeys;
+    }
 
 
     /* Public Methods block begin*/
@@ -154,12 +181,16 @@ public abstract class TableClass {
         this.usersTablesCache.setTableRowFieldValue(this.tableName,id,fieldName,value);
     }
 
-    public String getTableHeader() {
-        return tableHeader;
+    public String getTableHeader(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap) {
+        return createHeader(aliases,settingsMap);
+    }
+
+    public String getTableHeaderJSon(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap) {
+        return createHeaderJSon(aliases,settingsMap);
     }
 
 
-    public List getAll() throws Exception {
+    /*public List getAll() throws Exception {
         String queryString=getQuery(QUERY_SELECT_ALL);
         if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
         queryString=prepareQuery(queryString);
@@ -172,12 +203,44 @@ public abstract class TableClass {
                     .getResultList();
             if (cachable) return updateFromCache(result);
             else
-            return result;
+                return result;
         }
         catch (Exception e){
             System.out.println("Ошибка:"+e.toString());
         }
         return new ArrayList();
+    }*/
+
+    public List getAll(Map<Long, AliasSettings> aliasSettingsMap) throws Exception {
+        //aliasesStringList="id,".concat(HeaderGenerator.getColumnsList(aliases));
+        String queryString=getQuery(QUERY_SELECT_ALL);
+        if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
+        queryString=prepareQuery(queryString);
+        queryString=replaceTagsGetAllQuery(queryString,"id,"+getAliasSettingsListStr(aliasSettingsMap));
+        try {
+            List result=  em.createNativeQuery(queryString)
+                    .setHint( "org.hibernate.cacheable", "true")
+                    .setHint( QueryHints.HINT_CACHEABLE, "true")
+                    .setHint( QueryHints.HINT_CACHE_REGION, "query.cache.sourcetable" )
+                    .getResultList();
+            if (cachable) return updateFromCache(result);
+            else
+                return result;
+        }
+        catch (Exception e){
+            System.out.println("Ошибка:"+e.toString());
+        }
+        return new ArrayList();
+    }
+
+    private String getAliasSettingsListStr(Map<Long, AliasSettings> aliasSettingsMap) {
+        StringJoiner s=new StringJoiner(",");
+        for (Aliases alias:aliases){
+            Long id=alias.getId();
+            AliasSettings settings=aliasSettingsMap.get(id);
+            if (settings == null || (settings.isVisibility())) s.add(alias.getFieldalias());
+        }
+        return s.toString();
     }
 
     private List updateFromCache(List result) {
@@ -197,14 +260,25 @@ public abstract class TableClass {
         return result;
     }
 
-    public String getJsonResponseForFilterApply() throws Exception { //String datatable, Pagination pagination, FilterQuery filter
+    public String getJsonResponseForFilterApply(Map<Long,AliasSettings> aliasSettingsMap) throws Exception { //String datatable, Pagination pagination, FilterQuery filter
         Pagination pagination=paginationHelper.getPagination(getPaginationName());
-        String tableData=getResultAsJSONLine(this.getAll());
+        String tableData=getResultAsJSONLine(this.getAll(aliasSettingsMap));
         FilterQuery filterItem=FilterHelper.getFilter(getFilterName(),settingsManager);
         String dataLine="\"datatable\":"+tableData;
         String paging="\"pagination\":{"+pagination.toValueString()+"}";
         String filterStr="\"filtercolumns\":"+filterItem.getColumnsNamesAsJson();
         return "{"+dataLine+","+paging+","+filterStr+"}";
+    }
+
+    public String getJsonResponseForColumnsSettingsApply(Map<Long,AliasSettings> aliasSettingsMap) throws Exception {
+        Pagination pagination=paginationHelper.getPagination(getPaginationName());
+        String tableData=getResultAsJSONLine(this.getAll(aliasSettingsMap));
+        FilterQuery filterItem=FilterHelper.getFilter(getFilterName(),settingsManager);
+        String dataLine="\"datatable\":"+tableData;
+        String paging="\"pagination\":{"+pagination.toValueString()+"}";
+        String filterStr="\"filtercolumns\":"+filterItem.getColumnsNamesAsJson();
+        String headerStr="\"header\":"+this.getTableHeaderJSon(aliases,aliasSettingsMap);
+        return "{"+dataLine+","+paging+","+filterStr+","+headerStr+"}";
     }
 
     public String getFilteredColumnsAsJson(){
@@ -388,7 +462,7 @@ public abstract class TableClass {
         return query;
     }
 
-    protected abstract String replaceTagsGetAllQuery(String query);
+    protected abstract String replaceTagsGetAllQuery(String query, String aliasesStringList);
 
     private void saveCacheRowToDataBase(Long id, RowFields rowValues) {
         Map<String,Object> items=rowValues.getCollection();
@@ -492,5 +566,8 @@ public abstract class TableClass {
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
     }
+
+
+
 
 }

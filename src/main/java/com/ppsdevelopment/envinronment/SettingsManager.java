@@ -1,9 +1,11 @@
 package com.ppsdevelopment.envinronment;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpSession;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 @Service
 public class SettingsManager {
@@ -13,26 +15,40 @@ public class SettingsManager {
 
 
     public Object getSettingsValue(String fieldName, Class<?> instanceClass){
-        return getSettingsValue(fieldName,instanceClass,true);
+        return getSettingsValue(fieldName,instanceClass,true, null);
     }
 
-    public Object getSettingsValue(String fieldName, Class<?> instanceClass, boolean dbSearch){
+    public Object getSettingsValue(String fieldName, Class<?> instanceClass, boolean dbSearch, TypeReference typeRef){
         Object result=null;
         try {
             if (session.getAttribute(fieldName) == null) {
-                Object value = usersSettingsRepository.get(credentials.getUser(), fieldName, instanceClass, dbSearch);
-                if (value != null) result = instanceClass.cast(value);
+                Object value = usersSettingsRepository.get(credentials.getUser(), fieldName, instanceClass, typeRef);
+                if ((value != null) &&(instanceClass!=null)) result = instanceClass.cast(value);
                 else {
-                    try {
-                        result = instanceClass.getDeclaredConstructor().newInstance();
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                        e.printStackTrace();
+                    if (value==null) {
+                        try {
+                            result = instanceClass.getDeclaredConstructor().newInstance();
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
+                    else
+                        result=value;
+                    }
             } else
                 result = session.getAttribute(fieldName);
         }
         catch (Exception ignored){};
+        return result;
+    }
+
+    public Object getSettingsValue(String fieldName, Class<?> instanceClass, TypeReference typeRef){
+        return getSettingsValue(fieldName,instanceClass, true, typeRef);
+    }
+
+    public Object getFromDataBase(String fieldName, Class<?> instanceClass) {
+        Object result = null;
+        Object value = usersSettingsRepository.getFromDataBase(credentials.getUser(), fieldName);
         return result;
     }
 
@@ -60,4 +76,6 @@ public class SettingsManager {
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
     }
+
+
 }

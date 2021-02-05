@@ -1,6 +1,6 @@
 <#import "parts/common.ftlh" as c>
 <#assign
-varcss=['../static/css/fform/fform.css']
+varcss=['../static/css/fform/fform.css','../static/css/etable/etable-light.css']
 varjs=['/static/js/fform.js','/static/js/form1.js','/static/js/ajaxtools.js' ]
 >
 

@@ -1,46 +1,62 @@
 package com.ppsdevelopment.controller.rest;
 
-import com.ppsdevelopment.controller.requestclass.TableCellRequest;
-import com.ppsdevelopment.envinronment.SettingsManager;
+import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
-import com.ppsdevelopment.tmctypeslib.DetectType;
-import com.ppsdevelopment.tmctypeslib.FieldType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
 @RequestMapping("useraliasesdict")
 public class UserAliasesDictController {
+    private static final String ID_NULL="null";
     private SourceTableImpl sourceTable;
-    private SettingsManager settingsManager;
-    private AliasesSettingsImpl aliasesSettings;
+    private AliasesSettingsImpl aliasesSettingsImpl;
+    private AliasesSettingsCollection aliasesSettingsCollection;
+
     @Autowired
     public void setSourceTable(@Qualifier("SourceTableImpl") SourceTableImpl sourceTable) {
         this.sourceTable = sourceTable;
     }
 
     @Autowired
-    public void setSettingsManager(SettingsManager settingsManager) {
-        this.settingsManager = settingsManager;
+    public void setAliasesSettingsImpl(AliasesSettingsImpl aliasesSettingsImpl) {
+        this.aliasesSettingsImpl = aliasesSettingsImpl;
     }
 
-    @PostMapping(value="/getaliaseslist", consumes = "application/json;charset=UTF-8")
+    @PostMapping(value="/getaliaseslist")
     public @ResponseBody  List getaliasesList(@RequestBody  String request) {
-//        List l=sourceTable.getAliases();
-  //      List l1=sourceTable.getAliasesWithStyle();
-    //    System.out.println(l1);
+        Map collection=aliasesSettingsImpl.getSettingsCollection(
+                sourceTable.getTableName()
+                ,aliasesSettingsCollection
+                ,sourceTable.getAliasesKeys()
+                ,sourceTable.getAliases()
+                );
 
-        List l=aliasesSettings.getSettingsList(sourceTable.getTableName(),sourceTable.getTableId(),sourceTable.getAliases());
-        return l;
+        return aliasesSettingsImpl.getSettingsList(collection,sourceTable.getAliases());
+    }
+
+    @PostMapping(value="applysettings", consumes = "application/json;charset=UTF-8")
+    public @ResponseBody  String applySettings(@RequestBody  String request) throws Exception {
+        String[] list= request.substring(2).substring(0,(request.length()-5)).replace("\\\"","\"").split("},");
+        String tableName=sourceTable.getTableName();
+        aliasesSettingsImpl.applySettings(list,  tableName, aliasesSettingsCollection.getCollection());
+        Map collection=aliasesSettingsImpl.getSettingsCollection(
+                sourceTable.getTableName()
+                ,aliasesSettingsCollection
+                ,sourceTable.getAliasesKeys()
+                ,sourceTable.getAliases()
+        );
+        String s=sourceTable.getJsonResponseForColumnsSettingsApply(collection);
+        return s;
     }
 
     @Autowired
-    public void setAliasesSettings(AliasesSettingsImpl aliasesSettings) {
-        this.aliasesSettings = aliasesSettings;
+    public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
+        this.aliasesSettingsCollection = aliasesSettingsCollection;
     }
 }

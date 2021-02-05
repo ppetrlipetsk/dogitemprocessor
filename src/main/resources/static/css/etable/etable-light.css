@@ -29,15 +29,20 @@
 }
 
 .filter_form_class{
-    display: block;
-    border: 1px solid #101010;
     width:350px;
-    height:auto;
     margin-top: -170px;
     margin-left: -150px;
-    background-color: #ffffff;
-    box-shadow: 0.2em 0.2em 11px
 }
+
+.form-class{
+    display: block;
+    border: 1px solid #101010;
+    height:auto;
+    background-color: #ffffff;
+    box-shadow: 0.2em 0.2em 11px;
+}
+
+
 
 .filter_form_class li{
     list-style-type: none;

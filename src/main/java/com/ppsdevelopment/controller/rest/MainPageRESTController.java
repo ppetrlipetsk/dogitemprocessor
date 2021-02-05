@@ -4,7 +4,10 @@ import com.google.gson.Gson;
 import com.ppsdevelopment.controller.annotations.Action;
 import com.ppsdevelopment.controller.requestclass.ApplyFilter;
 import com.ppsdevelopment.controller.requestclass.TableCellRequest;
+import com.ppsdevelopment.domain.dictclasses.AliasSettings;
+import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
 import com.ppsdevelopment.envinronment.SettingsManager;
+import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.viewservices.Pagination;
 import com.ppsdevelopment.service.FilterQuery;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
@@ -28,6 +31,8 @@ public class MainPageRESTController {
     private PaginationHelper paginationHelper;
     private SettingsManager settingsManager;
     private static final Map<String, Method> actions = new HashMap<>();
+    private AliasesSettingsCollection aliasesSettingsCollection;
+    private AliasesSettingsImpl aliasesSettingsImpl;
 
     static
     {
@@ -52,6 +57,16 @@ public class MainPageRESTController {
         return data.toString();
     }
 */
+
+    private Map<Long, AliasSettings> getAliasSettingsCollection(){
+        Map<Long, AliasSettings> aliasSettings=aliasesSettingsImpl.getSettingsCollection(
+                sourceTable.getTableName()
+                ,aliasesSettingsCollection
+                ,sourceTable.getAliasesKeys()
+                ,sourceTable.getAliases()
+        );
+        return aliasSettings;
+    }
 
     /*@PostMapping(value="/setcachedcell", consumes = "application/json;charset=UTF-8")*/
     @PostMapping(value="/setcell", consumes = "application/json;charset=UTF-8")
@@ -90,7 +105,7 @@ public class MainPageRESTController {
                 Object[] nargs= new Object[] {pag};
                 Pagination pagination= (Pagination) m.invoke(this, nargs);
                 paginationHelper.setPagination(sourceTable.getPaginationName(),pagination);
-                return sourceTable.getJsonResponseForFilterApply();
+                return sourceTable.getJsonResponseForFilterApply(getAliasSettingsCollection());
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
@@ -112,7 +127,8 @@ public class MainPageRESTController {
     public @ResponseBody String applyFilter(@RequestBody ApplyFilter request) throws Exception {
         setFilter(request.getColumnNumber()-1, request.getData());
         sourceTable.setActualPaginationValues();
-        return sourceTable.getJsonResponseForFilterApply();
+
+        return sourceTable.getJsonResponseForFilterApply(getAliasSettingsCollection());
     }
 
     private void setFilter(Integer columnNumber, String[] data) {
@@ -171,5 +187,15 @@ public class MainPageRESTController {
     @Autowired
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
+    }
+
+    @Autowired
+    public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
+        this.aliasesSettingsCollection = aliasesSettingsCollection;
+    }
+
+    @Autowired
+    public void setAliasesSettingsImpl(AliasesSettingsImpl aliasesSettingsImpl) {
+        this.aliasesSettingsImpl = aliasesSettingsImpl;
     }
 }

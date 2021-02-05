@@ -1,7 +1,7 @@
 <#import "parts/common.ftlh" as c>
 <#assign
-varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css']
-varjs=['/static/js/etable.js','/static/js/fixtable.js']
+varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css','../static/css/fform/fform.css','../static/css/etable/etable-light.css']
+varjs=['/static/js/etable.js','/static/js/fixtable.js','/static/js/fform.js','/static/js/form1.js','/static/js/ajaxtools.js','/static/js/system_tools.js']
 >
 
 <@c.page varcss varjs>
