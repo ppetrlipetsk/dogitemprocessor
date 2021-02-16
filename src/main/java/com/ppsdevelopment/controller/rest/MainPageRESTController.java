@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.ppsdevelopment.controller.annotations.Action;
 import com.ppsdevelopment.controller.requestclass.ApplyFilter;
 import com.ppsdevelopment.controller.requestclass.TableCellRequest;
+import com.ppsdevelopment.domain.Aliases;
 import com.ppsdevelopment.domain.dictclasses.AliasSettings;
-import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
 import com.ppsdevelopment.envinronment.SettingsManager;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.viewservices.Pagination;
@@ -31,7 +31,6 @@ public class MainPageRESTController {
     private PaginationHelper paginationHelper;
     private SettingsManager settingsManager;
     private static final Map<String, Method> actions = new HashMap<>();
-    private AliasesSettingsCollection aliasesSettingsCollection;
     private AliasesSettingsImpl aliasesSettingsImpl;
 
     static
@@ -61,7 +60,7 @@ public class MainPageRESTController {
     private Map<Long, AliasSettings> getAliasSettingsCollection(){
         Map<Long, AliasSettings> aliasSettings=aliasesSettingsImpl.getSettingsCollection(
                 sourceTable.getTableName()
-                ,aliasesSettingsCollection
+                //,aliasesSettingsCollection
                 ,sourceTable.getAliasesKeys()
                 ,sourceTable.getAliases()
         );
@@ -71,8 +70,11 @@ public class MainPageRESTController {
     /*@PostMapping(value="/setcachedcell", consumes = "application/json;charset=UTF-8")*/
     @PostMapping(value="/setcell", consumes = "application/json;charset=UTF-8")
     public @ResponseBody String setCachedCell(@RequestBody TableCellRequest data){
-        String fieldName=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
-        String fieldType=sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
+        Aliases alias=sourceTable.getAliasById(data.getFieldIndex());
+        String fieldName=alias.getFieldalias();
+                //sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldalias();
+        String fieldType=alias.getFieldtype();
+                //sourceTable.getAliases().get(data.getFieldIndex()-1).getFieldtype();
         if (DetectType.isValueValid(FieldType.valueOf(fieldType),data.getValue())){
             sourceTable.updateFieldValueToCache(Long.valueOf(data.getId()),data.getValue(), fieldName);
         }
@@ -119,22 +121,29 @@ public class MainPageRESTController {
         sourceTable.updateFieldValueFromCache();
         Gson gson = new Gson();
         int cn = Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("columnNumber", s).toString()));
-        List lines=sourceTable.getColumnUniqValues(--cn);
+        //List lines=sourceTable.getColumnUniqValues(--cn);
+        List lines=sourceTable.getColumnUniqValues(cn);
         return gson.toJson(lines);
     }
 
     @PostMapping("/applyfilter")
     public @ResponseBody String applyFilter(@RequestBody ApplyFilter request) throws Exception {
-        setFilter(request.getColumnNumber()-1, request.getData());
+        //setFilter(request.getColumnNumber()-1, request.getData());
+        setFilter(request.getColumnNumber(), request.getData());
         sourceTable.setActualPaginationValues();
 
         return sourceTable.getJsonResponseForFilterApply(getAliasSettingsCollection());
     }
 
     private void setFilter(Integer columnNumber, String[] data) {
-        FilterQuery filterItem=FilterHelper.getFilter(sourceTable.getFilterName(),settingsManager);
-        filterItem.set(sourceTable.getAliases().get(columnNumber).getFieldalias(),Arrays.asList(data));
-        FilterHelper.setFilter(sourceTable.getFilterName(),filterItem,settingsManager);
+        String columnName=sourceTable.getAliasById(columnNumber).getFieldalias();
+        if ((columnName!=null)&&(columnName.length()>0)){
+            FilterQuery filterItem=FilterHelper.getFilter(sourceTable.getFilterName(),settingsManager);
+            //filterItem.set(sourceTable.getAliases().get(columnNumber).getFieldalias(),Arrays.asList(data));
+            filterItem.set(columnName,Arrays.asList(data));
+            FilterHelper.setFilter(sourceTable.getFilterName(),filterItem,settingsManager);
+        }
+        else throw new RuntimeException("Ошибка имени псевдонима поля с id="+columnNumber+", именем="+columnName);
     }
 
     @PostMapping("/savecache")
@@ -170,7 +179,7 @@ public class MainPageRESTController {
     public   Pagination sortMainPage(Pagination pag){
 //        Integer columnnumber= Objects.requireNonNull(Integer.valueOf(DataAdapter.valueFromJson("columnnumber", s).toString()));
         sourceTable.updateFieldValueFromCache();
-        return paginationHelper.sortPage(pag.getSortColumnNumber(),sourceTable.getAliases(),sourceTable.getPaginationName());
+        return paginationHelper.sortPage(pag.getSortColumnNumber(),sourceTable.getAliasById(pag.getSortColumnNumber()).getFieldalias(),sourceTable.getPaginationName());
     }
 
     @Autowired
@@ -189,10 +198,6 @@ public class MainPageRESTController {
         this.settingsManager = settingsManager;
     }
 
-    @Autowired
-    public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
-        this.aliasesSettingsCollection = aliasesSettingsCollection;
-    }
 
     @Autowired
     public void setAliasesSettingsImpl(AliasesSettingsImpl aliasesSettingsImpl) {

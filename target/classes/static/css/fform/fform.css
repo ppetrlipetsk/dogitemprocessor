@@ -5,7 +5,7 @@
     border: 1px solid #0a58ca;
 }
 .ff-form-class{
-    width:500px;
+    width:580px;
     margin: 0 auto;
 }
 .ff-form-top-panel{
@@ -98,4 +98,23 @@
     position: absolute;
     top: 0px;
     left: 0px;
+}
+
+.ff-aliases-dt-style{
+
+}
+
+.ff-h-check-box{
+    display: block;
+    width:10px;
+    height:10px;
+    border:1px solid #707070;
+}
+
+.check-none{
+    float:right;
+}
+
+.check-all{
+    float:left;
 }

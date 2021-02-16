@@ -1,14 +1,17 @@
 package com.ppsdevelopment.controller.rest;
 
-import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ppsdevelopment.domain.dictclasses.AliasSettings;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 
 @RestController
 @RequestMapping("useraliasesdict")
@@ -16,7 +19,6 @@ public class UserAliasesDictController {
     private static final String ID_NULL="null";
     private SourceTableImpl sourceTable;
     private AliasesSettingsImpl aliasesSettingsImpl;
-    private AliasesSettingsCollection aliasesSettingsCollection;
 
     @Autowired
     public void setSourceTable(@Qualifier("SourceTableImpl") SourceTableImpl sourceTable) {
@@ -32,7 +34,6 @@ public class UserAliasesDictController {
     public @ResponseBody  List getaliasesList(@RequestBody  String request) {
         Map collection=aliasesSettingsImpl.getSettingsCollection(
                 sourceTable.getTableName()
-                ,aliasesSettingsCollection
                 ,sourceTable.getAliasesKeys()
                 ,sourceTable.getAliases()
                 );
@@ -42,21 +43,62 @@ public class UserAliasesDictController {
 
     @PostMapping(value="applysettings", consumes = "application/json;charset=UTF-8")
     public @ResponseBody  String applySettings(@RequestBody  String request) throws Exception {
-        String[] list= request.substring(2).substring(0,(request.length()-5)).replace("\\\"","\"").split("},");
+
+        request= request.replace("\\\"","\"");//.split("},");
+
+        ObjectMapper mapper = new ObjectMapper();
+        LinkedList<AliasSettings> list=new LinkedList<>();
+        TypeReference<LinkedList<AliasSettings>> typeReference = new TypeReference<LinkedList<AliasSettings>>(){};
+        try{
+            list=mapper.readValue( request,typeReference);
+        }
+        catch (Exception ignored){}
+
+        if (list==null) throw new RuntimeException("Request error");
+
         String tableName=sourceTable.getTableName();
-        aliasesSettingsImpl.applySettings(list,  tableName, aliasesSettingsCollection.getCollection());
-        Map collection=aliasesSettingsImpl.getSettingsCollection(
+        HashMap<Long, AliasSettings> collection=aliasesSettingsImpl.getSettingsCollection(
                 sourceTable.getTableName()
-                ,aliasesSettingsCollection
                 ,sourceTable.getAliasesKeys()
                 ,sourceTable.getAliases()
         );
+        aliasesSettingsImpl.applySettings(list,  tableName, collection);
         String s=sourceTable.getJsonResponseForColumnsSettingsApply(collection);
         return s;
     }
 
-    @Autowired
-    public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
-        this.aliasesSettingsCollection = aliasesSettingsCollection;
+    @PostMapping(value = "widthsettings", consumes = "application/json;charset=UTF-8")
+    public String widthSettingsApply(@RequestBody String request){
+        TypeReference<LinkedList<AliasSettings>> typeReference
+                = new TypeReference<LinkedList<AliasSettings>>(){};
+        ObjectMapper mapper = new ObjectMapper();
+
+        HashMap<Long, AliasSettings> collection=aliasesSettingsImpl.getSettingsCollection(
+                sourceTable.getTableName()
+                ,sourceTable.getAliasesKeys()
+                ,sourceTable.getAliases()
+        );
+
+        LinkedList<AliasSettings> list=new LinkedList<>();
+        try{
+              list=mapper.readValue( request,typeReference);
+            System.out.println(list.size());
+        }
+        catch (Exception ignored){
+            System.out.println(ignored);
+        }
+
+        aliasesSettingsImpl.applySettings(
+                list
+                ,sourceTable.getTableName()
+                /*,sourceTable.getAliasesKeys()*/
+                //,sourceTable.getAliases()
+                ,collection
+        );
+
+        return "";
     }
+
+
+
 }

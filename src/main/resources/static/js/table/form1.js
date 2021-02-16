@@ -7,7 +7,7 @@ VisibilitySettingsForm=function(){
                 formClass:'ff-form-class'
                 , formParentTagId:undefined
                 , formId:'fform'
-                , topButtons:[{class:'ff-new-button',id:'ff-new'},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
+                , topButtons:[{class:'ff-new-button',id:'ff-new',title:''},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
                 , bottomButtons:[]
                 , buttonActionManager:this.buttonActionManager
                 , showTopPanel:false
@@ -18,10 +18,11 @@ VisibilitySettingsForm=function(){
                 , topPanelHeight:50
                 , fillContent:this.fillContent
                 , eventManager:this.eventManager
-                , title:'Видимость столбцов'
+                , title:'Настройка столбцов'
                 , parentInstance:this
             });
             f.showForm();
+            this.headerVisibleCheckboxListener();
     };
 
     this.buttonActionManager=function(id, instance){
@@ -38,7 +39,7 @@ VisibilitySettingsForm=function(){
         if (id==='ff-edit') applySettings(instance,instance.parentInstance);
     };
 
-    function getHeader(){
+    function getHeader(instance){
 
         let thead=document.createElement('thead');
         let headerRow=document.createElement('tr');
@@ -50,25 +51,83 @@ VisibilitySettingsForm=function(){
 
         th=document.createElement('th');
         th.className='ff-aliases-dt-vis';
-        th.innerText='Видимость';
-        headerRow.appendChild(th);
+        let titleElement=document.createElement('div');
+        titleElement.className='ff-h-vis-title';
+        titleElement.innerText='Видимость';
+        th.appendChild(titleElement);
 
 /*
+        let chv=document.createElement('div');
+        chv.className='ff-h-check-box check-all';
+*/
+
+        let chv=document.createElement('input');
+        chv.title='Выделить все';
+        chv.type='checkbox';
+        chv.checked=true;
+        chv.className='ff-h-chech-box check-all';
+        chv.addEventListener('click',function (e) {
+
+            $('.input_vis').each(function () {
+
+                    $(this)[0].checked=true;
+                });
+            this.checked=true;
+            }
+        );
+
+        chv.setAttribute('id','check-all');
+        th.appendChild(chv);
+
+        let chh=document.createElement('input');
+        chh.title='Снять выделение';
+        chh.type='checkbox';
+        chh.checked=false;
+        chh.className='ff-h-chech-box check-none';
+        chh.addEventListener('click',function (e) {
+                $('.input_vis').each(function () {
+                    $(this)[0].checked=false;
+                });
+                this.checked=false;
+            }
+        );
+
+        chh.setAttribute('id','check-none');
+        th.appendChild(chh);
+
+
+        headerRow.appendChild(th);
+
         th=document.createElement('th');
         th.className='ff-aliases-dt-width';
         th.innerText='Ширина';
         headerRow.appendChild(th);
-*/
 
         thead.appendChild(headerRow);
+        /*if (instance!==undefined)  instance.headerVisibleCheckboxListener();*/
         return thead;
     }
 
-    function getTable(response){
+    this.headerVisibleCheckboxListener=function() {
+        $('.ff-h-check-box').click(function () {
+            let id=this.getAttribute('id');
+            if (id!==undefined){
+                if (id==='check-all'){
+                    checkAllElementsVisibility(t);
+                }
+            }
+        });
+    };
+
+    function checkAllElementsVisibility() {
+        $('.input_vis').param('ckecked',true);
+    }
+
+    function getTable(response, instance){
         let table=document.createElement('table');
         table.className='ff-aliases-dict-table';
 
-        let theader=getHeader();
+        let theader=getHeader(instance);
         table.appendChild(theader);
 
         let cg=document.createElement('colgroup');
@@ -97,28 +156,63 @@ VisibilitySettingsForm=function(){
         return table;
     }
 
+    function createStyleInput(val, fieldId){
+        let td=document.createElement('td');
+        let input=document.createElement('input');
+        input.setAttribute('id','style'+fieldId);
+        input.style.border="none";
+        input.value=val['columnStyle'];
+        input.name='style_'+val['fieldAliasId'];
+        input.className='style_input';
+        td.appendChild(input);
+        return td;
+    }
+
+    function createWidthInput(val, fieldId){
+        let td=document.createElement('td');
+        let columnWidth=document.createElement('input');
+        columnWidth.style.width='100px';
+        columnWidth.setAttribute('id','w'+fieldId);
+        columnWidth.style.border="none";
+        columnWidth.innerText=val['columnWidth'];
+        columnWidth.value=val['columnWidth'];
+        columnWidth.name='width_'+val['fieldAliasId'];
+        columnWidth.className='with_input';
+        td.appendChild(columnWidth);
+        return td;
+    }
+
+    function createRowNameCaption(val) {
+        let td = document.createElement('td');
+        td.innerText = val['fieldname'];
+        td.className = 'c-name';
+        return td;
+    }
+
+    function createVisibilitiInput(val){
+        let td=document.createElement('td');
+        td.className='c-visible';
+        let vis_check=document.createElement('input');
+        vis_check.type='checkbox';
+        vis_check.name='visibility_'+val['fieldAliasId'];
+        let fieldId=val['fieldAliasId']||'null';
+        vis_check.setAttribute('id','vis_'+fieldId);
+        vis_check.className="input_vis";
+        vis_check.checked=val['visibility'];
+        td.appendChild(vis_check);
+        return td;
+    }
+
     function getTableRows(response) {
         if ((response!==undefined)&&(Array.isArray(response))){
             let rows=[];
-
             for (let i=0;i<response.length;i++){
-                let row=document.createElement('tr');
-                let td=document.createElement('td');
-                td.innerText=response[i]['fieldname'];
-                td.className='c-name';
-                row.appendChild(td);
-                td=document.createElement('td');
-                td.className='c-visible';
-                let vis_check=document.createElement('input');
-                vis_check.type='checkbox';
-                vis_check.name='visibility_'+response[i]['fieldAliasId']+'-'+response[i]['id'];
                 let fieldId=response[i]['fieldAliasId']||'null';
-                let id=response[i]['id']||'null';
-                vis_check.setAttribute('id','vis_'+fieldId+'-'+id);
-                vis_check.className="input_vis";
-                vis_check.checked=response[i]['visibility'];
-                td.appendChild(vis_check);
-                row.appendChild(td);
+                let row=document.createElement('tr');
+                row.appendChild(createRowNameCaption(response[i]));
+                row.appendChild(createVisibilitiInput(response[i]));
+                row.appendChild(createWidthInput(response[i], fieldId));
+                /*row.appendChild(createStyleInput(response[i], fieldId));*/
                 rows[i]=row;
             }
             return rows;
@@ -127,21 +221,37 @@ VisibilitySettingsForm=function(){
             return [document.createElement('tr')];
     }
 
+    function getWidthFromElement(el){
+        let width_el=el.querySelector('.with_input');
+        let val=undefined;
+        if ((el!==undefined)){
+            val=width_el.value;
+        }
+        return val;
+    }
+
+    function getStyleFromElement(el){
+        let width_el=el.querySelector('.style_input');
+        let val=undefined;
+        if ((el!==undefined)){
+            val=width_el.value;
+        }
+        return val;
+    }
+
     function getObjectFromElement(el){
         let vis=el.querySelector('.input_vis');
         let item= {};
+        let width=getWidthFromElement(el);
+        /*let styleValue=getStyleFromElement(el);*/
+        item['columnWidth']=width;
+        /*item['columnStyle']=styleValue;*/
         if (vis.type==='checkbox'){
             item['visibility']=vis.checked;
             if (vis.hasAttribute('id')){
                 let el_vis_id=vis.getAttribute('id');
                 if ((el_vis_id!==undefined)&&(el_vis_id.length>3)){
-                    let s=el_vis_id.substr(4,el_vis_id.length-4).split('-');
-                    //if ((s!==undefined)&&(s.length>1))
-
-                    item['id']=s[1];
-                    item['aliasid']=s[0];
-
-
+                    item['id']=el_vis_id.substr(4, el_vis_id.length - 4);
                 }
             }
         }
@@ -175,7 +285,7 @@ VisibilitySettingsForm=function(){
         }
 
         ajaxQuery("/useraliasesdict/applysettings"
-            ,JSON.stringify(data)
+            ,data
             ,function (t,response) {
                 instance.closeForm();
                 if ((t.parentInstance.callback!==undefined)&&(typeof(t.parentInstance.callback)===typeof(Function)))
@@ -188,9 +298,9 @@ VisibilitySettingsForm=function(){
             );
     }
 
-    function generateViewFromResponse(responseValue, contentElement) {
+    function generateViewFromResponse(responseValue, contentElement, instance) {
         if ((responseValue!==undefined)&&(Array.isArray(responseValue))){
-            contentElement.appendChild(getTable(responseValue));
+            contentElement.appendChild(getTable(responseValue),instance);
         }
 
 
@@ -212,7 +322,7 @@ VisibilitySettingsForm=function(){
             ,{currentPage:1}
             ,function (instance, response) {
                 /*let responseValue= JSON.parse(response);*/
-                generateViewFromResponse(response, contentElement);
+                generateViewFromResponse(response, contentElement, t);
             }
             , function (thisItem,response) {
                 alert('Error: ' + response);

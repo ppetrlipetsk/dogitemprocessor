@@ -1,6 +1,7 @@
 /*let ETable=1;*/
 
 ETable=function(preferences) {
+    this._MIN_COLUMN_WIDTH=90;
     this.tabledata = preferences.tabledata;
     this.tableBlockId = preferences.tableblockid;
     this.tableformid=preferences.tableformid;
@@ -50,7 +51,9 @@ ETable=function(preferences) {
     this.pagPanelTagLeft=this.pagPanelTag.slice(0,c1);
     this.pagPanelTagRight=this.pagPanelTag.slice(c1+this.itemsTmpl.length);
     this.sizeStep=5;
-
+    this.columnWidthDialog=true;
+    this.widthChanged=false;
+    this.serviceRowVisibility=false;
     /* Table output.  Begin... */
 
     this.showTableForm=function(){
@@ -63,63 +66,9 @@ ETable=function(preferences) {
     };
 
     this.showTable=function () {
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();
+        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener().widthDialogListener().headerFoldListener();
         this.showPaginationPanel();/*.setPaginationClickListener();*/
     };
-
-/*
-    this.showTableX=function () {
-        let tableBlock=document.querySelector('#'+this.tableBlockId);
-        if (tableBlock!==undefined){
-            let blocks=this.generateTableEntity();
-            tableBlock.innerHTML='';
-            tableBlock.appendChild(blocks["header"]);
-            tableBlock.appendChild(blocks["datatable"]);
-        }
-        /!*this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();*!/
-        this.setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener();
-        this.showPaginationPanel();/!*.setPaginationClickListener();*!/
-    };
-*/
-
-/*
-    this.createHeaderDiv=function()
-    {
-        let divEl=document.createElement('div');
-        /!*divEl.setAttribute("id",);*!/
-        divEl.className='header_block';
-        return divEl;
-    };
-
-    this.createDataBlockDiv = function () {
-        let divEl=document.createElement('div');
-        divEl.className='datablock';
-        return divEl;
-    };
-
-    this.getHeaderTable = function () {
-        let table=document.createElement('table');
-        table.setAttribute("id",'datatable_header');
-        table.innerHTML='<thead>' + this.getTableHeaderBlock() + '</thead><tbody>';
-        return table;
-    };
-
-    this.getDataTable = function () {
-        let table=document.createElement('table');
-        table.setAttribute("id",this.tableId);
-        table.innerHTML=this.getColumnsBlock()+'<tbody>'+this.getTableBody()+'</tbody>';
-        return table;
-    };*/
-
-   /* this.generateTableEntity = function () {
-        let headerDiv=this.createHeaderDiv();
-        let dataBlockDiv=this.createDataBlockDiv();
-        let headerTable=this.getHeaderTable();
-        let dataTable=this.getDataTable();
-        headerDiv.appendChild(headerTable);
-        dataBlockDiv.appendChild(dataTable);
-        return {header:headerDiv, datatable:dataBlockDiv};
-    };*/
 
     this.createTableBlocks = function () {
         let tableForm=document.getElementById(this.tableformid);
@@ -128,8 +77,6 @@ ETable=function(preferences) {
             panelElement.setAttribute("id",this.toolsPanelBlockId);
             panelElement.className=this.toolsPanelBlockId+'style';
             tableForm.appendChild(panelElement);
-
-
 
             let tableElement=document.createElement('div');
             tableElement.setAttribute("id",this.tableBlockId);
@@ -151,126 +98,441 @@ ETable=function(preferences) {
             return false;
     };
 
+    function getTableElement(id){
+        let tableElement=document.createElement('table');
+        tableElement.setAttribute('id', id+'_header');
+        return tableElement;
+    }
+
+    function createHeaderCell(cn, width, innerText, attr){
+        let th=document.createElement('th');
+        if (cn!==undefined) th.className=cn;
+        if (width!==undefined) th.style.width=width;
+        if (innerText!==undefined) th.innerHTML=innerText;
+        if (attr!==undefined){
+            if (Array.isArray(attr)){
+                for(let i=0;i<attr.length;i++){
+                    th.setAttribute(attr[i]['attrName'], attr[i]['attrValue']);
+                }
+            }
+            else
+                th.setAttribute(attr['attrName'], attr['attrValue']);
+        }
+        return th;
+    }
+
+    function createRowElement(id) {
+        let tr=document.createElement('tr');
+        tr.setAttribute('id',id);
+        return tr;
+    }
+
+    this.isServiceRowVisible = function () {
+        return this.serviceRowVisibility;
+    };
+
+    function createHeaderNamesRow(instance){
+        if (typeof (instance.headervalues !== 'undefined') && (Array.isArray(instance.headervalues))) {
+            let tr=createRowElement('column_name');
+            if (instance.showLeftColumn){
+                let th=createHeaderCell('leftcolumn folding-sr',undefined,undefined,undefined);
+                th.innerText=instance.isServiceRowVisible()?"-":"+";
+                th.title='Свернуть/развернуть';
+                tr.appendChild(th);
+            }
+            for (let i=0;i<instance.headervalues.length;i++) {
+                let val = instance.headervalues[i];
+                {
+                    let sortimage = getSortImage(val,instance);
+                    let cn=getHeaderCellClass(val, instance);
+                    let width=getHeaderCellWidth(val);
+                    let columnNumber =  (val['id']) ;
+                    let th=createHeaderCell(cn,width,val['fieldName'] + sortimage,{attrName:'data-columnnumber', attrValue:columnNumber});
+                    tr.appendChild(th);
+                }
+            }
+            return tr;
+        } else
+            return "";
+    }
+
+    function createHeaderElement(){
+        return  document.createElement('thead');
+    }
+
+    function getFilterBlock(instance,columnName){
+        let filteredColumns=instance.filterColumns||[];
+        let filterBlock=document.createElement('div');
+        if (filteredColumns.indexOf(columnName,0)!==-1){
+            filterBlock.className='filter-block filter_image';
+        }
+        else {
+            filterBlock.className='filter-block  vfilter_image';
+        }
+        return filterBlock;
+    }
+
+    this.setServiceRowVisible = function (value) {
+        this.serviceRowVisibility=value;
+    };
+
+    function setFoldingServiceRowSign(value) {
+        let sr=document.querySelector('.folding-sr');
+        value=value||'';
+        if (sr!==undefined) sr.innerText=value;
+
+    }
+
+    this.headerFoldListener=function(){
+        let t=this;
+        $('.folding-sr').click(function () {
+                if (t.isServiceRowVisible()) {
+                    t.setServiceRowVisible(false);
+                    $('#service_row').fadeOut();
+                    setFoldingServiceRowSign('+');
+                } else {
+                    t.setServiceRowVisible(true);
+                    $('#service_row').fadeIn();
+                    setFoldingServiceRowSign('-');
+                }
+            }
+        );
+    };
+
+    function createServiceRow(instance) {
+        let tr=createRowElement('service_row');
+
+        if (instance.showLeftColumn){
+            let th=createHeaderCell('leftcolumn',undefined,undefined,undefined);
+            tr.appendChild(th);
+        }
+
+        for (let i=0;i<instance.headervalues.length;i++) {
+            let val= instance.headervalues[i];
+            let columnNumber = (val['id']);
+            let filterBlock=getFilterBlock(instance,val["fieldAlias"]);
+            let resizeLeft=getDownResizeBlock(this);
+            let rightResizeBlock=getUpResizeBlock(this);
+            let saveResize=getSaveResizeBlock(instance);
+            let attr={attrName:'data-columnnumber', attrValue:columnNumber};
+            let th=createHeaderCell(undefined,undefined,undefined,attr);
+            th.appendChild(resizeLeft);
+            th.appendChild(saveResize);
+            th.appendChild(filterBlock);
+            th.appendChild(rightResizeBlock);
+            tr.appendChild(th);
+        }
+        if (instance.isServiceRowVisible()) tr.style.display='table-row';
+        else
+            tr.style.display='none';
+        return tr;
+    }
+
     this.getHeaderTableImage=function(){
-        return '<table id="'+this.tableId+'_header">'+'<thead>'+this.getTableHeaderBlock()+'</thead><tbody></tbody></table>';
+        let tableElement=getTableElement(this.tableId);
+        /*tableElement.appendChild(this.getColumnsBlock());*/
+        let headerElement=createHeaderElement();
+        headerElement.appendChild(createHeaderNamesRow(this));
+        headerElement.appendChild(createServiceRow(this));
+        tableElement.appendChild(headerElement);
+        tableElement.appendChild(document.createElement('tbody'));
+        return tableElement;
     };
 
     this.getTableImage=function(){
-        return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<tbody>'+this.getTableBody()+'</tbody></table>';
+        let table=document.createElement('table');
+        table.setAttribute('id',this.tableId);
+        table.appendChild(this.getColumnsBlock());
+        table.appendChild(this.getTableBody());
+
+        //return '<table id="'+this.tableId+'">'+this.getColumnsBlock()+'<tbody>'+this.getTableBody()+'</tbody></table>';
+        return table;
     };
 
     this.drawTable=function(){
         let tableBlock=document.querySelector('#'+this.tableBlockId+'>.datablock');
-        if (tableBlock!==undefined)
-            tableBlock.innerHTML=this.getTableImage();
+        if (tableBlock!==undefined){
+            tableBlock.innerHTML='';
+            tableBlock.appendChild(this.getTableImage());
+        }
+
             let headerBlock=document.querySelector('#'+this.tableBlockId+'>.header_block');
-            headerBlock.innerHTML=this.getHeaderTableImage();
+            headerBlock.innerHTML='';
+            headerBlock.appendChild(this.getHeaderTableImage());
         return this;
     };
 
+    function createTDElement(className){
+        let td=document.createElement('td');
+        td.className=className;
+        return td;
+
+    }
+
+    function createTableRow(className, attr){
+        let tr=document.createElement('tr');
+        if ((className!==undefined)&&(className.length>0))
+            tr.className=className;
+
+        if (attr!==undefined){
+            if (Array.isArray(attr)){
+                for(let i=0;i<attr.length;i++){
+                    tr.setAttribute(attr[i]['attrName'],attr[i]['attrValue']);
+                }
+            }
+            else
+                tr.setAttribute(attr['attrName'],attr['attrValue']);
+        }
+        return tr;
+    }
+
     this.getTableBody=function(){
-        let s='';
+        let tbody=document.createElement('tbody');
         if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
             let index=0;
             for (let i=0;i<this.tabledata.length; i++) {
                 let line=this.tabledata[i];
-                s = s + '<tr data-id="' + line[0] + '" data-index="' + index + '">';
+                let tr=createTableRow(undefined,[{attrName:'data-id',attrValue:line[0]},{attrName:'data-index',attrValue:index}]);
+
                 if (this.showLeftColumn){
                     let rowNumber = (this.currentPage-1)*this.getPageSize()+index+1;
-                    s = s + '<td class="leftcolumn">' + rowNumber + '</td>\n';
+                    let td=createTDElement('leftcolumn');
+                    td.innerText=rowNumber;
+                    tr.appendChild(td);
                 }
 
                 for (let i = 0; i < line.length; i++) {
-                    if (i > 0)
-                        s = s + '<td data-index="' + i + '">' + line[i] + '</td>\n';
-                }
-                s = s + '</tr>\n';
+                    if (i > 0){
+                        let td=createTDElement(undefined);
+                            td.setAttribute('data-index',i);
+                            td.innerText=line[i];
+                            tr.appendChild(td);
+                        }
+                    }
                 index++;
+                tbody.appendChild(tr);
+                }
             }
-        }
-        return s;
+
+        return tbody;
     };
+
+    function createColumnElement(className){
+        let c=document.createElement('col');
+        if ((className!==undefined)&&(className.length>0))
+            c.className=className;
+        return c;
+    }
 
     this.getColumnsBlock=function () {
+
         if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
-            let s = '<colgroup>';
-            let columnEven=false;
+            let columns=document.createElement('colgroup');
+
             if (this.showLeftColumn){
-                s = s + '<col class="leftcolumn" >\n';
+                columns.appendChild(createColumnElement('leftcolumn'));
             }
+
             for (let i=0;i<this.headervalues.length;i++) {
-                let line = this.headervalues[i];
-                for (let y=0; y<line.length;y++) {
-                    let evenStyle=undefined;
-                    evenStyle=columnEven?" even ":" odd ";
-                    let val= line[y];
-                    let cs=(val['columnStyle'].length>0)?' style="'+val['columnStyle']+'" ':'';
-                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass']+evenStyle + "\"" : this.getCSSByType(val,evenStyle);
-                    s = s + '<col ' + c+ cs+' >\n';
-                    columnEven=!columnEven;
+                let val= this.headervalues[i];
+                    let columnWidth=getHeaderCellWidth(val);
+                    let cellClass =getHeaderCellClass(val,this);
+                    let columnNumber = (val['id']) ;
+                    let c=createColumnElement(cellClass);
+                    c.setAttribute('data-columnnumber',columnNumber);
+                    if (columnWidth!==undefined) c.style.width=columnWidth;
+                    columns.appendChild(c);
+            }
+
+            return columns;
+        } else
+            return undefined;
+    };
+
+    function getSortImage(val, instance){
+        return val["id"] === instance.sortColumnNumber ? instance.getSortImage() : "";
+    }
+
+    function getHeaderCellClass(val, instance){
+        if ((val['styleClass']!==undefined)&&(val['styleClass']!==null)&&(val['styleClass'].length > 0))
+            return   " class=\"" + val['styleClass'] + "\"";
+        else {
+            if ((instance!==undefined))
+                return instance.getCSSByType(val, '');
+        }
+        return undefined;
+
+    }
+
+    function getHeaderCellWidth(val){
+        if ((val['columnWidth']!==undefined)&&(val['columnWidth']!==null)&&(!isNaN(val['columnWidth'])))
+            return val['columnWidth']+'px';
+    }
+
+    function createDivElement(cn,style){
+        let el=document.createElement('div');
+        if ((cn!==undefined)&&(cn.length>0)) el.className=cn;
+        if ((style!==undefined)&&(style.length>0))
+            el.style=style;
+        return el;
+    }
+
+    function getDownResizeBlock() {
+        return createDivElement('width-down');
+    }
+
+    function getUpResizeBlock() {
+        return createDivElement('width-up');
+    }
+
+    function getSaveResizeBlock(instance) {
+        let style='display:none';
+        if (instance.widthChanged)
+            style='display:block';
+        return createDivElement('save-width',style);
+    }
+
+    function widthSaeClickListener(instance){
+        $('.save-width').click(function () {
+            saveWidthSettings(instance);
+
+        });
+    }
+   
+
+    this.getWidthIconsCellBlock = function () {
+        return "<div class='width-down'></div><div class='width-up'></div>";
+    };
+
+    function getElementByIdFromList(id, elements){
+        if (elements!==undefined){
+            for (let i=0; i<elements.length;i++){
+                let el=elements[i];
+                if ((el instanceof Element)&&(el.hasAttribute('data-columnnumber'))){
+                    if (el.getAttribute('data-columnnumber')===(id+'')) return el;
                 }
             }
-            return s+'</colgroup>';
-        } else
-            return "";
-    };
+        }
+        return undefined;
+    }
 
-    this.getTableHeaderBlock=function() {
-        if (typeof (this.headervalues !== 'undefined') && (Array.isArray(this.headervalues))) {
-            let s = '<tr id=\"column_name\" >';
-            let index = 0;
-            if (this.showLeftColumn){
-                s = s + '<th class="leftcolumn"></th>\n';
+    function getCellFromNodeById(id, row) {
+        if ((row!==undefined)&&(row instanceof Element)){
+            let elements=row.childNodes;
+            return getElementByIdFromList(id,elements);
+        }
+        return undefined;
+    }
+
+    function showWidthSaveBlock(visible) {
+        if (visible)
+        $(".save-width").css('display','block');
+        else
+            $(".save-width").css('display','none');
+    }
+
+    function storeWidthSettings(t, data) {
+                t.ajaxQuery("/useraliasesdict/widthsettings"
+                    , data
+                    , function (response) {
+                    }
+                    , function (thisItem, response) {
+                        alert('Error: ' + response);
+                    });
+                return data;
+    }
+
+    function getColumnsWidthCollection(instance) {
+        let collection=[];
+        if ((instance!==undefined)&&(instance.headervalues!==undefined)){
+            for(let i=0;i<instance.headervalues.length;i++)
+            {
+                let element={id:instance.headervalues[i]['id'], columnWidth:instance.headervalues[i]['columnWidth'], columnStyle:instance.headervalues[i]['columnStyle'],visibility:true, columnClass:instance.headervalues[i]['columnClass']};
+                    /*instance.headervalues[i];*/
+
+                collection[i]=element;
             }
-            for (let i=0;i<this.headervalues.length;i++) {
-                let line = this.headervalues[i];
-                for (let y=0; y<line.length;y++) {
-                    let val= line[y];
-                    let sortimage = index === this.sortColumnNumber - 1 ? this.getSortImage() : "";
-                    let c = ((val['styleClass']).length > 0) ? " class=\"" + val['styleClass'] + "\"" : this.getCSSByType(val,'');
-                    let cs=(val['columnStyle'].length>0)?' style="'+val['columnStyle']+'" ':'';
-                    let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
-                    s = s + '<th ' + c + cs+columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';
-                    /*s = s + '<th ' +  columnNumber + ' >' + val['fieldname'] + sortimage + '</th>\n';*/
+        }
+        return collection;
+    }
+
+    function setColumnWidth(instance, w, id) {
+        if (instance.headervalues!==undefined){
+            let index=getColumnIndexById(instance,id);
+            if (index!==-1){
+                instance.headervalues[index]['columnWidth']=w;
+            }
+        }
+    }
+
+    function getColumnIndexById(instance,id){
+        if ((instance!==undefined)&&(instance.headervalues!==undefined)){
+            for(let i=0;i<instance.headervalues.length;i++){
+                if (instance.headervalues[i]['id']==id) return i;
+            }
+        }
+        return -1;
+    }
+
+    this.widthDialogListener=function () {
+        let t=this;
+        $('.width-up,.width-down').click(function () {
+            let el=this;
+            let elClassName=this.className;
+            let step=0;
+            if ((elClassName!==undefined)){
+                if (elClassName==='width-up') step=1;
+                else
+                if (elClassName==='width-down') step=-1;
+            }
+            if (el instanceof Element){
+                let parent=el.parentNode||el.parentElement;
+                if (parent instanceof Element){
+                    if (parent.hasAttribute('data-columnnumber')){
+                        let id=parent.getAttribute('data-columnnumber');
+                        let row=document.getElementById('column_name');
+                        let el=getCellFromNodeById(id,row);
+                        let tdList=$('#datatable col');
+                        let tdElement=getElementByIdFromList(id,tdList);
+                        let w=0;
+                        if (el!==undefined){
+                            let width=el.style.width;
+                            if ((width!==undefined)&&(width.length>0)){
+                            if (width.indexOf('px')!==-1)
+                                width=width.substr(0,width.length-2);
+                                w=parseInt(width);
+                            }
+                            else
+                            {
+                                w=el.offsetWidth;
+                            }
+                            if ((step==-1)&&(w<t._MIN_COLUMN_WIDTH)) step=0;
+                            w+=step;
+                            el.style.width=w+'px';
+                            tdElement.style.width=w+'px';
+                            t.widthChanged=true;
+                            setColumnWidth(t,w, id);
+                            showWidthSaveBlock(true);
+                        }
+                    }
                 }
             }
-            s += '</tr>' + "\n";
-            return s+this.getServiceHeaderRow();
-        } else
-            return "";
+        });
+        $('.save-width').click(function () {
+            saveWidthSettings(t);
+        });
+        return this;
     };
-
-    this.getServiceHeaderRow=function(){
-        /*
-                if (this.filterColumns!==undefined) let filteredColumns=this.filterColumns;
-                else
-        */
-        let filteredColumns=this.filterColumns||[];
-
-        let s = '<tr id=\"service_row\">';
-        if (this.showLeftColumn){
-            s = s + '<th class="leftcolumn"></th>\n';
-        }
-
-        let index = 0;
-        for (let i=0;i<this.headervalues.length;i++) {
-            let line = this.headervalues[i];
-            for (let y=0; y<line.length;y++) {
-                let val= line[y];
-                let columnName=val["fieldalias"];
-                let columnNumber = " data-columnnumber=\"" + (++index) + "\" ";
-                if (filteredColumns.indexOf(columnName,0)!==-1)
-                    s = s + '<th ' + columnNumber + ' ><div class="filter_image"></div></th>\n';
-                else
-                    s = s + '<th ' + columnNumber + ' >' +this.getServiceCellBlock()+ '</th>\n';
-            }
-        }
-        s += '</tr>' + "\n";
-        return s;
-    };
+    
+    function saveWidthSettings(t) {
+        let data=getColumnsWidthCollection(t);
+        storeWidthSettings(t,data);
+        showWidthSaveBlock(false);
+        t.widthChanged=false;
+    }
 
     this.getServiceCellBlock = function () {
-        return "_";
+        return "<div class=\"filter-block\">_</div>";
     };
 
     this.fillTable=function(values){
@@ -279,15 +541,9 @@ ETable=function(preferences) {
         this.showTable();
     };
 
-/*
-    this.clearTableBlock=function(){
-        $('#'+this.tableBlockId).html("");
-    };
-*/
-
     this.getCSSByType=function(val, evenStyle) {
         let fstyle="";
-        switch(val['fieldtype']){
+        switch(val['fieldType']){
            case "INTTYPE":
            case "BIGINTTYPE":
            case "DECIMALTYPE":
@@ -298,7 +554,7 @@ ETable=function(preferences) {
            default:
            {}
         }
-        if (fstyle.length>0) return "class=\""+fstyle+evenStyle+"\"";
+        if (fstyle.length>0) return fstyle+evenStyle;
         else
         return "";
     };
@@ -383,9 +639,9 @@ ETable=function(preferences) {
     };
 
     this.setBlurListener=function(input, td, eTableInstance, x, y,id){
+        let t=this;
         input.addEventListener('blur', function () {
             let isActive=td.hasAttribute('data-activecell');
-
             if (isActive) {
                 td.removeAttribute('data-activecell');
                 if ((eTableInstance.tabledata[y][x] + "") !== input.value) {
@@ -396,7 +652,8 @@ ETable=function(preferences) {
                     }
                     if (!inputError) {
                         eTableInstance.tabledata[y][x] = input.value;
-                        eTableInstance.postajax(x, y, input.value, id);
+                        let aliasId=t.headervalues[x-1]['id'];
+                        eTableInstance.postajax(y, aliasId, input.value, id);
                     } else {
                         alert("Ошибка ввода данных!");
                         input.value = eTableInstance.tabledata[y][x];
@@ -411,7 +668,7 @@ ETable=function(preferences) {
 
     this.getCheckType=function(x){
         if (typeof(this.headervalues!=='undefined')&&(Array.isArray(this.headervalues))) {
-            let ct=this.headervalues[x-1][0]['fieldtype'];
+            let ct=this.headervalues[x-1]['fieldType'];
             if (ct!=="undefined")
                 return ct;
         }
@@ -438,7 +695,7 @@ ETable=function(preferences) {
     this.postajax=function(x,y, value,id){
         let url = "/tablerest/setcell";
         this.ajaxQuery(url
-            ,{id:id,fieldIndex:x,value:value}
+            ,{id:id,fieldIndex:y,value:value}
             ,function (response) {
                 $('#spinner').fadeOut();
             }
@@ -454,13 +711,15 @@ ETable=function(preferences) {
         else
             return  '<img alt="ASC" src="/static/images/sort-dwn-gray.gif"" style="width: 16px;">';
     };
+
     /* Table output. End... */
 
     /* Top panel block begin*/
+
     this.getTopPanelImage=function(){
         let s='<div class="et-top-panel">';
-        s+='<div class="tp-button save-image" id="button-save"></div>';
-        s+='<div class="tp-button visible-set-image" id="button-visible-settings"></div>';
+        s+='<div class="tp-button save-image" id="button-save" title="Сохранить"></div>';
+        s+='<div class="tp-button visible-set-image" id="button-visible-settings" title="Настройки таблицы"></div>';
         s+='</div>';
         return s;
     };
@@ -471,18 +730,24 @@ ETable=function(preferences) {
         return this;
     };
 
-    /*function isFunctionDefined(functionName) {
-        if(eval("typeof(" + functionName + ") == typeof(Function)")) {
-            return true;
+    this.confirmWidthSave=function(){
+        let c=true;
+        if (this.widthChanged) {
+            c = false;
+            if (confirm('Настройки ширины столбцов были изменены, но не были сохранены. Сохранить?')) {
+                saveWidthSettings(this);
+                c = true;
+            }
         }
-        else
-            return false;
-    }*/
+        return c;
+    };
 
     this.tableSettingsForm = function () {
-        if (isFunctionDefined('VisibilitySettingsForm')){
-            let f=new VisibilitySettingsForm();
-            f.show(this.redrawTableByResponse, this);
+        if (this.confirmWidthSave()) {
+            if (isFunctionDefined('VisibilitySettingsForm')) {
+                let f = new VisibilitySettingsForm();
+                f.show(this.redrawTableByResponse, this);
+            }
         }
     };
 
@@ -545,13 +810,20 @@ ETable=function(preferences) {
     this.setServiceClickListener=function(){
         if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
         let t = this;
-        $("#" + this.tableId + "_header #service_row th:not(.leftcolumn)").click(function () {
-            if (!t.getFilterFormActive()) {
-                t.setFilterFormActive(true);
-                let attrcell = this.hasAttribute('data-columnnumber');
-                if (attrcell !== undefined) {
-                    let columnNumber = $(this).attr('data-columnnumber');
-                    t.filterQuery(columnNumber);
+        /*$("#" + this.tableId + "_header #service_row th:not(.leftcolumn)").click(function () {*/
+        $(".filter-block").click(function () {
+                let parentElement=this.parentElement;
+                if ((parentElement!==undefined)&&(parentElement instanceof Element)){
+                        let attrcell = this.hasAttribute('data-columnnumber');
+                         if (attrcell !== undefined) {
+                             let columnNumber = parentElement.getAttribute('data-columnnumber');
+                            if (!t.getFilterFormActive()) {
+                                t.setFilterFormActive(true);
+                                if (columnNumber!==undefined)
+                                    t.filterQuery(columnNumber);
+                                else
+                                    alert('Ошибка передачи параметра ColumnNumber!');
+                    }
                 }
             }
         });
@@ -580,7 +852,7 @@ ETable=function(preferences) {
         formElement.setAttribute("id","filterform");
         formElement.className="form-class filter_form_class p-2 rounded";
 
-        let s="<form name='filter_form' action='/'><div class='filter_datablock'>";
+        let s="<form name='filter_form' action='/static'><div class='filter_datablock'>";
         if ((data!==undefined)&&(Array.isArray(data))){
             for (let i=0;i<data.length;i++){
                 let checked=data[i]["checked"]?"CHECKED":"";
@@ -816,7 +1088,8 @@ ETable=function(preferences) {
                 alert('Error: ' + response);
             });
     };
-/*Ошибка пагинации, при выборе следующего блока*/
+
+    /*Ошибка пагинации, при выборе следующего блока*/
 
     this.generateTableFromQueryData=function(responseValue){
         this.setPaginatorValues(responseValue["pagination"]);

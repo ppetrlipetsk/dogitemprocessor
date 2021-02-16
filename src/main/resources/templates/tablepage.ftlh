@@ -1,7 +1,7 @@
 <#import "parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css','../static/css/fform/fform.css','../static/css/etable/etable-light.css']
-varjs=['/static/js/etable.js','/static/js/fixtable.js','/static/js/fform.js','/static/js/form1.js','/static/js/ajaxtools.js','/static/js/system_tools.js']
+varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/table/fform.js','/static/js/table/form1.js','/static/js/table/lib/ajaxtools.js','/static/js/table/lib/system_tools.js']
 >
 
 <@c.page varcss varjs>
@@ -30,6 +30,7 @@ varjs=['/static/js/etable.js','/static/js/fixtable.js','/static/js/fform.js','/s
         let columnName=["t1","t2","t3","t4","t5"];
 
         <#if headervalues??>
+
         let headervalues=${headervalues?no_esc};
         <#else>
         let headervalues=[];

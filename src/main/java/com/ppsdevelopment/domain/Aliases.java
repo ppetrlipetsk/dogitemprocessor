@@ -1,11 +1,6 @@
 package com.ppsdevelopment.domain;
 
-import com.google.gson.Gson;
-import org.hibernate.annotations.Filter;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "aliases")
@@ -22,10 +17,15 @@ public class Aliases {
   private Integer columnwidth;
   private Long table_id;
   private String fieldtype;
+  private String columnclass;
+  private Boolean columnVisibility;
+
+/*
 
   @OneToOne(cascade = CascadeType.DETACH)
   @JoinColumn(name="style_id")
   private Styles style;
+*/
 
 
   public long getId() {
@@ -65,21 +65,6 @@ public class Aliases {
     this.fieldtype = fieldtype;
   }
 
-
-  public Styles getStyle() {
-    return style;
-  }
-
-  public void setStyle(Styles style) {
-    this.style = style;
-  }
-
-  public String getStyleClass(){
-    if (this.style!=null) return this.style.styleClass;
-    else
-      return "";
-  }
-
   public String getColumnstyle() {
     return columnstyle;
   }
@@ -113,32 +98,24 @@ public class Aliases {
             ", fieldalias='" + fieldalias + '\'' +
             ", fieldname='" + fieldname + '\'' +
             ", table_id=" + table_id +
-            ", style=" + style +
             ", fieldtype='" + fieldtype + '\'' +
             '}';
   }
 
-  public String toCellString() {
-    if (columnstyle ==null) columnstyle ="";
-    return "[{" +
-            "id:" + id +
-            ", fieldalias:'" + fieldalias + '\'' +
-            ", fieldname:'" + fieldname + '\'' +
-            ", styleClass:'" + this.getStyleClass() +"'"+
-            ", fieldtype:'" + fieldtype + '\'' +
-            ", columnStyle:'" + columnstyle + '\'' +
-            "}]";
+
+  public Boolean getColumnvisibility() {
+    return columnVisibility;
   }
 
-  public String toCellJSon() {
-    return "[{" +
-            "\"id\":" + id +
-            ", \"fieldalias\":\"" + fieldalias + "\"" +
-            ", \"fieldname\":\"" + fieldname + "\"" +
-            ", \"styleClass\":\"" + this.getStyleClass() +"\""+
-            ", \"fieldtype\":\"" + fieldtype + "\"" +
-            ", \"columnStyle\":\"" + columnstyle + "\"" +
-            "}]";
+  public void setColumnvisibility(Boolean columnvisibility) {
+    this.columnVisibility = columnvisibility;
   }
 
+  public String getColumnclass() {
+    return columnclass;
+  }
+
+  public void setColumnclass(String columnclass) {
+    this.columnclass = columnclass;
+  }
 }

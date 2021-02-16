@@ -38,7 +38,7 @@
 </#macro>
 
 <#macro logout>
-<form class="rounded-sm shadow align-middle form-inline" action="/logout" method="post">
+<form class="rounded-sm shadow align-middle form-inline" action="/logoutsession" method="post">
     <input type="hidden" name="_csrf" value="${_csrf.token}" />
     <input type="submit" value="Выход"/>
 </form>

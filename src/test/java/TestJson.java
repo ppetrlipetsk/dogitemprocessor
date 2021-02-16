@@ -3,7 +3,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.ppsdevelopment.controller.rest.AliasRequestBody;
+
 import com.ppsdevelopment.domain.dictclasses.AliasSettings;
 import com.ppsdevelopment.service.databasetableimpl.helpers.DataAdapter;
 import com.ppsdevelopment.service.viewservices.Pagination;
@@ -43,8 +43,8 @@ public class TestJson {
         String s="[{\"visibility\":true},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false},{\"visibility\":false}]";
         String[] sc=s.split("},");
         sc[0]=sc[0].substring(1,sc[0].length());
-        AliasRequestBody c =(AliasRequestBody) DataAdapter.objectFromJson(sc[0]+"}", AliasRequestBody.class);
-        System.out.println(c);
+        //AliasRequestBody c =(AliasRequestBody) DataAdapter.objectFromJson(sc[0]+"}", AliasRequestBody.class);
+        //System.out.println(c);
     }
 
     @Test
@@ -52,11 +52,11 @@ public class TestJson {
         HashMap<Long, AliasSettings> c=new HashMap<>();
         AliasSettings s1=new AliasSettings();
         s1.setVisibility(false);
-        s1.setAliasid(1L);
+        s1.setId(1L);
         c.put(1L,s1);
         AliasSettings s2=new AliasSettings();
         s2.setVisibility(false);
-        s2.setAliasid(1L);
+        s2.setId(1L);
         c.put(2L,s2);
         Gson gson = new Gson();
         String s=gson.toJson(c);
@@ -71,6 +71,23 @@ public class TestJson {
                 = new TypeReference<LinkedList<AliasSettings>>(){};
         LinkedList list = mapper.readValue(s, typeRef);
         System.out.println(list);
+
+    }
+    @Test
+    public void getResultAsStringLine(){
+        TableImpl table=new TableImpl();
+        ArrayList<String> list=new ArrayList<>();
+        list.add("line1");
+        list.add("line2");
+        list.add("line3");
+        list.add("line4");
+        list.add("line5");
+        list.add("line6<script");
+        list.add("line7<Script");
+        list.add("line8<<<script");
+        String s=table.getResultAsStringLine(list);
+        System.out.println(s);
+
 
     }
 }

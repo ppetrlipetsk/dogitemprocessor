@@ -88,3 +88,17 @@
     width: 90%;
     box-shadow: 0.2em 0.2em 11px;
 }
+
+.width-down{
+    display:block;
+    width:16px;
+    height:16px;
+    background: url('/static/images/width_1.gif') no-repeat;
+}
+
+.width-up{
+    display:block;
+    width:16px;
+    height:16px;
+    background: url('/static/images/spread-1.gif') no-repeat;
+}

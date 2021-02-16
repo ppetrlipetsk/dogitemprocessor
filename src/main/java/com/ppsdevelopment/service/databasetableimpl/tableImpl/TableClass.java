@@ -24,7 +24,6 @@ import com.ppsdevelopment.viewlib.dataprepare.statichelpers.HeaderGenerator;
 import org.hibernate.jpa.QueryHints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -93,11 +92,10 @@ public abstract class TableClass {
     public String createHeader(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap){
         String tableHeader= HeaderGenerator.getHeaderDataList(aliases, settingsMap);
         return tableHeader;
-
     }
 
     public String createHeaderJSon(List<Aliases> aliases, Map<Long, AliasSettings> settingsMap){
-        String tableHeader= HeaderGenerator.getHeaderDataListJson(aliases, settingsMap);
+        String tableHeader= HeaderGenerator.getHeaderDataList(aliases, settingsMap);
         return tableHeader;
     }
 
@@ -108,6 +106,18 @@ public abstract class TableClass {
             keys.add(alias.getId());
         }
         return keys;
+    }
+
+    public int getAliasIndex(Long id, Map<Long, AliasSettings> settingsMap){
+        int index=0;
+        for (Aliases alias : aliases){
+            Long aliasId=alias.getId();
+            AliasSettings settings=settingsMap.get(aliasId);
+            if (aliasId==id) return ++index;
+            if (settings == null || (settings.isVisibility()))
+                index++;
+        }
+        return -1;
     }
 
     public Set<Long> getAliasesKeys() {
@@ -223,7 +233,7 @@ public abstract class TableClass {
                     .setHint( QueryHints.HINT_CACHEABLE, "true")
                     .setHint( QueryHints.HINT_CACHE_REGION, "query.cache.sourcetable" )
                     .getResultList();
-            if (cachable) return updateFromCache(result);
+            if (cachable) return updateFromCache(result, aliasSettingsMap);
             else
                 return result;
         }
@@ -243,7 +253,7 @@ public abstract class TableClass {
         return s.toString();
     }
 
-    private List updateFromCache(List result) {
+    private List updateFromCache(List result, Map<Long, AliasSettings> aliasSettingsMap) {
         for (int i=0;i<result.size();i++){
             Object[] resultSet= (Object[]) result.get(i);
             long id= (((Number) resultSet[0])).longValue();
@@ -251,8 +261,9 @@ public abstract class TableClass {
             if (rowFields!=null){
                 Set<String> keys=rowFields.getRecords().keySet();
                 for (String key:keys){
-                    int index=getAliasIndex(key);
-                    resultSet[index+1]=rowFields.get(key);
+                    int index=getAliasIndexWithHidden(key,aliasSettingsMap);
+                    if (index>-1)
+                        resultSet[index+1]=rowFields.get(key);
                 }
                 result.set(i,resultSet);
             }
@@ -295,15 +306,27 @@ public abstract class TableClass {
     }
 
     public String getResultAsStringLine(List all) {
+/*
+      String s=DataAdapter.asJSON(all);
+        while (s.toLowerCase().contains("<script")){
+            int pos=s.toLowerCase().indexOf("<script");
+            int sl="<script".length();
+            if (pos>-1)
+                s=s.substring(0,pos)+"script"+s.substring(pos+1+sl);
+            s=s.replace("<script","script");
+
+        }
+*/
         return DataAdapter.asJSON(all);
     }
 
-    public String getResultAsJSONLine(List all) {
+    private String getResultAsJSONLine(List all) {
         return DataAdapter.getListAsJSONLine(all);
     }
 
     public List getColumnUniqValues(int cn) throws Exception {
-        String cname=aliases.get(cn).getFieldalias();
+        //String cname=aliases.get(cn).getFieldalias();
+        String cname=getAliasById(cn).getFieldalias();
         if (cname!=null){
             String queryString=propertiesService.get("columnuniqvalues");
             if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
@@ -327,16 +350,45 @@ public abstract class TableClass {
             throw new Exception("Ошибочный номер столбца");
     }
 
+    public Aliases getAliasById(int id) {
+        for (Aliases alias:aliases){
+            if (alias.getId()==id) return alias;
+        }
+        return null;
+    }
+
     public String getPaginationName(){
         return this.tableName+"."+PAGINATIONNAME;
     }
 
-
+   /* public Long getAliasId(String alias) {
+        for(Aliases aliasesItem:aliases){
+            if (aliasesItem.getFieldalias().equals(alias)) return aliasesItem.getId();
+        }
+        return -1L;
+    }
+*/
     public int getAliasIndex(String key) {
         int index=0;
         for(Aliases aliasesItem:aliases){
             if (aliasesItem.getFieldalias().equals(key)) return index;
             index++;
+        }
+        return -1;
+    }
+
+    public int getAliasIndexWithHidden(String fieldName, Map<Long, AliasSettings> aliasSettingsMap) {
+        int index=-1;
+        //Long aliasId=getAliasId(key);
+
+        for(Aliases aliasesItem:aliases){
+            long aliasId=aliasesItem.getId();
+            AliasSettings settings=aliasSettingsMap.get(aliasId);
+            //if (aliasId==settings.getAliasid()) return ++index;
+            if (settings == null || (settings.isVisibility()))
+                index++;
+            //if (aliasesItem.getFieldalias().equals(key)) return index;
+            if (aliasesItem.getFieldalias().equals(fieldName)) return index;
         }
         return -1;
     }

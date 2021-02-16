@@ -1,8 +1,7 @@
 package com.ppsdevelopment.controller;
 
-import com.ppsdevelopment.domain.Aliases;
+
 import com.ppsdevelopment.domain.dictclasses.AliasSettings;
-import com.ppsdevelopment.domain.dictclasses.AliasesSettingsCollection;
 import com.ppsdevelopment.envinronment.*;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.AliasesSettingsImpl;
 import com.ppsdevelopment.service.databasetableimpl.tableImpl.SourceTableImpl;
@@ -21,7 +20,7 @@ public class TablePageController {
     private SourceTableImpl sourceTable;
     private SettingsManager settingsManager;
     private AliasesSettingsImpl aliasesSettingsImpl;
-    private AliasesSettingsCollection aliasesSettingsCollection;
+    /*private AliasesSettingsCollection aliasesSettingsCollection;*/
 
     @GetMapping
     public String index(Map<String, Object> model) throws Exception {
@@ -38,7 +37,7 @@ public class TablePageController {
         //AliasesSettingsCollection aliasesSettingsCollection=aliasesSettings.getSettingsList(sourceTable.getTableName(),sourceTable.getTableId(),sourceTable.getAliases());
         Map<Long, AliasSettings> aliasSettings=aliasesSettingsImpl.getSettingsCollection(
                 sourceTable.getTableName()
-                ,aliasesSettingsCollection
+                //,aliasesSettingsCollection
                 ,sourceTable.getAliasesKeys()
                 ,sourceTable.getAliases()
         );
@@ -77,8 +76,10 @@ public class TablePageController {
         this.aliasesSettingsImpl = aliasesSettingsImpl;
     }
 
+/*
     @Autowired
     public void setAliasesSettingsCollection(AliasesSettingsCollection aliasesSettingsCollection) {
         this.aliasesSettingsCollection = aliasesSettingsCollection;
     }
+*/
 }

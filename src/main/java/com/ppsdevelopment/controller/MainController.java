@@ -5,12 +5,18 @@ import com.ppsdevelopment.domain.User;
 import com.ppsdevelopment.repos.res.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.Map;
 
 @Controller
@@ -59,4 +65,29 @@ public class MainController {
 
         return "main";
     }
+
+    @PostMapping("/logoutsession")
+    public String logoutsession(
+            @AuthenticationPrincipal User user // можно убрать
+            , HttpServletResponse response // можно убрать
+            , HttpSession session // можно убрать
+            , HttpServletRequest request
+            ) {
+
+        try {
+            request.logout();
+        } catch (ServletException e) {
+            e.printStackTrace();
+        }
+/*
+Этот код тоже работает
+        SecurityContextHolder.clearContext();
+        if(session != null)
+            session.invalidate();
+            */
+        return "redirect:/login";
+
+
+    }
+
 }

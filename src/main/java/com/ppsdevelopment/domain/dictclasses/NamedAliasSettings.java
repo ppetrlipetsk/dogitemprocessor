@@ -8,6 +8,9 @@ public class NamedAliasSettings {
     private String fieldAlias;
     private String fieldname;
     private boolean visibility;
+    private Integer columnWidth;
+    private String columnClass;
+    private String columnStyle;
 
 
     public Long getFieldAliasId() {
@@ -40,5 +43,29 @@ public class NamedAliasSettings {
 
     public void setVisibility(boolean visibility) {
         this.visibility = visibility;
+    }
+
+    public Integer getColumnWidth() {
+        return columnWidth;
+    }
+
+    public void setColumnWidth(Integer columnWidth) {
+        this.columnWidth = columnWidth;
+    }
+
+    public String getColumnClass() {
+        return columnClass;
+    }
+
+    public void setColumnClass(String columnClass) {
+        this.columnClass = columnClass;
+    }
+
+    public String getColumnStyle() {
+        return columnStyle;
+    }
+
+    public void setColumnStyle(String columnStyle) {
+        this.columnStyle = columnStyle;
     }
 }

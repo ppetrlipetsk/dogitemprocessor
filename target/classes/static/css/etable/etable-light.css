@@ -61,6 +61,14 @@
     margin: 0 auto;
 }
 
+.vfilter_image{
+    background: url(/static/images/filter43.gif);
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+    margin: 0 auto;
+}
+
 #pagination_block{
     padding: 15px 0px;
 }
@@ -89,4 +97,37 @@
 
 .page-item div:hover{
     color: #303030;
+}
+.width-down{
+    display:block;
+    width:16px;
+    height:16px;
+    background: url('/static/images/width_1.gif') no-repeat;
+    background-size: 16px 16px;
+    float:left;
+}
+
+.width-up{
+    display:block;
+    width:16px;
+    height:16px;
+    background: url('/static/images/spread-1.gif') no-repeat;
+    background-size: 16px 16px;
+    float: right;
+}
+.filter-block{
+    float: left;
+    /*
+    margin-left: -20px;
+    left: 50%;
+    position: relative;
+    */
+}
+.save-width{
+    display:block;
+    width:16px;
+    height:16px;
+    background: url('/static/images/save.gif') no-repeat;
+    background-size: 16px 16px;
+    float:left;
 }

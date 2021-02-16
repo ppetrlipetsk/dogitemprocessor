@@ -40,13 +40,13 @@ public class PaginationHelper {
         return pagination;
     }
 
-    public   Pagination sortPage(Integer columnnumber, List<Aliases> aliases, String paginationName){
+    public   Pagination sortPage(Integer columnNumber, String columnName, String paginationName){
         Pagination pagination=getPagination(paginationName);
-        pagination.setSortColumnNumber(columnnumber);
-        String columnName=aliases.get(pagination.getSortColumnNumber()-1).getFieldalias();// pagination.getSortColumnName();
-
-        pagination.setSortColumnName(aliases.get(columnnumber-1).getFieldalias());
-        if (columnName.equals(aliases.get(columnnumber-1).getFieldalias())){
+        int currentSortColumnId=pagination.getSortColumnNumber();
+        pagination.setSortColumnNumber(columnNumber);
+        //String columnName=aliases.get(pagination.getSortColumnNumber()-1).getFieldalias();// pagination.getSortColumnName();
+        pagination.setSortColumnName(columnName);
+        if (columnNumber==currentSortColumnId){
             pagination.setSortDirection(!pagination.isSortDirection());
         }
         else{
@@ -54,7 +54,7 @@ public class PaginationHelper {
         }
         pagination.setCurrentPage(1);
         pagination.setFirstPage(1);
-        pagination.setSortColumnNumber(columnnumber);
+        pagination.setSortColumnNumber(columnNumber);
         setPagination(paginationName,pagination);
     return pagination;
     }
