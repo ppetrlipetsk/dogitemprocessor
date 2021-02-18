@@ -1,5 +1,3 @@
-/*let ETable=1;*/
-
 ETable=function(preferences) {
     this._MIN_COLUMN_WIDTH=90;
     this.tabledata = preferences.tabledata;
@@ -12,7 +10,6 @@ ETable=function(preferences) {
     this.sortColumnNumber = preferences.sortColumnNumber;
     this.sortDirection = preferences.sortDirection;
     this.spinnerId = preferences.spinnerId;
-    /*this.paginator = {};*/
     this.isFilterFormActive=false;
     this.filterColumns=preferences.filterColumns||[];
     this.showLeftColumn=preferences.showLeftColumn||false;
@@ -28,6 +25,8 @@ ETable=function(preferences) {
     this.leftButtonDisabled=preferences.leftButtonDisabled;
     this.rightButtonDisabled=preferences.rightButtonDisabled;
     this.pageSize=preferences.pageSize;
+    this.topButtons=preferences.topButtons;
+    this.requestColumnsSettingsApply=preferences.requestColumnsSettingsApply;
 
     this.buttonItemTmpl=preferences.buttonItemTmpl;
     this.pagPanelTag=preferences.pagPanelTag;
@@ -38,7 +37,14 @@ ETable=function(preferences) {
     this.itemLinkClass=preferences.itemLinkClass;
     /*this.spinnerId=preferences.spinnerId;*/
     this.tableClass=preferences.tableClass;
+    this.tableSettingsInstance=preferences.tableSettingsInstance;
 
+    if (preferences.paginationVisibility!==undefined) this.paginationVisibility=preferences.paginationVisibility; else this.paginationVisibility=true;
+    if (preferences.readOnly!==undefined) this.readOnly=preferences.readOnly; else this.readOnly=false;
+    if (preferences.sortable!==undefined) this.sortable=preferences.sortable; else this.sortable=true;
+    if (preferences.filtered!==undefined) this.filtered=preferences.filtered; else this.filtered=true;
+    
+    
     let c1=this.buttonTag.indexOf(this.buttonItemTmpl);
     this.buttonTagLeft=this.buttonTag.slice(0,c1);
     this.buttonTagRight=this.buttonTag.slice(c1+this.buttonItemTmpl.length);
@@ -51,11 +57,13 @@ ETable=function(preferences) {
     this.pagPanelTagLeft=this.pagPanelTag.slice(0,c1);
     this.pagPanelTagRight=this.pagPanelTag.slice(c1+this.itemsTmpl.length);
     this.sizeStep=5;
-    this.columnWidthDialog=true;
     this.widthChanged=false;
     this.serviceRowVisibility=false;
-    /* Table output.  Begin... */
 
+
+
+
+    /* Table output.  Begin... */
     this.showTableForm=function(){
         if (this.createTableBlocks()) {
             this.showToolsPanel();
@@ -66,8 +74,9 @@ ETable=function(preferences) {
     };
 
     this.showTable=function () {
-        this.drawTable().setCellClickListener().setHeaderClickListener().setServiceClickListener().setScrollListener().widthDialogListener().headerFoldListener();
-        this.showPaginationPanel();/*.setPaginationClickListener();*/
+        this.drawTable().setCellClickListener().setSortClickListener().setFilterClickListener().setScrollListener().widthDialogListener().headerFoldListener();
+
+        if (this.paginationVisibility)  this.showPaginationPanel();
     };
 
     this.createTableBlocks = function () {
@@ -199,6 +208,7 @@ ETable=function(preferences) {
         );
     };
 
+
     function createServiceRow(instance) {
         let tr=createRowElement('service_row');
 
@@ -210,7 +220,7 @@ ETable=function(preferences) {
         for (let i=0;i<instance.headervalues.length;i++) {
             let val= instance.headervalues[i];
             let columnNumber = (val['id']);
-            let filterBlock=getFilterBlock(instance,val["fieldAlias"]);
+
             let resizeLeft=getDownResizeBlock(this);
             let rightResizeBlock=getUpResizeBlock(this);
             let saveResize=getSaveResizeBlock(instance);
@@ -218,7 +228,7 @@ ETable=function(preferences) {
             let th=createHeaderCell(undefined,undefined,undefined,attr);
             th.appendChild(resizeLeft);
             th.appendChild(saveResize);
-            th.appendChild(filterBlock);
+            if (instance.filtered) th.appendChild(getFilterBlock(instance,val["fieldAlias"]));
             th.appendChild(rightResizeBlock);
             tr.appendChild(th);
         }
@@ -264,7 +274,7 @@ ETable=function(preferences) {
 
     function createTDElement(className){
         let td=document.createElement('td');
-        td.className=className;
+        if (className!==undefined) td.className=className;
         return td;
 
     }
@@ -286,6 +296,14 @@ ETable=function(preferences) {
         return tr;
     }
 
+    this.getCellStyle=function(index){
+        if(this.headervalues!==undefined){
+            let item=this.headervalues[index];
+            if (item!==undefined) return item['columnStyle'];
+        }
+        return undefined;
+    };
+
     this.getTableBody=function(){
         let tbody=document.createElement('tbody');
         if (typeof(this.tabledata!=='undefined')&&(Array.isArray(this.tabledata))) {
@@ -306,6 +324,8 @@ ETable=function(preferences) {
                         let td=createTDElement(undefined);
                             td.setAttribute('data-index',i);
                             td.innerText=line[i];
+                            let style=this.getCellStyle(i-1);
+                            if ((style!==undefined)&&(style.length>0)) td.style=style;
                             tr.appendChild(td);
                         }
                     }
@@ -392,18 +412,6 @@ ETable=function(preferences) {
         return createDivElement('save-width',style);
     }
 
-    function widthSaeClickListener(instance){
-        $('.save-width').click(function () {
-            saveWidthSettings(instance);
-
-        });
-    }
-   
-
-    this.getWidthIconsCellBlock = function () {
-        return "<div class='width-down'></div><div class='width-up'></div>";
-    };
-
     function getElementByIdFromList(id, elements){
         if (elements!==undefined){
             for (let i=0; i<elements.length;i++){
@@ -432,14 +440,21 @@ ETable=function(preferences) {
     }
 
     function storeWidthSettings(t, data) {
-                t.ajaxQuery("/useraliasesdict/widthsettings"
-                    , data
-                    , function (response) {
-                    }
-                    , function (thisItem, response) {
-                        alert('Error: ' + response);
-                    });
-                return data;
+        if (t.requestColumnsSettingsApply!==undefined) {
+            t.ajaxQuery(t.requestColumnsSettingsApply
+                , data
+                , function (response) {
+                }
+                , function (thisItem, response) {
+                    alert('Error: ' + response);
+                });
+            return data;
+        }
+        else
+        {
+            console.log('requestColumnsSettingsApply error!');
+            return undefined;
+        }
     }
 
     function getColumnsWidthCollection(instance) {
@@ -601,6 +616,7 @@ ETable=function(preferences) {
     };
 
     this.setCellClickListener=function(){
+        if (this.readOnly) return this;
         let t=this;
         $( "#"+this.tableId+" tr td:not(.leftcolumn)" ).click(function() {
             let attrcell = this.hasAttribute('data-activecell');
@@ -717,15 +733,23 @@ ETable=function(preferences) {
     /* Top panel block begin*/
 
     this.getTopPanelImage=function(){
-        let s='<div class="et-top-panel">';
-        s+='<div class="tp-button save-image" id="button-save" title="Сохранить"></div>';
-        s+='<div class="tp-button visible-set-image" id="button-visible-settings" title="Настройки таблицы"></div>';
-        s+='</div>';
-        return s;
+        let etp=document.createElement('div');
+        etp.className='et-top-panel';
+        if((this.topButtons!==undefined)&&(Array.isArray(this.topButtons))){
+            for (let i=0; i<this.topButtons.length;i++){
+                let btn=document.createElement('div');
+                btn.className='tp-button '+this.topButtons[i]['buttonClass'];
+                btn.setAttribute('id', this.topButtons[i]['buttonId']);
+                btn.title=this.topButtons[i]['buttonTitle'];
+                etp.appendChild(btn);
+            }
+        }
+        return etp;
     };
 
     this.showToolsPanel = function () {
-        $('#'+this.toolsPanelBlockId).html(this.getTopPanelImage());
+        let el=$('#'+this.toolsPanelBlockId)[0];
+        el.appendChild(this.getTopPanelImage());
         this.setPanelClickListener();
         return this;
     };
@@ -744,10 +768,9 @@ ETable=function(preferences) {
 
     this.tableSettingsForm = function () {
         if (this.confirmWidthSave()) {
-            if (isFunctionDefined('VisibilitySettingsForm')) {
-                let f = new VisibilitySettingsForm();
-                f.show(this.redrawTableByResponse, this);
-            }
+        if (this.tableSettingsInstance!==undefined){
+            this.tableSettingsInstance.show(this.redrawTableByResponse, this, this.tableSettingsInstance);
+        }
         }
     };
 
@@ -807,10 +830,10 @@ ETable=function(preferences) {
         return data;
     };
 
-    this.setServiceClickListener=function(){
+    this.setFilterClickListener=function(){
+        if (!this.filtered) return this;
         if ((this.isFilterFormActive === undefined)) this.isFilterFormActive = false;
         let t = this;
-        /*$("#" + this.tableId + "_header #service_row th:not(.leftcolumn)").click(function () {*/
         $(".filter-block").click(function () {
                 let parentElement=this.parentElement;
                 if ((parentElement!==undefined)&&(parentElement instanceof Element)){
@@ -953,8 +976,9 @@ ETable=function(preferences) {
 
     /* Sort block. Begin */
 
-    this.setHeaderClickListener=function(){
+    this.setSortClickListener=function(){
         let t=this;
+        if (!this.sortable) return this;
         $( "#"+this.tableId+"_header #column_name th:not(.leftcolumn)" ).click(function() {
             let attrcell = this.hasAttribute('data-columnnumber');
             if (attrcell!==undefined){

@@ -1,33 +1,40 @@
-VisibilitySettingsForm=function(){
+VisibilitySettingsForm=function(preferences) {
+    preferences = preferences || {};
 
-    this.show=function(callbackFunction, cInstance){
-        this.callback=callbackFunction;
-        this.callerInstance=cInstance;
-            let f=new FForm({
-                formClass:'ff-form-class'
-                , formParentTagId:undefined
-                , formId:'fform'
-                , topButtons:[{class:'ff-new-button',id:'ff-new',title:''},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
-                , bottomButtons:[]
-                , buttonActionManager:this.buttonActionManager
-                , showTopPanel:false
-                , showBottomPanel:true
-                , height:600
-                , width:500
-                , topPanelWidth:'100%'
-                , topPanelHeight:50
-                , fillContent:this.fillContent
-                , eventManager:this.eventManager
-                , title:'Настройка столбцов'
-                , parentInstance:this
-            });
-            f.showForm();
-            this.headerVisibleCheckboxListener();
+    this.applySettingsURL = preferences.applySettingsURL || undefined;
+    this.requestAliasSettingsURL=preferences.requestAliasSettingsURL||undefined;
+    this.formPreferences = preferences.formPreferences;
+
+    this.show=function(callbackFunction, cInstance, context){
+        this.initPreferences();
+        this.fform = this.getFForm(this.formPreferences);
+        this.callback = callbackFunction;
+        this.callerInstance = cInstance;
+        this.fform.showForm(this);
+        this.headerVisibleCheckboxListener();
+    };
+
+    this.setApplySettingsURL=function(url){
+        this.applySettingsURL=url;
+    };
+
+    /*Метод создан для возможности переопределения в наследнике*/
+    this.initPreferences=function(){
+        this.formPreferences['fillContent']=this.fillContent;
+        this.formPreferences['eventManager']=this.eventManager;
+        this.formPreferences['parentInstance']=this;
+        this.formPreferences['buttonActionManager']=this.buttonActionManager;
+    };
+
+    /*Метод создан для возможности переопределения в наследнике*/
+    this.getFForm=function(preferences){
+        return new FForm(preferences);
     };
 
     this.buttonActionManager=function(id, instance){
         if (id==="filterform_ok_button"){
-            applySettings(instance,instance.parentInstance);
+            if ((instance!==undefined)&&(instance.parentInstance!==undefined))
+                instance.parentInstance.applySettings(instance,instance.parentInstance);
         }
         else
         if(id==="filterform_cancel_button"){
@@ -36,10 +43,12 @@ VisibilitySettingsForm=function(){
         else
         if (id==='ff-delete') instance.closeForm();
         else
-        if (id==='ff-edit') applySettings(instance,instance.parentInstance);
+        if (id==='ff-edit')
+            if ((instance!==undefined)&&(instance.parentInstance!==undefined))
+                instance.parentInstance.applySettings(instance,instance.parentInstance);
     };
 
-    function getHeader(instance){
+    this.getHeader=function(instance){
 
         let thead=document.createElement('thead');
         let headerRow=document.createElement('tr');
@@ -106,7 +115,7 @@ VisibilitySettingsForm=function(){
         thead.appendChild(headerRow);
         /*if (instance!==undefined)  instance.headerVisibleCheckboxListener();*/
         return thead;
-    }
+    };
 
     this.headerVisibleCheckboxListener=function() {
         $('.ff-h-check-box').click(function () {
@@ -123,11 +132,11 @@ VisibilitySettingsForm=function(){
         $('.input_vis').param('ckecked',true);
     }
 
-    function getTable(response, instance){
+    this.getTable=function(response, instance){
         let table=document.createElement('table');
         table.className='ff-aliases-dict-table';
 
-        let theader=getHeader(instance);
+        let theader=this.getHeader();
         table.appendChild(theader);
 
         let cg=document.createElement('colgroup');
@@ -146,7 +155,7 @@ VisibilitySettingsForm=function(){
 
 
 
-        let tableRows=getTableRows(response);
+        let tableRows=this.getTableRows(response);
         if ((tableRows!==undefined)&&(Array.isArray(tableRows))){
             for (let i=0;i<tableRows.length;i++)
                 tbody.appendChild(tableRows[i]);
@@ -156,19 +165,7 @@ VisibilitySettingsForm=function(){
         return table;
     }
 
-    function createStyleInput(val, fieldId){
-        let td=document.createElement('td');
-        let input=document.createElement('input');
-        input.setAttribute('id','style'+fieldId);
-        input.style.border="none";
-        input.value=val['columnStyle'];
-        input.name='style_'+val['fieldAliasId'];
-        input.className='style_input';
-        td.appendChild(input);
-        return td;
-    }
-
-    function createWidthInput(val, fieldId){
+    this.createWidthInput=function(val, fieldId){
         let td=document.createElement('td');
         let columnWidth=document.createElement('input');
         columnWidth.style.width='100px';
@@ -182,14 +179,14 @@ VisibilitySettingsForm=function(){
         return td;
     }
 
-    function createRowNameCaption(val) {
+    this.createRowNameCaption=function(val) {
         let td = document.createElement('td');
         td.innerText = val['fieldname'];
         td.className = 'c-name';
         return td;
-    }
+    };
 
-    function createVisibilitiInput(val){
+    this.createVisibilitiInput=function(val){
         let td=document.createElement('td');
         td.className='c-visible';
         let vis_check=document.createElement('input');
@@ -201,17 +198,22 @@ VisibilitySettingsForm=function(){
         vis_check.checked=val['visibility'];
         td.appendChild(vis_check);
         return td;
-    }
+    };
 
-    function getTableRows(response) {
+    this.putCellsToTableRow=function(row,val, id){
+        row.appendChild(this.createRowNameCaption(val));
+        row.appendChild(this.createVisibilitiInput(val));
+        row.appendChild(this.createWidthInput(val, id));
+    };
+
+    this.getTableRows=function(response) {
         if ((response!==undefined)&&(Array.isArray(response))){
             let rows=[];
             for (let i=0;i<response.length;i++){
                 let fieldId=response[i]['fieldAliasId']||'null';
                 let row=document.createElement('tr');
-                row.appendChild(createRowNameCaption(response[i]));
-                row.appendChild(createVisibilitiInput(response[i]));
-                row.appendChild(createWidthInput(response[i], fieldId));
+                row.setAttribute('data-id',fieldId);
+                this.putCellsToTableRow(row,response[i],fieldId);
                 /*row.appendChild(createStyleInput(response[i], fieldId));*/
                 rows[i]=row;
             }
@@ -219,115 +221,126 @@ VisibilitySettingsForm=function(){
         }
         else
             return [document.createElement('tr')];
-    }
+    };
 
     function getWidthFromElement(el){
         let width_el=el.querySelector('.with_input');
         let val=undefined;
-        if ((el!==undefined)){
+        if ((width_el!==undefined)&&(width_el!==null)){
             val=width_el.value;
         }
         return val;
     }
 
-    function getStyleFromElement(el){
+    this.getStyleFromElement=function(el){
         let width_el=el.querySelector('.style_input');
         let val=undefined;
-        if ((el!==undefined)){
+        if ((width_el!==undefined)&&(width_el!==null)){
             val=width_el.value;
         }
         return val;
-    }
-
-    function getObjectFromElement(el){
+    };
+    
+    this.getVisibilityFromElement=function (el) {
         let vis=el.querySelector('.input_vis');
+        let val=true;
+        if (vis.type==='checkbox')
+            val=vis.checked;
+        return val;
+    };
+
+    this.getIdFromElement=function(el){
+        if (el.hasAttribute('data-id')) return el.getAttribute('data-id');
+        return undefined;
+    };
+
+    this.getColumnClassFromElement=function(el){
+        let item=el.querySelector('.class_input');
+        let val=undefined;
+        if ((item!==undefined)&&(item!==null)){
+            val=item.value;
+        }
+        return val;
+    };
+
+    this.getObjectFromElement=function(el){
         let item= {};
-        let width=getWidthFromElement(el);
-        /*let styleValue=getStyleFromElement(el);*/
-        item['columnWidth']=width;
-        /*item['columnStyle']=styleValue;*/
-        if (vis.type==='checkbox'){
-            item['visibility']=vis.checked;
-            if (vis.hasAttribute('id')){
-                let el_vis_id=vis.getAttribute('id');
-                if ((el_vis_id!==undefined)&&(el_vis_id.length>3)){
-                    item['id']=el_vis_id.substr(4, el_vis_id.length - 4);
-                }
-            }
-        }
+        let width=getWidthFromElement(el)||0;
+        let vis=this.getVisibilityFromElement(el);
+        let id=this.getIdFromElement(el)||-1;
+        let style=this.getStyleFromElement(el)||'';
+        let columnClass=this.getColumnClassFromElement(el)||'';
+
+        item['visibility']=vis;
+        item['columnWidth']=width||'';
+        item['id']=id;
+        item['columnStyle']=style;
+        item['columnClass']=columnClass;
+
         return item;
-/*
+    };
 
 
-        let elements=el.childNodes;
-
-        if ((elements!==undefined)&&(elements.length>0)){
-            for (let i=0;i<elements.length;i++){
-                let n=elements[i];
-                if (n.attr('name')=='visibility'){
-                    items['visibility']=n.checked();
-                    alert('qwe');
-                }
-
-            }
-        }
-*/
-    }
-
-    function applySettings(instance, t) {
+    this.applySettings=function(instance, t) {
         let data=[];
         let rows=$('.ff-content>table>tbody>tr');
         if ((rows!==undefined)){
             for(let i=0;i<rows.length;i++){
-                let x=getObjectFromElement(rows[i]);
+                let x=this.getObjectFromElement(rows[i]);
                 data[i]=x;
             }
         }
 
-        ajaxQuery("/useraliasesdict/applysettings"
-            ,data
-            ,function (t,response) {
-                instance.closeForm();
-                if ((t.parentInstance.callback!==undefined)&&(typeof(t.parentInstance.callback)===typeof(Function)))
-                    t.parentInstance.callback(response,t.parentInstance.callerInstance);
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
-            }
-            ,instance
-            );
-    }
+        this.sendApplyQuery(instance,data);
+    };
 
-    function generateViewFromResponse(responseValue, contentElement, instance) {
-        if ((responseValue!==undefined)&&(Array.isArray(responseValue))){
-            contentElement.appendChild(getTable(responseValue),instance);
+    this.sendApplyQuery=function(instance, data){
+        if (this.applySettingsURL===undefined){
+            console.log('applySettingsURL is undefined!');
         }
+        else {
+            ajaxQuery(this.applySettingsURL
+                , data
+                , function (t, response) {
+                    instance.closeForm();
+                    if ((response!==undefined)&&((t.parentInstance.callback !== undefined) && (typeof (t.parentInstance.callback) === typeof (Function))))
+                        t.parentInstance.callback(response, t.parentInstance.callerInstance);
+                    else
+                        console.log('Save column settings error. Response in undefined!');
+                }
+                , function (thisItem, response) {
+                    alert('Error: ' + response);
+                }
+                , instance
+            );
+        }
+    };
 
+    this.generateViewFromResponse=function(responseValue, contentElement, instance) {
+        if ((responseValue!==undefined)&&(Array.isArray(responseValue))){
+            contentElement.appendChild(this.getTable(responseValue),instance);
+        }
+    };
 
-/*
-        contentElement.text="Text";
-        let el=document.createElement('span');
-        el.text='text';
-        el.html='eltext';
-        el.setAttribute('id','el');
-        el.innerText='innerText';
-        contentElement.appendChild(el);
-*/
+/*    function getGenerateViewFromResponse() {
+        return this.generateViewFromResponse;
+    }*/
 
-    }
-
-    this.fillContent=function(instance, contentElement){
-        let t=this;
-        ajaxQuery("/useraliasesdict/getaliaseslist"
-            ,{currentPage:1}
-            ,function (instance, response) {
-                /*let responseValue= JSON.parse(response);*/
-                generateViewFromResponse(response, contentElement, t);
-            }
-            , function (thisItem,response) {
-                alert('Error: ' + response);
+    this.fillContent=function(instance, contentElement,thisContext) {
+        if (thisContext.requestAliasSettingsURL !== undefined) {
+            ajaxQuery(thisContext.requestAliasSettingsURL
+                , {currentPage: 1}
+                , function (instance, response) {
+                    /*let responseValue= JSON.parse(response);*/
+                    thisContext.generateViewFromResponse(response, contentElement, instance, thisContext);
+                }
+                , function (thisItem, response) {
+                    alert('Error: ' + response);
             });
-
+        }
+        else{
+            console.log('RequestAliasURL error');
+        }
     };
 
     this.eventManager=function (event, instance) {
@@ -339,7 +352,8 @@ VisibilitySettingsForm=function(){
             }
             else
             if (event.key==='Enter'){
-                applySettings(instance,instance.parentInstance);
+                if ((instance!==undefined)&&(instance.parentInstance!==undefined))
+                    instance.parentInstance.applySettings(instance,instance.parentInstance);
             }
         }
     };

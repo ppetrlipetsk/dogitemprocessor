@@ -61,6 +61,7 @@ public abstract class TableClass {
 
 
      static final String QUERY_SELECT_ALL="query_select_all";
+    static final String QUERY_SELECT_TOP="query_select_top";
      static final String QUERY_COUNT="query_count";
      static final String QUERY_UPDATE="query_update";
      static final String QUERY_UPDATE_FROM_CACHE="query_update_from_cache";
@@ -222,7 +223,6 @@ public abstract class TableClass {
     }*/
 
     public List getAll(Map<Long, AliasSettings> aliasSettingsMap) throws Exception {
-        //aliasesStringList="id,".concat(HeaderGenerator.getColumnsList(aliases));
         String queryString=getQuery(QUERY_SELECT_ALL);
         if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
         queryString=prepareQuery(queryString);
@@ -243,12 +243,48 @@ public abstract class TableClass {
         return new ArrayList();
     }
 
+    protected String replaceTagsGetTopQuery(String query, String aliasesStringList) {
+        return query
+                .replace(FIELDS_TAG, aliasesStringList);
+    }
+
+    public List getTopRecords(Map<Long, AliasSettings> aliasSettingsMap, int count) throws Exception {
+        String queryString=getQuery(QUERY_SELECT_TOP);
+        if ((queryString==null)||(queryString.length()==0)) throw new Exception("Ошибка чтения текста запроса получения данных таблицы "+tableName);
+
+        queryString=replaceTagsGetTopQuery(queryString,"id,"+getAliasSettingsListStr(aliasSettingsMap));
+        queryString=queryString
+                .replace("%topcount%", String.valueOf(count))
+                .replace(TABLENAME_TAG,tableName);
+
+        try {
+            List result=  em.createNativeQuery(queryString)
+                    .setHint( "org.hibernate.cacheable", "true")
+                    .setHint( QueryHints.HINT_CACHEABLE, "true")
+                    .setHint( QueryHints.HINT_CACHE_REGION, "query.cache.sourcetable" )
+                    .getResultList();
+/*
+            if (cachable) return updateFromCache(result, aliasSettingsMap);
+            else
+*/
+                return result;
+        }
+        catch (Exception e){
+            System.out.println("Ошибка:"+e.toString());
+        }
+        return new ArrayList();
+    }
+
+
     private String getAliasSettingsListStr(Map<Long, AliasSettings> aliasSettingsMap) {
         StringJoiner s=new StringJoiner(",");
         for (Aliases alias:aliases){
             Long id=alias.getId();
             AliasSettings settings=aliasSettingsMap.get(id);
-            if (settings == null || (settings.isVisibility())) s.add(alias.getFieldalias());
+            boolean v;
+            if (settings != null) v=settings.isVisibility();
+            else v=alias.getColumnvisibility();
+            if (v) s.add(alias.getFieldalias());
         }
         return s.toString();
     }
@@ -288,6 +324,15 @@ public abstract class TableClass {
         String dataLine="\"datatable\":"+tableData;
         String paging="\"pagination\":{"+pagination.toValueString()+"}";
         String filterStr="\"filtercolumns\":"+filterItem.getColumnsNamesAsJson();
+        String headerStr="\"header\":"+this.getTableHeaderJSon(aliases,aliasSettingsMap);
+        return "{"+dataLine+","+paging+","+filterStr+","+headerStr+"}";
+    }
+
+    public String getResponseForAdminColumnsSettingsApply(Map<Long, AliasSettings> aliasSettingsMap, int topcount) throws Exception {
+        String tableData=getResultAsJSONLine(this.getTopRecords(aliasSettingsMap,topcount));
+        String dataLine="\"datatable\":"+tableData;
+        String paging="\"pagination\":{}";
+        String filterStr="\"filtercolumns\":{}";
         String headerStr="\"header\":"+this.getTableHeaderJSon(aliases,aliasSettingsMap);
         return "{"+dataLine+","+paging+","+filterStr+","+headerStr+"}";
     }
@@ -350,7 +395,7 @@ public abstract class TableClass {
             throw new Exception("Ошибочный номер столбца");
     }
 
-    public Aliases getAliasById(int id) {
+    public Aliases getAliasById(long id) {
         for (Aliases alias:aliases){
             if (alias.getId()==id) return alias;
         }

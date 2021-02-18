@@ -21,7 +21,7 @@ public class AliasSettings implements Serializable {
 
 
     public AliasSettings() {
-        this.visibility=true;
+        //this.visibility=true;
     }
 
     public Long getId() {
@@ -141,7 +141,7 @@ public class AliasSettings implements Serializable {
         else
         if ((alias.getColumnclass()!=null)&&(alias.getColumnclass().length()>0)) return alias.getColumnclass();
         else
-            return getDefaultClass(alias.getFieldtype());
+            return "";//getDefaultClass(alias.getFieldtype());
     }
 
     public static String getColumnStyle(Aliases alias, String columnstyle){

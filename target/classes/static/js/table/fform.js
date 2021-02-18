@@ -29,19 +29,17 @@ FForm=function(preferences) {
 
     /*this.topPanelWidth=preferences.topPanelWidth;*/
 
-    function getParentElement(instance) {
-        if (instance.formParentTagId!==undefined)
-            return document.getElementById(instance.formParentTagId);
+    function getParentElement(tagId) {
+        if (tagId!==undefined)
+            return document.getElementById(tagId);
         else
             return document.body;
     }
 
-    function getFormInstance(instance) {
+    function getFormInstance(formId, formClass) {
         let formBlock=document.createElement('div');
-        formBlock.setAttribute("id",instance.formId);
-        formBlock.className=instance.formClass+' form-class rounded';
-        /*formBlock.style.height=instance.height+'px';*/
-        /*formBlock.style.width=instance.width+'px';*/
+        formBlock.setAttribute("id",formId);
+        formBlock.className=formClass+' form-class rounded';
         return formBlock;
     }
 
@@ -84,17 +82,17 @@ FForm=function(preferences) {
         return titleBlock;
     }
 
-    this.showForm=function () {
+    this.showForm=function (caller) {
         if (!this.formActive){
-            let parentElement=getParentElement(this);
+            let parentElement=getParentElement(this.formParentTagId||undefined);
             let globalBlock=document.createElement('div');
             globalBlock.className='global-block';
             globalBlock.setAttribute('id','global-block');
 
-            let formElement=getFormInstance(this);
-
+            let formElement=getFormInstance(this.formId, this.formClass);
             formElement.style.display='none';
             if (this.title!==undefined) formElement.appendChild(getTitle(this));
+
             if (this.showTopPanel) {
                 let formTopPanel = getTopPanel(this);
                 formElement.appendChild(formTopPanel);
@@ -103,7 +101,7 @@ FForm=function(preferences) {
             this.formContentPanel = getFormContentPanel(this, this.height - this.topPanelHeight - 2);
 
             if ((this.fillContent!==undefined)&&(this.fillContent instanceof Function))
-                this.fillContent(this,this.formContentPanel);
+                this.fillContent(this,this.formContentPanel,caller);
 
             formElement.appendChild(this.formContentPanel);
 
@@ -136,7 +134,8 @@ FForm=function(preferences) {
             document.removeEventListener('keydown',this);
             let t=this;
             $('#'+this.formElementInstance.getAttribute('id')).fadeOut(500,function () {
-                getParentElement(t).removeChild(t.formElementInstance)
+                let el=getParentElement(t.formParentTagId);
+                if (el!==undefined) el.removeChild(t.formElementInstance);
             });
             this.formActive=false;
         }

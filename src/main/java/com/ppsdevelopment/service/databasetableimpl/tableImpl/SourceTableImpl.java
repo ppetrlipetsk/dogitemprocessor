@@ -15,6 +15,8 @@ public class SourceTableImpl  extends TableClass{
         queries.put(QUERY_COUNT, propertiesService.get("sourceTableCountQuery"));
         queries.put(QUERY_UPDATE, propertiesService.get("fieldupdate"));
         queries.put(QUERY_UPDATE_FROM_CACHE, propertiesService.get("fieldupdatefromcache"));
+        queries.put(QUERY_SELECT_TOP, propertiesService.get("tableselecttop"));
+
     }
 
     @Override

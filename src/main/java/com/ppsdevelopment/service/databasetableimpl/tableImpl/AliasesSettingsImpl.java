@@ -51,6 +51,17 @@ public class AliasesSettingsImpl implements Serializable {
                 }
     }
 
+    /** Возвращает коллекцию настроек столбцов из таблицы aliases
+     * @param aliases
+     * @return
+     */
+    public HashMap<Long,AliasSettings> getAliasesSettingsCollection(List<Aliases> aliases){
+            HashMap<Long, AliasSettings> collection=new HashMap<>();
+            createAliasesCollection(collection, aliases);
+            return collection;
+    }
+
+
     private HashMap<Long, AliasSettings> getValidatedCollection(HashMap<Long, AliasSettings> collection, List<Aliases> aliases, String collectionId) {
         boolean changed=false;
         for (Aliases alias:aliases){

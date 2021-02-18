@@ -20,7 +20,13 @@ public class HeaderGenerator {
         for (Aliases alias : aliases){
             Long id=alias.getId();
             AliasSettings settings=settingsMap.get(id);
-            if (settings == null || (settings.isVisibility())){
+
+            if (settings==null){
+                settings=new AliasSettings();
+                settings.setVisibility(alias.getColumnvisibility());
+            }
+
+            if (settings.isVisibility()){
                 Integer cWidth=getColumnWith(alias, settings);
                 if (settings.getColumnWidth()!=cWidth) settings.setColumnWidth(cWidth);
                 ColumnItem item=new ColumnItem();
@@ -32,6 +38,7 @@ public class HeaderGenerator {
                 item.setFieldType(alias.getFieldtype());
                 item.setColumnStyle(getColumnStyle(alias, settings));
                 item.setColumnClass(getColumnClass(alias,settings));
+                item.setVisibility(settings.isVisibility());
                 list.add(item);
             }
             //s.add(alias.toCellJSon());
@@ -53,8 +60,10 @@ public class HeaderGenerator {
 
     private static String getColumnStyle(Aliases alias, AliasSettings settings) {
         String cClass=null;
-        if (settings!=null)
-            cClass=settings.getColumnStyle();
+        if ((settings!=null)&&(settings.getColumnStyle()!=null))
+            if (settings.getColumnStyle().length() > 0) {
+                cClass = settings.getColumnStyle();
+            }
         if (isEmpty(cClass))
             cClass=alias.getColumnstyle();
         if (isEmpty(cClass)) {
@@ -65,8 +74,9 @@ public class HeaderGenerator {
 
     private static String getColumnClass(Aliases alias, AliasSettings settings) {
         String cClass=null;
-        if (settings!=null)
-            cClass=settings.getColumnClass();
+        if ((settings!=null)&&(settings.getColumnClass()!=null))
+                if (settings.getColumnClass().length()>0)
+                    cClass=settings.getColumnClass();
         if (isEmpty(cClass))
             cClass=alias.getColumnclass();
         if (isEmpty(cClass)) {

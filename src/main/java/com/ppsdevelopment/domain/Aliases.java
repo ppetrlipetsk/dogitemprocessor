@@ -104,6 +104,7 @@ public class Aliases {
 
 
   public Boolean getColumnvisibility() {
+    if (columnVisibility==null) return true;
     return columnVisibility;
   }
 

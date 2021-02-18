@@ -36,7 +36,7 @@ public class UserAliasesDictController {
                 sourceTable.getTableName()
                 ,sourceTable.getAliasesKeys()
                 ,sourceTable.getAliases()
-                );
+        );
 
         return aliasesSettingsImpl.getSettingsList(collection,sourceTable.getAliases());
     }
@@ -67,6 +67,7 @@ public class UserAliasesDictController {
         return s;
     }
 
+    //Сохранение настроек ширины столбцов
     @PostMapping(value = "widthsettings", consumes = "application/json;charset=UTF-8")
     public String widthSettingsApply(@RequestBody String request){
         TypeReference<LinkedList<AliasSettings>> typeReference
@@ -81,7 +82,7 @@ public class UserAliasesDictController {
 
         LinkedList<AliasSettings> list=new LinkedList<>();
         try{
-              list=mapper.readValue( request,typeReference);
+            list=mapper.readValue( request,typeReference);
             System.out.println(list.size());
         }
         catch (Exception ignored){

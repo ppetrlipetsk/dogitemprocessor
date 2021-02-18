@@ -29,6 +29,29 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
 
         let columnName=["t1","t2","t3","t4","t5"];
 
+        let userTableSettingsFormPreferences={
+            applySettingsURL:'/useraliasesdict/applysettings'
+            , requestAliasSettingsURL:'/useraliasesdict/getaliaseslist'
+            , formPreferences:{
+                  formClass:'ff-form-class'
+                , applySettingsURL:'/useraliasesdict/applysettings'
+                , formParentTagId:undefined
+                , formId:'fform'
+                , topButtons:[{class:'ff-new-button',id:'ff-new',title:''},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
+                , bottomButtons:[]
+                , showTopPanel:false
+                , showBottomPanel:true
+                , height:600
+                , width:500
+                , topPanelWidth:'100%'
+                , topPanelHeight:50
+                , title:'Настройка столбцов'
+            }
+        };
+
+
+        let vxf=new VisibilitySettingsForm(userTableSettingsFormPreferences);
+
         <#if headervalues??>
 
         let headervalues=${headervalues?no_esc};
@@ -96,6 +119,11 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
         let pagPanelTag='<nav aria-label="Page navigation ">\n<ul class="pagination justify-content-center">%items%</ul></nav>';
         let showLeftColumn=true;
 
+        let topButtons=[
+            {buttonClass:'save-image', buttonId:'button-save', buttonTitle:'Сохранить'}
+            ,{buttonClass:'visible-set-image', buttonId:'button-visible-settings', buttonTitle:'Настройки таблицы'}
+        ];
+
 
         let tableItem=new ETable({
             tablearray:dt,
@@ -133,45 +161,12 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
             leftClass:'.left-item',
             rightClass:'.right-item',
             itemLinkClass:'.page-link'
+            ,topButtons:topButtons
+            ,tableSettingsInstance:vxf
+            ,requestColumnsSettingsApply:'/useraliasesdict/widthsettings'
         });
 
-/*
-
-        let paginator= new Pagination({
-            firstPage:pagFirstPage,
-            buttonsCount:pagButtonsCount,
-            currentPage:pagCurrentPage,
-            pagesCount:pagPagesCount,
-            firstButtonNumber:1,
-            pageSize:pageSize,
-            pagTag:pagtag,
-            buttonTag:buttonTag,
-            leftButton:leftButton,
-            rightButton:rightButton,
-            buttonTagActive:buttonTagActive,
-            leftButtonDisabled:leftButtonDisabled,
-            rightButtonDisabled:rightButtonDisabled,
-            buttonItemTmpl:'%button%',
-            pagPanelTag:pagPanelTag,
-            itemsTmpl:'%items%',
-            itemClass:'.pagination-item',
-            leftClass:'.left-item',
-            rightClass:'.right-item',
-            itemLinkClass:'.page-link',
-            tableClass:tableItem
-            }
-        );
-
-        tableItem.setPaginator(paginator);
-*/
         tableItem.showTableForm();
-/*
-            .drawTable()
-            .setHeaderClickListener()
-            .setCellClickListener()
-            .setServiceClickListener().showPaginationPanel().setPaginationClickListener();
-*/
-  /*      paginator.showPaginationPanel();/!*.setClickListener();*!/*/
 
     </script>
 

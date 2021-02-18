@@ -1,7 +1,7 @@
-<#import "parts/common.ftlh" as c>
+<#import "../parts/common.ftlh" as c>
 <#assign
 varcss=['../static/css/etable/etable-light.css','../static/css/etable/maintable-light.css','../static/css/fform/fform.css','../static/css/etable/etable-light.css']
-varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/table/fform.js','/static/js/table/form1.js','/static/js/table/lib/ajaxtools.js','/static/js/table/lib/system_tools.js']
+varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/table/fform.js','/static/js/table/form1.js','/static/js/table/form_admin.js','/static/js/table/lib/ajaxtools.js','/static/js/table/lib/system_tools.js']
 >
 
 <@c.page varcss varjs>
@@ -10,15 +10,9 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
     <div id="tableform">
     </div>
 
-
     <div id="pagination_block"></div>
 
     <div>
-    <#--<#if attr1??>
-        attr=${attr1}
-        <#else>
-                attr1=___
-    </#if>-->
 
     </div>
     <script type="text/javascript">
@@ -26,31 +20,6 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
             t1:"numeric",
             t5:"numeric"
         };
-
-        let columnName=["t1","t2","t3","t4","t5"];
-
-        let userTableSettingsFormPreferences={
-            applySettingsURL:'/useraliasesdict/applysettings'
-            , requestAliasSettingsURL:'/useraliasesdict/getaliaseslist'
-            , formPreferences:{
-                  formClass:'ff-form-class'
-                , applySettingsURL:'/useraliasesdict/applysettings'
-                , formParentTagId:undefined
-                , formId:'fform'
-                , topButtons:[{class:'ff-new-button',id:'ff-new',title:''},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
-                , bottomButtons:[]
-                , showTopPanel:false
-                , showBottomPanel:true
-                , height:600
-                , width:500
-                , topPanelWidth:'100%'
-                , topPanelHeight:50
-                , title:'Настройка столбцов'
-            }
-        };
-
-
-        let vxf=new VisibilitySettingsForm(userTableSettingsFormPreferences);
 
         <#if headervalues??>
 
@@ -120,15 +89,15 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
         let showLeftColumn=true;
 
         let topButtons=[
-            {buttonClass:'save-image', buttonId:'button-save', buttonTitle:'Сохранить'}
-            ,{buttonClass:'visible-set-image', buttonId:'button-visible-settings', buttonTitle:'Настройки таблицы'}
-        ];
+            {buttonClass:'visible-set-image', buttonId:'button-visible-settings', buttonTitle:'Настройки таблицы'}
+            ];
 
+
+        let vxf=adminTableSettingsForm;
 
         let tableItem=new ETable({
             tablearray:dt,
             columnchecks:columnCheck,
-            columnname:columnName,
             tabledata:tabledata,
             tableformid:"tableform",
             tableblockid:"tableblock",
@@ -160,14 +129,17 @@ varjs=['/static/js/table/etable.js','/static/js/table/fixtable.js','/static/js/t
             itemClass:'.pagination-item',
             leftClass:'.left-item',
             rightClass:'.right-item',
-            itemLinkClass:'.page-link'
+            itemLinkClass:'.page-link',
+            paginationVisibility:false,
+            readOnly:true,
+            sortable:false,
+            filtered:false
             ,topButtons:topButtons
             ,tableSettingsInstance:vxf
-            ,requestColumnsSettingsApply:'/useraliasesdict/widthsettings'
+            ,requestColumnsSettingsApply:'/administration/applysettings'
         });
 
         tableItem.showTableForm();
-
     </script>
 
 </@c.page>

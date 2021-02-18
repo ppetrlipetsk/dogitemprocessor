@@ -10,6 +10,7 @@ import java.util.List;
 public interface AliasesRepo extends CrudRepository<Aliases,Long> {
     @Query("from Aliases as al where al.table_id=?1 order by id asc")
     List<Aliases> getAllByTable(Long id);
+    Aliases findFirstById(Long id);
 
 
 /*

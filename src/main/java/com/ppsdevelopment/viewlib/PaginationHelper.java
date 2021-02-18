@@ -70,23 +70,7 @@ public class PaginationHelper {
 
     public void setPagination(String paginationName, Pagination pagination){ //"pagination"
         settingsProvider.setSettingsValue(paginationName,pagination);
-/*
-        session.setAttribute(paginationName,pagination);
-        this.usersSettingsRepository.set(Credentials.getUser(),paginationName,pagination);//"maintable.pagination"
-*/
     }
-
-/*
-    @Autowired
-    public void setSession(HttpSession session) {
-        this.session = session;
-    }
-
-    @Autowired
-    public void setUsersSettingsRepository(UsersSettingsRepository usersSettingsRepository) {
-        this.usersSettingsRepository = usersSettingsRepository;
-    }
-*/
 
     @Autowired
     public void setSettingsProvider(SettingsManager settingsProvider) {
