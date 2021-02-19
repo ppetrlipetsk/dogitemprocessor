@@ -86,8 +86,11 @@ public class MainController {
             session.invalidate();
             */
         return "redirect:/login";
+    }
 
-
+    @GetMapping("/accessdenied")
+    public String accessDenied(){
+        return "accessdenied";
     }
 
 }

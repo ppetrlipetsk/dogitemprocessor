@@ -276,7 +276,6 @@ VisibilitySettingsForm=function(preferences) {
         item['id']=id;
         item['columnStyle']=style;
         item['columnClass']=columnClass;
-
         return item;
     };
 
@@ -291,7 +290,23 @@ VisibilitySettingsForm=function(preferences) {
             }
         }
 
-        this.sendApplyQuery(instance,data);
+        if (this.validateFormData(data))
+            this.sendApplyQuery(instance,data);
+        else
+        {
+
+        }
+    };
+
+    this.validateFormData=function(data){
+
+        for (let i=0;i<data.length;i++){
+            if (isNaN(data[i]['columnWidth'])) {
+                alert('Неверный ввод ширины столбца!');
+                return false;
+            }
+        }
+        return true;
     };
 
     this.sendApplyQuery=function(instance, data){

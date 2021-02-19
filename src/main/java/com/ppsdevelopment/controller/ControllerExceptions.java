@@ -4,11 +4,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-@ControllerAdvice
+/*@ControllerAdvice*/
 public class ControllerExceptions {
-    @ExceptionHandler(Exception.class)
+    /*@ExceptionHandler(Exception.class)*/
+/*
+    @ExceptionHandler(RuntimeException.class)
     @ResponseBody
+*/
     public String processException(Exception e) {
+
         return e.getMessage();
+
     }
 }

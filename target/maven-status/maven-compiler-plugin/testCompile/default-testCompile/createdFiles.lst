@@ -1,4 +1,5 @@
 TestTablePageController.class
-TestJPA.class
+TableImpl.class
 TestSourceTable.class
+TestJson$1.class
 TestJson.class

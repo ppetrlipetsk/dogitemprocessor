@@ -126,48 +126,6 @@ adminTableSettingsForm.putCellsToTableRow=function(row,val, id){
     row.appendChild(this.createClassInput(val, id));
     row.appendChild(this.createStyleInput(val, id));
 };
-/*
-adminTableSettingsForm.getObjectFromElement=function(el){
-    let vis=el.querySelector('.input_vis');
-    let item= {};
-    let width=getWidthFromElement(el);
-    let styleValue=getStyleFromElement(el);
-    let classValue=getClassFromElement(el);
-    item['columnWidth']=width;
-    /!*item['columnStyle']=styleValue;*!/
-    if (vis.type==='checkbox'){
-        item['visibility']=vis.checked;
-        if (vis.hasAttribute('id')){
-            let el_vis_id=vis.getAttribute('id');
-            if ((el_vis_id!==undefined)&&(el_vis_id.length>3)){
-                item['id']=el_vis_id.substr(4, el_vis_id.length - 4);
-            }
-        }
-    }
-    return item;
-};*/
-/*
-
-adminTableSettingsForm.getFForm=function(){
-    return new FForm({
-        formClass:'ff-form-class-admin'
-        , formParentTagId:undefined
-        , formId:'fform'
-        , topButtons:[{class:'ff-new-button',id:'ff-new',title:''},{class:'ff-edit-button',id:'ff-edit'},{class:'ff-delete-button',id:'ff-delete'}]
-        , bottomButtons:[]
-        , buttonActionManager:this.buttonActionManager
-        , showTopPanel:false
-        , showBottomPanel:true
-        , height:600
-        , width:500
-        , topPanelWidth:'100%'
-        , topPanelHeight:50
-        , fillContent:this.fillContent
-        , eventManager:this.eventManager
-        , title:'Настройка столбцов'
-        , parentInstance:this
-    });
-*/
 
     /*/!*Метод создан для возможности переопределения в наследнике*!/
     adminTableSettingsForm.initPreferences=function(){

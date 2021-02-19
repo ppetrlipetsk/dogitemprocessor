@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta charset="UTF-8">
-    <title>Sweater</title>
+    <title>TMC_PROCESSOR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/main_light.css">
