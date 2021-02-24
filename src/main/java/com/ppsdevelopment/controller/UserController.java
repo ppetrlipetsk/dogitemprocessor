@@ -16,11 +16,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/*
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/administration/user")
 @PreAuthorize("hasAuthority('ADMIN')")
-public class UserController {
-    @Autowired
+*/
+class UserControllerw {
+/*    @Autowired
     private UserRepo userRepo;
 
     @GetMapping
@@ -61,5 +63,5 @@ public class UserController {
         userRepo.save(user);
 
         return "redirect:/user";
-    }
+    }*/
 }

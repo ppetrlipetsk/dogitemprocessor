@@ -2,8 +2,11 @@ package com.ppsdevelopment.domain;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.Set;
 
@@ -13,13 +16,25 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotBlank(message = "Username cannot be empty")
+
+    @NotBlank(message = "Логин не может быть пустым.")
+    @Size(min=5, max=30, message = "Длина строки имени пользователя не может быть короче 5 символов и длиннее 30 символов.")
     private String username;
-    @NotBlank(message = "Password cannot be empty")
+
+  /*  @Min(5)*/
+    @NotBlank(message = "Пароль не может быть пустым.")
     private String password;
+
+    @Size(min=5, max=50, message = "Ф.И.О. не может быть короче 5 символов и длиннее 50 символов.")
+    @NotBlank(message = "Ф.И.О. не может быть пустым.")
+    private String fio;
+
+/*
     @Transient
     @NotBlank(message = "Password confirmation cannot be empty")
     private String password2;
+*/
+
     private boolean active;
 
 
@@ -98,6 +113,7 @@ public class User implements UserDetails {
     }
 
 
+/*
     public String getPassword2() {
         return password2;
     }
@@ -105,5 +121,13 @@ public class User implements UserDetails {
     public void setPassword2(String password2) {
         this.password2 = password2;
     }
+*/
 
+    public String getFio() {
+        return fio;
+    }
+
+    public void setFio(String fio) {
+        this.fio = fio;
+    }
 }

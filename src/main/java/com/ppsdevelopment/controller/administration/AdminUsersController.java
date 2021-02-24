@@ -24,14 +24,14 @@ public class AdminUsersController {
     @GetMapping
     public String userList(Model model) {
         model.addAttribute("users", userRepo.findAll());
-        return "userList";
+        return "/administration/userList";
     }
 
     @GetMapping("{user}")
     public String userEditForm(@PathVariable User user, Model model) {
         model.addAttribute("user", user);
         model.addAttribute("roles", Role.values());
-        return "userEdit";
+        return "/administration/userEdit";
     }
 
     @PostMapping
@@ -56,6 +56,6 @@ public class AdminUsersController {
 
         userRepo.save(user);
 
-        return "redirect:/user";
+        return "redirect:/administration/user";
     }
 }
