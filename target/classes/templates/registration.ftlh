@@ -3,74 +3,25 @@
 
 <@c.page>
 
-    <#if errors??>
-        <#assign fio_error=errors['fio']>
-        <#assign username_error=errors['username']>
-    </#if>
-
-    <#if !fio_error??>
-        <#assign fio_error="">
-    </#if>
-
-    <#if !username_error??>
-        <#assign username_error="">
-    </#if>
-
-<#--
-    <#if !message??>
-       <#assign message="">
-    </#if>
--->
-
-<#--
-    <#if user??>
-        <#if user.fio??>
-            <#assign fio=user.fio>
-        <#else>
-            <#assign
-            fio=""
-                >
-        </#if>
-
-        <#if user.login??>
-            <#assign login=user.username>
-            <#else >
-            <#assign login="">
-        </#if>
-        <#if user.password??>
-            <#assign password=user.password>
-            <#else>
-                <#assign password="">
-        </#if>
-        <#else>
-            <#assign
-            fio="null"
-            login="null"
-            password="null"
-            >
-    </#if>
--->
     <#if !password2??>
         <#assign password2="">
     </#if>
-<#--
-    message=${message}<br>
-    login=${login}<br>
--->
 
-
-        <#if error??>
-        <div class="row">
-        <div class="col-md-3" style="margin: 0 auto">
-            <div class="col-md-3 mt-5 mx-auto text-danger text-center border border-white rounded-sm shadow position-fixed fw-bold" >
-                Ошибка! <#if errormessage??>${errormessage}</#if>
-            </div>
-        </div>
-        </div>
+    <#if errors??>
+        <#if errors['fio']??>
+            <#assign fio_error=errors['fio']>
         </#if>
+        <#if errors['username']??>
+            <#assign username_error=errors['username']>
+        </#if>
+        <#if errors['password']??>
+            <#assign password_error=errors['password']>
+        </#if>
+    </#if>
+
     <div class="row">
         <div class="col-md-3" style="margin: 0 auto">
-            <div class="col-sm-3 mx-auto  border border-white rounded-sm shadow position-fixed" style="top:50%;margin-top:-200px;">
+            <div class="col-sm-3 mx-auto  border border-white rounded-sm shadow position-fixed" style="top:50%;margin-top:-200px;" id="login-block">
                 <span style="display: block;width: 100%;font-weight: bold;color:#902020;background-color: rgba(70, 70, 70, 0.2)">Создание учетной записи</span>
                 <div style="display: block;width: 100%;height: 100%;padding:10px;">
                     <form  action="/registration" novalidate method="post" >
@@ -79,7 +30,7 @@
                             <div class="col-sm-8">
                                 <input type="text" name="fio" placeholder="Ф.И.О." class="form-control <#if fio_error??>is-invalid</#if>" required value=<#if user??>${user.fio}</#if> >
                                 <div class="invalid-feedback">
-                                    ${fio_error}
+                                    Правильно заполните поле Ф.И.О.
                                 </div>
                             </div>
                         </div>
@@ -89,7 +40,7 @@
                             <div class="col-sm-8">
                                 <input type="text" name="username" placeholder="Логин" class="form-control <#if username_error??>is-invalid</#if>" required value=<#if user??>${user.username}</#if>>
                                 <div class="invalid-feedback">
-                                    ${username_error}
+                                    Правильно заполните имя пользователя
                                 </div>
 
                             </div>
@@ -129,6 +80,42 @@
             </div>
         </div>
     </div>
+
+    <#if error??>
+<div style="width: 100%; display: block; border: 0px solid #101010; position: fixed" id="error-block" >
+        <div  style="display: block; width: 700px; margin-left: auto; margin-right: auto; border: 0px solid #202020;" class=" border border-white rounded-sm shadow">
+            <span class="text-danger fw-bold">Ошибка!</span><#if errormessage??><br>${errormessage}</#if>
+            <#if errors??>
+                <ul>
+                    <#list errors as key, error_item>
+                        <li>${error_item}</li>
+                    </#list>
+                </ul>
+            </#if>
+        </div>
+</div>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                let lblock=document.querySelector('#login-block');
+                let error_block=document.querySelector('#error-block');
+                if ((lblock!==undefined)&&(error_block!==undefined)){
+                    let coord=lblock.getBoundingClientRect();
+
+                    let el_top=coord.top;
+                    let el_h=lblock.offsetHeight;
+                    if ((el_top!==undefined)&&(el_h!==undefined)){
+                        let y=el_top+el_h+20;
+                        error_block.style.top=y+20+'px';
+                    }
+                }
+                }
+            );
+        </script>
+    </#if>
+
+
+
+
 
 
     <div class="row">
